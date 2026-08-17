@@ -1,0 +1,1151 @@
+<title>Atlas IDMS</title>
+
+<style>
+/* ============================================================
+   TOKENS
+   Light là bảng màu gốc. Dark chỉ định nghĩa lại token.
+   ============================================================ */
+:root {
+  --bg:        #FBFBFD;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F4F8;
+  --line:      #E3E3EC;
+  --line-soft: #EEEEF4;
+  --ink:       #15151E;
+  --muted:     #6A6A7C;
+  --accent:    #4B2ED4;
+  --accent-bg: #EEEBFC;
+
+  --st-core:       #4B2ED4;
+  --st-core-bg:    #EEEBFC;
+  --st-connected:  #0E7C63;
+  --st-connected-bg:#E2F3EE;
+  --st-standalone: #8A5A08;
+  --st-standalone-bg:#F8EFDD;
+  --st-planned:    #6A6A7C;
+  --st-planned-bg: #EEEEF4;
+  --st-private:    #A82F49;
+  --st-private-bg: #FAE7EB;
+
+  --shadow: 0 1px 2px rgba(21,21,30,.05), 0 8px 24px -12px rgba(21,21,30,.14);
+
+  --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --t-xs: 11.5px;
+  --t-sm: 13px;
+  --t-md: 15px;
+  --t-lg: 17px;
+  --t-xl: 21px;
+  --t-2xl: 28px;
+  --t-3xl: 38px;
+
+  /* Tiếng Việt có dấu chồng (ế ữ ộ ằ) — leading rộng để dấu không chạm dòng trên */
+  --lh-body: 1.75;
+  --lh-head: 1.18;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #0B0B11;
+    --surface:   #13131B;
+    --surface-2: #1A1A24;
+    --line:      #272733;
+    --line-soft: #1F1F29;
+    --ink:       #ECECF3;
+    --muted:     #8E8EA3;
+    --accent:    #9B7CFF;
+    --accent-bg: #211A3D;
+
+    --st-core:       #9B7CFF;
+    --st-core-bg:    #211A3D;
+    --st-connected:  #3FBE9C;
+    --st-connected-bg:#10322A;
+    --st-standalone: #D9A441;
+    --st-standalone-bg:#332714;
+    --st-planned:    #8E8EA3;
+    --st-planned-bg: #22222D;
+    --st-private:    #E2647E;
+    --st-private-bg: #37151F;
+
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0B0B11;
+  --surface:   #13131B;
+  --surface-2: #1A1A24;
+  --line:      #272733;
+  --line-soft: #1F1F29;
+  --ink:       #ECECF3;
+  --muted:     #8E8EA3;
+  --accent:    #9B7CFF;
+  --accent-bg: #211A3D;
+
+  --st-core:       #9B7CFF;
+  --st-core-bg:    #211A3D;
+  --st-connected:  #3FBE9C;
+  --st-connected-bg:#10322A;
+  --st-standalone: #D9A441;
+  --st-standalone-bg:#332714;
+  --st-planned:    #8E8EA3;
+  --st-planned-bg: #22222D;
+  --st-private:    #E2647E;
+  --st-private-bg: #37151F;
+
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.7);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--t-md);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* ============================================================
+   G — khung gallery
+   ============================================================ */
+.g-wrap { max-width: 1220px; margin: 0 auto; padding: 0 24px 96px; }
+
+.g-masthead { padding: 56px 0 40px; border-bottom: 1px solid var(--line); }
+.g-eyebrow {
+  font-family: var(--mono); font-size: var(--t-xs); letter-spacing: .14em;
+  text-transform: uppercase; color: var(--muted); margin: 0 0 18px;
+}
+.g-title {
+  font-size: var(--t-3xl); line-height: var(--lh-head); letter-spacing: -.022em;
+  font-weight: 700; margin: 0 0 14px; text-wrap: balance;
+}
+.g-lede { font-size: var(--t-lg); color: var(--muted); max-width: 62ch; margin: 0; }
+
+.g-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 26px; }
+.g-meta span {
+  font-family: var(--mono); font-size: var(--t-xs); letter-spacing: .05em;
+  padding: 5px 9px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted);
+}
+
+.g-section { padding-top: 56px; }
+.g-section-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+.g-num {
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--accent);
+  letter-spacing: .12em; padding-top: 4px;
+}
+.g-section-title { font-size: var(--t-xl); font-weight: 660; letter-spacing: -.015em; margin: 0; line-height: 1.3; }
+.g-note { color: var(--muted); font-size: var(--t-sm); max-width: 70ch; margin: 6px 0 22px; }
+
+/* Khung "màn hình" */
+.g-frame { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
+.g-frame-bar {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  background: var(--surface-2); border-bottom: 1px solid var(--line);
+}
+.g-dots { display: flex; gap: 5px; }
+.g-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); display: block; }
+.g-url {
+  font-family: var(--mono); font-size: var(--t-xs); color: var(--muted);
+  background: var(--bg); border: 1px solid var(--line); border-radius: 4px;
+  padding: 3px 10px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.g-vp { font-family: var(--mono); font-size: var(--t-xs); color: var(--muted); }
+.g-body { overflow-x: auto; }
+.g-canvas { min-width: 940px; }
+
+.g-phones { display: flex; gap: 24px; flex-wrap: wrap; }
+.g-phone { width: 340px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--surface); box-shadow: var(--shadow); }
+.g-phone-bar { height: 26px; background: var(--surface-2); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+.g-phone-bar::after { content: ""; width: 62px; height: 5px; border-radius: 3px; background: var(--line); }
+
+/* ============================================================
+   M — nội dung mockup
+   ============================================================ */
+.m { font-size: 14px; }
+.m-mono { font-family: var(--mono); }
+
+/* -- topbar sản phẩm -- */
+.m-top {
+  display: flex; align-items: center; gap: 18px;
+  padding: 0 20px; height: 52px; border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.m-brand { display: flex; align-items: center; gap: 9px; font-weight: 660; letter-spacing: -.01em; }
+.m-brand-mark {
+  width: 18px; height: 18px; border-radius: 4px; background: var(--accent);
+  display: grid; place-items: center; color: #fff; font-family: var(--mono); font-size: 10px; font-weight: 700;
+}
+.m-nav { display: flex; gap: 20px; font-size: 13.5px; color: var(--muted); }
+.m-nav .on { color: var(--ink); font-weight: 560; }
+.m-top-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.m-lang {
+  display: flex; border: 1px solid var(--line); border-radius: 5px; overflow: hidden;
+  font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+}
+.m-lang span { padding: 4px 8px; color: var(--muted); }
+.m-lang .on { background: var(--ink); color: var(--bg); }
+.m-search {
+  border: 1px solid var(--line); border-radius: 5px; padding: 5px 10px;
+  font-size: 12.5px; color: var(--muted); display: flex; gap: 28px; align-items: center;
+}
+.m-kbd { font-family: var(--mono); font-size: 10.5px; border: 1px solid var(--line); border-radius: 3px; padding: 1px 4px; }
+
+/* -- hero -- */
+.m-hero { padding: 52px 44px 44px; border-bottom: 1px solid var(--line); }
+.m-hero-eyebrow {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .15em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 16px;
+}
+.m-hero h1 {
+  font-size: 34px; line-height: 1.16; letter-spacing: -.025em; font-weight: 700;
+  margin: 0 0 14px; max-width: 20ch; text-wrap: balance;
+}
+.m-hero p { color: var(--muted); max-width: 58ch; margin: 0; font-size: 15px; }
+
+/* -- SIGNATURE: sơ đồ đấu nối -- */
+.m-wire { margin-top: 38px; display: grid; grid-template-columns: 96px 1fr; gap: 0; }
+.m-wire-spine { position: relative; }
+.m-wire-spine::after {
+  content: ""; position: absolute; right: 0; top: 16px; bottom: 26px; width: 2px; background: var(--accent);
+}
+.m-wire-core {
+  position: absolute; right: 0; top: 0; transform: translate(50%, 0);
+  background: var(--accent); color: #fff; font-family: var(--mono); font-size: 10.5px;
+  letter-spacing: .1em; padding: 4px 9px; border-radius: 3px; white-space: nowrap;
+}
+.m-wire-rows { list-style: none; margin: 0; padding: 0; }
+.m-wire-row { display: grid; grid-template-columns: 74px 1fr auto; align-items: center; gap: 14px; padding: 9px 0; }
+.m-lead { height: 0; border-top: 2px solid var(--accent); }
+.m-lead.planned { border-top-style: dashed; border-color: var(--st-planned); }
+.m-lead.private { border-top-style: dashed; border-color: var(--st-private); }
+.m-lead.none { border-top: 2px dotted transparent; }
+.m-wire-name { font-family: var(--mono); font-size: 12.5px; }
+.m-wire-desc { color: var(--muted); font-size: 12.5px; margin-left: 10px; font-family: var(--sans); }
+
+.m-legend { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line-soft); }
+.m-legend div { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); }
+.m-legend i { width: 26px; height: 0; border-top: 2px solid var(--accent); display: block; }
+.m-legend i.planned { border-top-style: dashed; border-color: var(--st-planned); }
+.m-legend i.none { border-top: 2px dotted var(--line); }
+
+/* -- badge trạng thái, dùng chung toàn site -- */
+.m-badge {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase;
+  padding: 3px 7px; border-radius: 3px; white-space: nowrap;
+}
+.b-core       { background: var(--st-core-bg);       color: var(--st-core); }
+.b-connected  { background: var(--st-connected-bg);  color: var(--st-connected); }
+.b-standalone { background: var(--st-standalone-bg); color: var(--st-standalone); }
+.b-planned    { background: var(--st-planned-bg);    color: var(--st-planned); }
+.b-private    { background: var(--st-private-bg);    color: var(--st-private); }
+
+/* -- lưới app -- */
+.m-grid-sec { padding: 40px 44px 48px; }
+.m-sec-label {
+  font-family: var(--mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 18px;
+}
+.m-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+.m-card { border: 1px solid var(--line); border-radius: 6px; padding: 16px; background: var(--surface); }
+.m-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
+.m-card-name { font-family: var(--mono); font-size: 12.5px; font-weight: 600; }
+.m-card p { margin: 0 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.m-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.m-chip {
+  font-family: var(--mono); font-size: 10px; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 3px; padding: 2px 6px;
+}
+
+/* -- bố cục 3 cột docs -- */
+.m-docs { display: grid; grid-template-columns: 208px minmax(0,1fr) 178px; min-height: 560px; }
+.m-side { border-right: 1px solid var(--line); padding: 20px 0; background: var(--surface); }
+.m-side-group { padding: 0 16px; margin-bottom: 20px; }
+.m-side-h {
+  font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 9px; padding-left: 9px;
+}
+.m-side a { display: block; padding: 5px 9px; border-radius: 4px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.m-side a.on { background: var(--accent-bg); color: var(--accent); font-weight: 560; }
+
+.m-main { padding: 30px 40px 48px; min-width: 0; }
+.m-crumb { font-family: var(--mono); font-size: 11px; color: var(--muted); margin: 0 0 14px; letter-spacing: .04em; }
+.m-h1 { font-size: 28px; letter-spacing: -.022em; font-weight: 700; margin: 0 0 8px; line-height: 1.2; }
+.m-tag { color: var(--muted); font-size: 15px; margin: 0 0 16px; }
+.m-metarow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-bottom: 22px; border-bottom: 1px solid var(--line); }
+.m-link { font-family: var(--mono); font-size: 11.5px; color: var(--accent); text-decoration: none; border-bottom: 1px solid currentColor; }
+
+.m-h2 {
+  font-size: 18px; font-weight: 660; letter-spacing: -.012em; margin: 32px 0 12px;
+  padding-top: 4px; scroll-margin-top: 20px;
+}
+.m-h2 .anchor { font-family: var(--mono); font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 8px; }
+.m-p { font-size: 14.5px; line-height: var(--lh-body); color: var(--ink); margin: 0 0 14px; max-width: 66ch; }
+.m-p.muted { color: var(--muted); }
+
+.m-feats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0 8px; }
+.m-feat { border: 1px solid var(--line); border-radius: 6px; padding: 13px 15px; }
+.m-feat h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 600; }
+.m-feat p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+.m-pre {
+  background: var(--surface-2); border: 1px solid var(--line); border-radius: 6px;
+  padding: 14px 16px; overflow-x: auto; margin: 0 0 14px;
+}
+.m-pre code { font-family: var(--mono); font-size: 12.5px; line-height: 1.85; white-space: pre; display: block; }
+.c-com { color: var(--muted); }
+.c-key { color: var(--accent); }
+.c-str { color: var(--st-connected); }
+
+.m-tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 14px; }
+.m-tbl th {
+  text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--muted); font-weight: 500;
+  padding: 7px 10px; border-bottom: 1px solid var(--line);
+}
+.m-tbl td { padding: 8px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.m-tbl td:first-child { font-family: var(--mono); font-size: 11.5px; white-space: nowrap; }
+
+.m-callout {
+  border: 1px solid var(--line); border-left: 3px solid var(--st-standalone);
+  background: var(--st-standalone-bg); border-radius: 0 6px 6px 0; padding: 13px 16px; margin: 0 0 16px;
+}
+.m-callout p { margin: 0; font-size: 13px; line-height: 1.65; }
+.m-callout strong { font-family: var(--mono); font-size: 11px; letter-spacing: .09em; text-transform: uppercase; display: block; margin-bottom: 5px; color: var(--st-standalone); }
+
+.m-toc { border-left: 1px solid var(--line); padding: 30px 18px; }
+.m-toc-h { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.m-toc a { display: block; font-size: 12.5px; color: var(--muted); text-decoration: none; padding: 4px 0 4px 11px; border-left: 2px solid var(--line-soft); }
+.m-toc a.on { color: var(--accent); border-left-color: var(--accent); }
+
+/* -- luồng OAuth -- */
+.m-flow { border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-bottom: 16px; }
+.m-flow-step { display: grid; grid-template-columns: 34px 1fr; gap: 14px; padding: 12px 16px; border-bottom: 1px solid var(--line-soft); }
+.m-flow-step:last-child { border-bottom: 0; }
+.m-flow-n { font-family: var(--mono); font-size: 11px; color: var(--accent); padding-top: 2px; letter-spacing: .05em; }
+.m-flow-step h5 { margin: 0 0 3px; font-size: 13px; font-weight: 600; }
+.m-flow-step p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.m-flow-step code { font-family: var(--mono); font-size: 11.5px; background: var(--surface-2); padding: 1px 5px; border-radius: 3px; }
+
+/* -- CMS -- */
+.m-admin { display: grid; grid-template-columns: 190px minmax(0,1fr); min-height: 600px; background: var(--bg); }
+.m-adm-side { border-right: 1px solid var(--line); padding: 18px 0; background: var(--surface); }
+.m-adm-side a { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 7px 16px; font-size: 13px; color: var(--muted); text-decoration: none; }
+.m-adm-side a.on { background: var(--accent-bg); color: var(--accent); font-weight: 560; box-shadow: inset 2px 0 0 var(--accent); }
+.m-adm-count { font-family: var(--mono); font-size: 10px; }
+
+.m-adm-main { min-width: 0; }
+.m-adm-bar { display: flex; align-items: center; gap: 12px; padding: 12px 22px; border-bottom: 1px solid var(--line); background: var(--surface); }
+.m-back { font-family: var(--mono); font-size: 11.5px; color: var(--muted); text-decoration: none; }
+.m-adm-title { font-family: var(--mono); font-size: 14px; font-weight: 600; }
+.m-adm-actions { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+.m-btn { font-size: 12.5px; padding: 6px 13px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.m-btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 560; }
+
+.m-adm-body { padding: 20px 22px 40px; display: flex; flex-direction: column; gap: 14px; }
+.m-block { border: 1px solid var(--line); border-radius: 7px; background: var(--surface); overflow: hidden; }
+.m-block-head { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--line-soft); background: var(--surface-2); }
+.m-block-h { font-size: 13px; font-weight: 620; }
+.m-block-scope { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.m-block-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.m-add { font-family: var(--mono); font-size: 11px; color: var(--accent); border: 1px dashed var(--accent); border-radius: 4px; padding: 3px 9px; }
+.m-block-body { padding: 15px 16px; }
+
+.m-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.m-field label { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.m-input { border: 1px solid var(--line); border-radius: 5px; padding: 7px 10px; font-size: 12.5px; background: var(--bg); color: var(--ink); }
+.m-input.mono { font-family: var(--mono); font-size: 11.5px; }
+.m-input.ta { min-height: 58px; line-height: 1.6; color: var(--muted); }
+
+.m-trans {
+  display: flex; align-items: center; gap: 8px; font-family: var(--mono);
+  font-size: 10.5px; letter-spacing: .05em;
+}
+.m-trans .warn { color: var(--st-standalone); }
+.m-trans .ok { color: var(--st-connected); }
+
+.m-list { display: flex; flex-direction: column; gap: 7px; }
+.m-item { display: flex; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 5px; padding: 9px 12px; background: var(--bg); }
+.m-item.drag { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-bg); }
+.m-grip { font-family: var(--mono); color: var(--muted); font-size: 13px; cursor: grab; letter-spacing: -1px; }
+.m-item-name { font-size: 13px; font-weight: 550; }
+.m-item-sub { font-size: 12px; color: var(--muted); }
+.m-item-right { margin-left: auto; display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); }
+.m-anchor { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.m-md {
+  border: 1px solid var(--line); border-radius: 5px; background: var(--bg);
+  font-family: var(--mono); font-size: 11.5px; line-height: 1.85; padding: 11px 13px; color: var(--muted);
+  margin-top: 8px; white-space: pre; overflow-x: auto;
+}
+.m-mdbar { display: flex; gap: 4px; border-bottom: 1px solid var(--line); padding: 6px 8px; margin: -11px -13px 10px; background: var(--surface-2); }
+.m-mdbar span { font-family: var(--mono); font-size: 10.5px; color: var(--muted); padding: 2px 7px; border-radius: 3px; }
+.m-mdbar span.on { background: var(--surface); color: var(--ink); border: 1px solid var(--line); }
+
+/* -- thư viện ảnh -- */
+.m-media { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.m-drop {
+  border: 1.5px dashed var(--line); border-radius: 7px; display: grid; place-content: center;
+  text-align: center; padding: 20px 12px; gap: 5px; color: var(--muted);
+}
+.m-drop b { font-size: 12.5px; color: var(--ink); font-weight: 600; }
+.m-drop span { font-size: 11.5px; }
+.m-thumb { border: 1px solid var(--line); border-radius: 7px; overflow: hidden; background: var(--surface); }
+.m-thumb-img { height: 88px; display: grid; place-items: center; font-family: var(--mono); font-size: 10px; color: var(--muted); }
+.m-thumb-meta { padding: 8px 10px; border-top: 1px solid var(--line-soft); }
+.m-thumb-meta b { display: block; font-family: var(--mono); font-size: 11px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.m-thumb-meta span { font-family: var(--mono); font-size: 10px; color: var(--muted); }
+
+/* -- login -- */
+.m-login { display: grid; place-items: center; min-height: 470px; padding: 40px 20px; background: var(--bg); }
+.m-login-card { width: 340px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); padding: 28px; box-shadow: var(--shadow); }
+.m-login h2 { font-size: 19px; font-weight: 660; letter-spacing: -.015em; margin: 16px 0 5px; }
+.m-login .sub { font-size: 13px; color: var(--muted); margin: 0 0 22px; }
+.m-login .m-field { margin-bottom: 13px; }
+.m-login .m-input { width: 100%; }
+.m-login .m-btn { width: 100%; margin-top: 6px; padding: 9px; }
+.m-login-foot { margin-top: 20px; padding-top: 15px; border-top: 1px solid var(--line-soft); font-family: var(--mono); font-size: 10.5px; color: var(--muted); line-height: 1.7; }
+
+/* -- mobile -- */
+.mb { padding-bottom: 20px; }
+.mb-top { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.mb-burger { font-family: var(--mono); color: var(--muted); }
+.mb-hero { padding: 26px 16px 22px; border-bottom: 1px solid var(--line); }
+.mb-hero h1 { font-size: 24px; line-height: 1.2; letter-spacing: -.02em; margin: 12px 0 10px; font-weight: 700; }
+.mb-hero p { font-size: 13.5px; color: var(--muted); margin: 0; }
+.mb-wire { margin-top: 24px; display: grid; grid-template-columns: 54px 1fr; }
+.mb-wire .m-wire-row { grid-template-columns: 34px 1fr; gap: 10px; padding: 7px 0; }
+.mb-wire .m-wire-desc { display: none; }
+.mb-sec { padding: 22px 16px; }
+.mb-cards { display: flex; flex-direction: column; gap: 10px; }
+.mb-toc { margin: 0 0 18px; border: 1px solid var(--line); border-radius: 6px; padding: 11px 13px; }
+.mb-main { padding: 20px 16px 30px; }
+.mb-main .m-h1 { font-size: 23px; }
+.mb-main .m-feats { grid-template-columns: 1fr; }
+
+/* -- bảng token -- */
+.g-tokens { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 22px; }
+.g-tok-h { font-family: var(--mono); font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.g-sw { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+.g-sw i { width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--line); display: block; flex: none; }
+.g-sw b { font-size: 12.5px; font-weight: 550; }
+.g-sw span { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-left: auto; }
+.g-type-row { padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+.g-type-row .lbl { font-family: var(--mono); font-size: 10px; color: var(--muted); letter-spacing: .09em; text-transform: uppercase; display: block; margin-bottom: 3px; }
+
+@media (max-width: 720px) {
+  .g-wrap { padding: 0 16px 64px; }
+  .g-title { font-size: 27px; }
+  .g-lede { font-size: 15px; }
+}
+</style>
+
+<div class="g-wrap">
+
+  <header class="g-masthead">
+    <p class="g-eyebrow">app-store-doc · bản thiết kế giao diện · 17.08.2026</p>
+    <h1 class="g-title">Atlas IDMS</h1>
+    <p class="g-lede">Sáu màn hình đề xuất cho trang tài liệu hệ sinh thái và trang quản trị nội dung. Toàn bộ nội dung trong mockup là dữ liệu thật lấy từ các repo trên GitHub — không có chữ giả.</p>
+    <div class="g-meta">
+      <span>6 MÀN HÌNH + 2 MOBILE</span>
+      <span>SÁNG / TỐI</span>
+      <span>HTML TĨNH — CHƯA PHẢI NEXT.JS</span>
+      <span>CHỜ DUYỆT</span>
+    </div>
+  </header>
+
+  <!-- ══════════ HƯỚNG THIẾT KẾ ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">00</span><h2 class="g-section-title">Hướng thiết kế</h2></div>
+    <p class="g-note">Ba quyết định làm nên bộ mặt của trang. Mỗi cái đều xuất phát từ chính đề bài, không phải từ khuôn mẫu docs có sẵn.</p>
+
+    <div class="g-tokens">
+      <div>
+        <p class="g-tok-h">Màu</p>
+        <div class="g-sw"><i style="background:#4B2ED4"></i><b>Tím điện</b><span>#4B2ED4</span></div>
+        <div class="g-sw"><i style="background:#FBFBFD"></i><b>Nền lạnh</b><span>#FBFBFD</span></div>
+        <div class="g-sw"><i style="background:#15151E"></i><b>Mực</b><span>#15151E</span></div>
+        <div class="g-sw"><i style="background:#0E7C63"></i><b>Đã nối</b><span>#0E7C63</span></div>
+        <div class="g-sw"><i style="background:#8A5A08"></i><b>Độc lập</b><span>#8A5A08</span></div>
+        <div class="g-sw"><i style="background:#A82F49"></i><b>Riêng tư</b><span>#A82F49</span></div>
+        <p class="g-note" style="margin-top:12px">Xám ngả lạnh về phía tím, không phải xám trung tính. Bốn màu trạng thái chỉ dùng cho trạng thái — không bao giờ dùng để trang trí.</p>
+      </div>
+
+      <div>
+        <p class="g-tok-h">Chữ</p>
+        <div class="g-type-row">
+          <span class="lbl">Tiêu đề — sans hệ thống, 700, tracking âm</span>
+          <div style="font-size:26px;font-weight:700;letter-spacing:-.025em;line-height:1.2">Một tài khoản, nhiều ứng dụng</div>
+        </div>
+        <div class="g-type-row">
+          <span class="lbl">Thân bài — leading 1.75</span>
+          <div style="font-size:14.5px;line-height:1.75;color:var(--muted)">Tiếng Việt có dấu chồng: ế ữ ộ ằ ể. Ở leading chật, dấu mũ chạm chân dòng trên.</div>
+        </div>
+        <div class="g-type-row">
+          <span class="lbl">Nhãn &amp; mã — mono, hoa, tracking rộng</span>
+          <div class="m-mono" style="font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--accent)">QUICK START · REDIRECT_URI · CU-HOURS</div>
+        </div>
+        <p class="g-note" style="margin-top:12px">Không dùng webfont: bộ chữ nào phủ đủ dấu tiếng Việt cũng nặng, mà tải chậm thì trang docs mất luôn lý do tồn tại. Cá tính đến từ <em>cách sắp chữ</em> — bậc cỡ, tương phản đậm nhạt, tracking — chứ không từ tên phông.</p>
+      </div>
+
+      <div>
+        <p class="g-tok-h">Điểm nhấn</p>
+        <p class="g-note" style="margin:0 0 14px">Sơ đồ đấu nối. IDMS là trục dọc, mỗi ứng dụng là một nhánh, và <strong>kiểu nét mang thông tin thật</strong>: nét liền là đã nối OAuth, nét đứt là dự kiến, không có nét là chạy độc lập.</p>
+        <div class="m-legend" style="margin:0;padding:0;border:0;flex-direction:column;gap:11px">
+          <div><i></i>Đã nối OAuth</div>
+          <div><i class="planned"></i>Dự kiến nối</div>
+          <div><i class="none"></i>Chạy độc lập, không qua IDMS</div>
+        </div>
+        <p class="g-note" style="margin-top:14px">Ngôn ngữ nét này lặp lại ở huy hiệu trạng thái trên mọi trang. Và nó nói thật: tính đến hôm nay <strong>chưa ứng dụng vệ tinh nào nối vào IDMS</strong> — sơ đồ hiển thị đúng như vậy thay vì vẽ một hệ sinh thái hoàn hảo không có thật.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 01 — LANDING ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">01</span><h2 class="g-section-title">Trang chủ</h2></div>
+    <p class="g-note">Mở đầu bằng sơ đồ đấu nối chứ không bằng khẩu hiệu. Người đọc cần biết ngay: có gì trong hệ sinh thái, cái nào đã nối, cái nào chưa.</p>
+    <div class="g-frame">
+      <div class="g-frame-bar">
+        <div class="g-dots"><i></i><i></i><i></i></div>
+        <div class="g-url">atlas.levananhduc.dev/vi</div>
+        <div class="g-vp">1280</div>
+      </div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-top">
+          <div class="m-brand"><span class="m-brand-mark">A</span>Atlas</div>
+          <nav class="m-nav"><span class="on">Hệ sinh thái</span><span>Ứng dụng</span><span>Hướng dẫn</span><span>API</span></nav>
+          <div class="m-top-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang"><span class="on">VI</span><span>EN</span></div>
+          </div>
+        </div>
+
+        <div class="m-hero">
+          <p class="m-hero-eyebrow">6 ứng dụng · 1 máy chủ định danh</p>
+          <h1>Một tài khoản, mọi ứng dụng.</h1>
+          <p>IDMS cấp danh tính cho toàn bộ hệ sinh thái. Trang này ghi lại từng ứng dụng làm gì, chạy thế nào, và nối vào IDMS ra sao.</p>
+
+          <div class="m-wire">
+            <div class="m-wire-spine"><span class="m-wire-core">IDMS</span></div>
+            <ul class="m-wire-rows">
+              <li class="m-wire-row">
+                <i class="m-lead"></i>
+                <div><span class="m-wire-name">web-store-apps</span><span class="m-wire-desc">Đăng nhập, consent, bảng khởi chạy</span></div>
+                <span class="m-badge b-core">Lõi</span>
+              </li>
+              <li class="m-wire-row">
+                <i class="m-lead planned"></i>
+                <div><span class="m-wire-name">match-cv</span><span class="m-wire-desc">Đối chiếu CV với mô tả công việc</span></div>
+                <span class="m-badge b-planned">Dự kiến nối</span>
+              </li>
+              <li class="m-wire-row">
+                <i class="m-lead planned"></i>
+                <div><span class="m-wire-name">app-manage-gym</span><span class="m-wire-desc">Nhật ký tập luyện</span></div>
+                <span class="m-badge b-planned">Dự kiến nối</span>
+              </li>
+              <li class="m-wire-row">
+                <i class="m-lead planned"></i>
+                <div><span class="m-wire-name">app-AI-study-coach</span><span class="m-wire-desc">Trợ lý học tập</span></div>
+                <span class="m-badge b-planned">Dự kiến nối</span>
+              </li>
+              <li class="m-wire-row">
+                <i class="m-lead private"></i>
+                <div><span class="m-wire-name">shorten-link</span><span class="m-wire-desc">Rút gọn liên kết</span></div>
+                <span class="m-badge b-private">Repo riêng tư</span>
+              </li>
+              <li class="m-wire-row">
+                <i class="m-lead none"></i>
+                <div><span class="m-wire-name">app-calculate-badminton</span><span class="m-wire-desc">Chia tiền sân cầu lông, lưu trên máy</span></div>
+                <span class="m-badge b-standalone">Độc lập</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="m-legend">
+            <div><i></i>Đã nối OAuth</div>
+            <div><i class="planned"></i>Dự kiến nối</div>
+            <div><i class="none"></i>Chạy độc lập</div>
+          </div>
+        </div>
+
+        <div class="m-grid-sec">
+          <p class="m-sec-label">Bắt đầu từ đâu</p>
+          <div class="m-cards">
+            <div class="m-card">
+              <div class="m-card-top"><span class="m-card-name">web-store-apps</span><span class="m-badge b-core">Lõi</span></div>
+              <p>Trang đăng nhập, màn hình đồng ý quyền và bảng khởi chạy ứng dụng cho toàn hệ sinh thái.</p>
+              <div class="m-chips"><span class="m-chip">Next.js 15</span><span class="m-chip">shadcn/ui</span><span class="m-chip">next-intl</span></div>
+            </div>
+            <div class="m-card">
+              <div class="m-card-top"><span class="m-card-name">api-web-store-apps</span><span class="m-badge b-core">Lõi</span></div>
+              <p>Máy chủ OAuth 2.0 / OIDC: cấp token, xác thực nhiều lớp, quản lý danh bạ ứng dụng.</p>
+              <div class="m-chips"><span class="m-chip">Express</span><span class="m-chip">MongoDB</span><span class="m-chip">Redis</span></div>
+            </div>
+            <div class="m-card">
+              <div class="m-card-top"><span class="m-card-name">match-cv</span><span class="m-badge b-planned">Dự kiến</span></div>
+              <p>Chấm độ khớp giữa CV và mô tả công việc bằng nhúng vector, sinh thư ứng tuyển.</p>
+              <div class="m-chips"><span class="m-chip">NestJS 11</span><span class="m-chip">pgvector</span><span class="m-chip">TanStack</span></div>
+            </div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 02 — TRANG ỨNG DỤNG ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">02</span><h2 class="g-section-title">Trang ứng dụng</h2></div>
+    <p class="g-note">Ba cột: điều hướng, nội dung, mục lục. Khối tính năng và các mục nội dung đều do CMS sinh ra — thứ tự trong trang là thứ tự bạn kéo thả trong trang quản trị.</p>
+    <div class="g-frame">
+      <div class="g-frame-bar">
+        <div class="g-dots"><i></i><i></i><i></i></div>
+        <div class="g-url">atlas.levananhduc.dev/vi/apps/web-store-apps</div>
+        <div class="g-vp">1280</div>
+      </div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-top">
+          <div class="m-brand"><span class="m-brand-mark">A</span>Atlas</div>
+          <nav class="m-nav"><span>Hệ sinh thái</span><span class="on">Ứng dụng</span><span>Hướng dẫn</span><span>API</span></nav>
+          <div class="m-top-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang"><span class="on">VI</span><span>EN</span></div>
+          </div>
+        </div>
+
+        <div class="m-docs">
+          <aside class="m-side">
+            <div class="m-side-group">
+              <p class="m-side-h">Lõi</p>
+              <a href="#" class="on">web-store-apps</a>
+              <a href="#">api-web-store-apps</a>
+            </div>
+            <div class="m-side-group">
+              <p class="m-side-h">Ứng dụng vệ tinh</p>
+              <a href="#">match-cv</a>
+              <a href="#">app-manage-gym</a>
+              <a href="#">app-AI-study-coach</a>
+              <a href="#">app-calculate-badminton</a>
+              <a href="#">shorten-link</a>
+            </div>
+            <div class="m-side-group">
+              <p class="m-side-h">Hướng dẫn</p>
+              <a href="#">Tổng quan hệ sinh thái</a>
+              <a href="#">Tích hợp OAuth</a>
+              <a href="#">Thêm ứng dụng mới</a>
+            </div>
+          </aside>
+
+          <main class="m-main">
+            <p class="m-crumb">Ứng dụng / Lõi</p>
+            <h1 class="m-h1">web-store-apps</h1>
+            <p class="m-tag">Cổng đăng nhập và bảng khởi chạy ứng dụng</p>
+            <div class="m-metarow">
+              <span class="m-badge b-core">Lõi</span>
+              <span class="m-chip">Next.js 15</span>
+              <span class="m-chip">React 19</span>
+              <span class="m-chip">Tailwind v4</span>
+              <span class="m-chip">Zustand 5</span>
+              <span style="flex:1"></span>
+              <a href="#" class="m-link">github ↗</a>
+              <a href="#" class="m-link">api-web-store-apps ↗</a>
+            </div>
+
+            <h2 class="m-h2" id="la-gi">Là gì<span class="anchor">#la-gi</span></h2>
+            <p class="m-p">Giao diện của IDMS. Người dùng đăng nhập ở đây một lần, sau đó mở được mọi ứng dụng trong hệ sinh thái mà không phải nhập lại mật khẩu. Ứng dụng vệ tinh chuyển hướng người dùng tới đây, nhận lại mã uỷ quyền, rồi đổi mã lấy token.</p>
+
+            <h2 class="m-h2" id="tinh-nang">Tính năng<span class="anchor">#tinh-nang</span></h2>
+            <div class="m-feats">
+              <div class="m-feat"><h4>Đăng nhập bằng email và mã OTP</h4><p>Gửi mã sáu chữ số qua email, hết hạn sau năm phút.</p></div>
+              <div class="m-feat"><h4>Liên kết đăng nhập một chạm</h4><p>Nhận liên kết qua email, bấm là vào, không cần mật khẩu.</p></div>
+              <div class="m-feat"><h4>Màn hình đồng ý quyền</h4><p>Hiện rõ ứng dụng nào đang xin quyền gì trước khi bạn cho phép.</p></div>
+              <div class="m-feat"><h4>Bảng khởi chạy ứng dụng</h4><p>Chỉ hiện những ứng dụng tài khoản của bạn được phép mở.</p></div>
+              <div class="m-feat"><h4>Lịch sử đăng nhập</h4><p>Xem thiết bị, vị trí và thời điểm của từng lần đăng nhập.</p></div>
+              <div class="m-feat"><h4>Đồng bộ ngôn ngữ</h4><p>Chọn tiếng Việt ở đây thì mọi ứng dụng vệ tinh mở ra cũng tiếng Việt.</p></div>
+            </div>
+
+            <h2 class="m-h2" id="quick-start">Chạy thử trong 5 phút<span class="anchor">#quick-start</span></h2>
+            <p class="m-p">Cần Node 20 trở lên. Máy chủ <code style="font-family:var(--mono);font-size:12.5px">api-web-store-apps</code> phải chạy trước ở cổng 5000.</p>
+            <div class="m-pre"><code><span class="c-com"># 1 — lấy mã nguồn và cài gói</span>
+git clone https://github.com/LeVanAnhDuc/web-store-apps.git
+cd web-store-apps &amp;&amp; npm install
+
+<span class="c-com"># 2 — khai biến môi trường</span>
+cp .env.example .env.local
+
+<span class="c-com"># 3 — chạy</span>
+npm run dev   <span class="c-com"># → http://localhost:3000</span></code></div>
+
+            <h2 class="m-h2" id="bien-moi-truong">Biến môi trường<span class="anchor">#bien-moi-truong</span></h2>
+            <table class="m-tbl">
+              <thead><tr><th>Tên</th><th>Bắt buộc</th><th>Mô tả</th></tr></thead>
+              <tbody>
+                <tr><td>API_SERVER_URL</td><td>Có</td><td>Địa chỉ máy chủ IDMS. Mặc định <code style="font-family:var(--mono)">http://localhost:5000</code></td></tr>
+                <tr><td>NEXT_PUBLIC_API_PREFIX</td><td>Có</td><td>Tiền tố đường dẫn API, thường là <code style="font-family:var(--mono)">/api/v1</code></td></tr>
+                <tr><td>NEXT_PUBLIC_SITE_URL</td><td>Không</td><td>Địa chỉ công khai của trang, dùng cho thẻ chia sẻ</td></tr>
+              </tbody>
+            </table>
+
+            <div class="m-callout">
+              <p><strong>Lưu ý</strong>Mọi yêu cầu tới <code style="font-family:var(--mono);font-size:11.5px">/api/v1/*</code> được chuyển tiếp sang máy chủ qua rewrite trong <code style="font-family:var(--mono);font-size:11.5px">next.config.ts</code>. Gọi thẳng cổng 5000 từ trình duyệt sẽ vướng CORS.</p>
+            </div>
+          </main>
+
+          <nav class="m-toc">
+            <p class="m-toc-h">Trong trang</p>
+            <a href="#la-gi">Là gì</a>
+            <a href="#tinh-nang" class="on">Tính năng</a>
+            <a href="#quick-start">Chạy thử trong 5 phút</a>
+            <a href="#bien-moi-truong">Biến môi trường</a>
+          </nav>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 03 — HƯỚNG DẪN TÍCH HỢP ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">03</span><h2 class="g-section-title">Hướng dẫn tích hợp</h2></div>
+    <p class="g-note">Trang tài liệu kỹ thuật dài. Ở đây đánh số 01–05 là hợp lý vì đó là một trình tự thật — bước bốn không chạy được nếu chưa xong bước ba.</p>
+    <div class="g-frame">
+      <div class="g-frame-bar">
+        <div class="g-dots"><i></i><i></i><i></i></div>
+        <div class="g-url">atlas.levananhduc.dev/vi/docs/tich-hop-oauth</div>
+        <div class="g-vp">1280</div>
+      </div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-top">
+          <div class="m-brand"><span class="m-brand-mark">A</span>Atlas</div>
+          <nav class="m-nav"><span>Hệ sinh thái</span><span>Ứng dụng</span><span class="on">Hướng dẫn</span><span>API</span></nav>
+          <div class="m-top-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang"><span class="on">VI</span><span>EN</span></div>
+          </div>
+        </div>
+
+        <div class="m-docs">
+          <aside class="m-side">
+            <div class="m-side-group">
+              <p class="m-side-h">Hướng dẫn</p>
+              <a href="#">Tổng quan hệ sinh thái</a>
+              <a href="#" class="on">Tích hợp OAuth</a>
+              <a href="#">Thêm ứng dụng mới</a>
+              <a href="#">Đồng bộ ngôn ngữ</a>
+            </div>
+            <div class="m-side-group">
+              <p class="m-side-h">Tham chiếu</p>
+              <a href="#">Các endpoint</a>
+              <a href="#">Nội dung token</a>
+              <a href="#">Mã lỗi</a>
+            </div>
+          </aside>
+
+          <main class="m-main">
+            <p class="m-crumb">Hướng dẫn</p>
+            <h1 class="m-h1">Tích hợp OAuth</h1>
+            <p class="m-tag">Nối một ứng dụng mới vào IDMS bằng Authorization Code kèm PKCE</p>
+            <div class="m-metarow">
+              <span class="m-badge b-planned">Chưa ứng dụng nào dùng</span>
+              <span class="m-chip">OAuth 2.0</span>
+              <span class="m-chip">OIDC</span>
+              <span class="m-chip">PKCE</span>
+            </div>
+
+            <div class="m-callout" style="margin-top:22px">
+              <p><strong>Trạng thái</strong>Tính đến 17.08.2026 chưa ứng dụng vệ tinh nào thực sự nối vào IDMS. Trang này mô tả cách hệ thống <em>được thiết kế để</em> hoạt động — hãy kiểm chứng lại khi nối ứng dụng đầu tiên.</p>
+            </div>
+
+            <h2 class="m-h2" id="luong">Luồng năm bước<span class="anchor">#luong</span></h2>
+            <div class="m-flow">
+              <div class="m-flow-step"><span class="m-flow-n">01</span><div><h5>Đăng ký ứng dụng</h5><p>Khai <code>redirect_uri</code> và phạm vi quyền trong danh bạ ứng dụng. Nhận về <code>client_id</code>.</p></div></div>
+              <div class="m-flow-step"><span class="m-flow-n">02</span><div><h5>Sinh cặp mã kiểm chứng</h5><p>Tạo <code>code_verifier</code> ngẫu nhiên, băm SHA-256 ra <code>code_challenge</code>.</p></div></div>
+              <div class="m-flow-step"><span class="m-flow-n">03</span><div><h5>Chuyển người dùng sang IDMS</h5><p>Người dùng đăng nhập và bấm đồng ý ở màn hình quyền.</p></div></div>
+              <div class="m-flow-step"><span class="m-flow-n">04</span><div><h5>Nhận mã uỷ quyền</h5><p>IDMS chuyển ngược về <code>redirect_uri</code> kèm <code>code</code>. Mã này sống 60 giây.</p></div></div>
+              <div class="m-flow-step"><span class="m-flow-n">05</span><div><h5>Đổi mã lấy token</h5><p>Gửi <code>code</code> kèm <code>code_verifier</code> lên máy chủ, nhận access token và ID token.</p></div></div>
+            </div>
+
+            <h2 class="m-h2" id="buoc-3">Bước 3 — chuyển người dùng<span class="anchor">#buoc-3</span></h2>
+            <div class="m-pre"><code>GET https://idms.levananhduc.dev/oauth/authorize
+  ?<span class="c-key">response_type</span>=<span class="c-str">code</span>
+  &amp;<span class="c-key">client_id</span>=<span class="c-str">app_match_cv</span>
+  &amp;<span class="c-key">redirect_uri</span>=<span class="c-str">https://match-cv.dev/callback</span>
+  &amp;<span class="c-key">scope</span>=<span class="c-str">openid profile email</span>
+  &amp;<span class="c-key">code_challenge</span>=<span class="c-str">E9Melhoa2OwvfrEd...</span>
+  &amp;<span class="c-key">code_challenge_method</span>=<span class="c-str">S256</span>
+  &amp;<span class="c-key">state</span>=<span class="c-str">xyzABC123</span></code></div>
+            <p class="m-p muted">Luôn kiểm tra <code style="font-family:var(--mono);font-size:12.5px">state</code> khi nhận lại. Bỏ qua bước này là mở cửa cho tấn công giả mạo yêu cầu.</p>
+
+            <h2 class="m-h2" id="buoc-5">Bước 5 — đổi mã lấy token<span class="anchor">#buoc-5</span></h2>
+            <div class="m-pre"><code><span class="c-key">POST</span> /api/v1/oauth/token
+<span class="c-key">Content-Type</span>: application/x-www-form-urlencoded
+
+grant_type=authorization_code
+&amp;code=<span class="c-str">SplxlOBeZQQYbYS6WxSbIA</span>
+&amp;code_verifier=<span class="c-str">dBjftJeZ4CVP-mB92K27uh...</span>
+&amp;client_id=<span class="c-str">app_match_cv</span></code></div>
+          </main>
+
+          <nav class="m-toc">
+            <p class="m-toc-h">Trong trang</p>
+            <a href="#luong" class="on">Luồng năm bước</a>
+            <a href="#buoc-3">Bước 3 — chuyển người dùng</a>
+            <a href="#buoc-5">Bước 5 — đổi mã lấy token</a>
+          </nav>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 04 — CMS ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">04</span><h2 class="g-section-title">Trang soạn nội dung</h2></div>
+    <p class="g-note">Màn phức tạp nhất. Khối trên cùng không đổi theo ngôn ngữ; ba khối dưới thì có. Nút chuyển VI/EN nằm một chỗ duy nhất trên đầu, kèm số mục còn thiếu bản dịch.</p>
+    <div class="g-frame">
+      <div class="g-frame-bar">
+        <div class="g-dots"><i></i><i></i><i></i></div>
+        <div class="g-url">atlas.levananhduc.dev/admin/apps/web-store-apps</div>
+        <div class="g-vp">1280</div>
+      </div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-admin">
+          <aside class="m-adm-side">
+            <a href="#">Tổng quan</a>
+            <a href="#" class="on">Ứng dụng <span class="m-adm-count">6</span></a>
+            <a href="#">Trang hướng dẫn <span class="m-adm-count">4</span></a>
+            <a href="#">Ảnh <span class="m-adm-count">23</span></a>
+            <a href="#">Ngôn ngữ <span class="m-adm-count">2</span></a>
+          </aside>
+
+          <div class="m-adm-main">
+            <div class="m-adm-bar">
+              <a href="#" class="m-back">← Ứng dụng</a>
+              <span class="m-adm-title">web-store-apps</span>
+              <span class="m-badge b-planned">Bản nháp</span>
+              <div class="m-adm-actions">
+                <div class="m-trans">
+                  <div class="m-lang"><span class="on">VI</span><span>EN</span></div>
+                  <span class="warn">EN thiếu 3/8 mục</span>
+                </div>
+                <button class="m-btn">Xem thử</button>
+                <button class="m-btn primary">Lưu</button>
+              </div>
+            </div>
+
+            <div class="m-adm-body">
+
+              <div class="m-block">
+                <div class="m-block-head">
+                  <span class="m-block-h">Thông tin chung</span>
+                  <span class="m-block-scope">Chung cho mọi ngôn ngữ</span>
+                </div>
+                <div class="m-block-body">
+                  <div class="m-fields">
+                    <div class="m-field"><label>Slug</label><div class="m-input mono">web-store-apps</div></div>
+                    <div class="m-field"><label>Phân loại</label><div class="m-input">Lõi</div></div>
+                    <div class="m-field"><label>Trạng thái</label><div class="m-input">Bản nháp</div></div>
+                    <div class="m-field"><label>Repo</label><div class="m-input mono">LeVanAnhDuc/web-store-apps</div></div>
+                    <div class="m-field"><label>Repo máy chủ</label><div class="m-input mono">LeVanAnhDuc/api-web-store-apps</div></div>
+                    <div class="m-field"><label>Công nghệ</label><div class="m-input">Next.js 15 · React 19 · Tailwind v4 ＋</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="m-block">
+                <div class="m-block-head">
+                  <span class="m-block-h">Nội dung</span>
+                  <span class="m-block-scope">Đang sửa bản tiếng Việt</span>
+                </div>
+                <div class="m-block-body">
+                  <div class="m-fields" style="grid-template-columns:1fr 1fr">
+                    <div class="m-field"><label>Tên hiển thị</label><div class="m-input">web-store-apps</div></div>
+                    <div class="m-field"><label>Mô tả một dòng</label><div class="m-input">Cổng đăng nhập và bảng khởi chạy ứng dụng</div></div>
+                  </div>
+                  <div class="m-field" style="margin-top:12px"><label>Tóm tắt</label><div class="m-input ta">Giao diện của IDMS. Người dùng đăng nhập một lần ở đây, sau đó mở được mọi ứng dụng trong hệ sinh thái…</div></div>
+                </div>
+              </div>
+
+              <div class="m-block">
+                <div class="m-block-head">
+                  <span class="m-block-h">Tính năng</span>
+                  <span class="m-block-scope">6 mục · kéo để sắp xếp</span>
+                  <div class="m-block-right"><span class="m-add">＋ Thêm tính năng</span></div>
+                </div>
+                <div class="m-block-body">
+                  <div class="m-list">
+                    <div class="m-item"><span class="m-grip">⠿</span><span class="m-item-name">Đăng nhập bằng email và mã OTP</span><span class="m-item-right">Sửa · Xoá</span></div>
+                    <div class="m-item drag"><span class="m-grip">⠿</span><span class="m-item-name">Liên kết đăng nhập một chạm</span><span class="m-item-right">Đang kéo</span></div>
+                    <div class="m-item"><span class="m-grip">⠿</span><span class="m-item-name">Màn hình đồng ý quyền</span><span class="m-item-right">Sửa · Xoá</span></div>
+                    <div class="m-item"><span class="m-grip">⠿</span><span class="m-item-name">Bảng khởi chạy ứng dụng</span><span class="m-item-right">Sửa · Xoá</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="m-block">
+                <div class="m-block-head">
+                  <span class="m-block-h">Mục nội dung</span>
+                  <span class="m-block-scope">4 mục</span>
+                  <div class="m-block-right"><span class="m-add">＋ Thêm mục</span></div>
+                </div>
+                <div class="m-block-body">
+                  <div class="m-list">
+                    <div class="m-item"><span class="m-grip">⠿</span><span class="m-item-name">Là gì</span><span class="m-anchor">#la-gi</span><span class="m-item-right">▸</span></div>
+                    <div class="m-item" style="flex-direction:column;align-items:stretch;gap:0">
+                      <div style="display:flex;align-items:center;gap:11px">
+                        <span class="m-grip">⠿</span><span class="m-item-name">Chạy thử trong 5 phút</span>
+                        <span class="m-anchor">#quick-start</span>
+                        <span class="m-item-right">▾</span>
+                      </div>
+                      <div class="m-md"><div class="m-mdbar"><span class="on">Soạn</span><span>Xem trước</span><span>H2</span><span>Mã</span><span>Ảnh</span><span>Liên kết</span></div>Cần Node 20 trở lên. Máy chủ `api-web-store-apps`
+phải chạy trước ở cổng 5000.
+
+```bash
+git clone https://github.com/LeVanAnhDuc/web-store-apps.git
+cd web-store-apps &amp;&amp; npm install
+```</div>
+                    </div>
+                    <div class="m-item"><span class="m-grip">⠿</span><span class="m-item-name">Biến môi trường</span><span class="m-anchor">#bien-moi-truong</span><span class="m-item-right">▸</span></div>
+                    <div class="m-item"><span class="m-grip">⠿</span><span class="m-item-name">Câu hỏi thường gặp</span><span class="m-anchor">#faq</span><span class="m-item-right" style="color:var(--st-standalone)">Thiếu bản EN · ▸</span></div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 05 — THƯ VIỆN ẢNH ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">05</span><h2 class="g-section-title">Thư viện ảnh</h2></div>
+    <p class="g-note">Ảnh dùng chung cho mọi trang, không gắn cứng vào một ứng dụng — sơ đồ kiến trúc sẽ xuất hiện lại ở nhiều trang hướng dẫn.</p>
+    <div class="g-frame">
+      <div class="g-frame-bar">
+        <div class="g-dots"><i></i><i></i><i></i></div>
+        <div class="g-url">atlas.levananhduc.dev/admin/media</div>
+        <div class="g-vp">1280</div>
+      </div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-admin">
+          <aside class="m-adm-side">
+            <a href="#">Tổng quan</a>
+            <a href="#">Ứng dụng <span class="m-adm-count">6</span></a>
+            <a href="#">Trang hướng dẫn <span class="m-adm-count">4</span></a>
+            <a href="#" class="on">Ảnh <span class="m-adm-count">23</span></a>
+            <a href="#">Ngôn ngữ <span class="m-adm-count">2</span></a>
+          </aside>
+
+          <div class="m-adm-main">
+            <div class="m-adm-bar">
+              <span class="m-adm-title">Ảnh</span>
+              <span class="m-block-scope">23 tệp · 4,1 MB / 10 GB</span>
+              <div class="m-adm-actions">
+                <div class="m-search">Tìm theo tên tệp</div>
+                <button class="m-btn primary">Tải ảnh lên</button>
+              </div>
+            </div>
+
+            <div class="m-adm-body">
+              <div class="m-media">
+                <div class="m-drop"><b>Kéo ảnh vào đây</b><span>PNG, JPG, SVG, WebP — tối đa 5 MB</span></div>
+                <div class="m-thumb">
+                  <div class="m-thumb-img" style="background:var(--accent-bg);color:var(--accent)">SƠ ĐỒ</div>
+                  <div class="m-thumb-meta"><b>so-do-oauth.svg</b><span>1600×900 · 84 KB</span></div>
+                </div>
+                <div class="m-thumb">
+                  <div class="m-thumb-img" style="background:var(--st-connected-bg);color:var(--st-connected)">ẢNH CHỤP</div>
+                  <div class="m-thumb-meta"><b>man-hinh-dang-nhap.png</b><span>2560×1440 · 312 KB</span></div>
+                </div>
+                <div class="m-thumb">
+                  <div class="m-thumb-img" style="background:var(--surface-2)">LOGO</div>
+                  <div class="m-thumb-meta"><b>logo-match-cv.svg</b><span>512×512 · 6 KB</span></div>
+                </div>
+                <div class="m-thumb">
+                  <div class="m-thumb-img" style="background:var(--st-standalone-bg);color:var(--st-standalone)">ẢNH CHỤP</div>
+                  <div class="m-thumb-meta"><b>bang-khoi-chay.png</b><span>2560×1440 · 428 KB</span></div>
+                </div>
+                <div class="m-thumb">
+                  <div class="m-thumb-img" style="background:var(--surface-2)">LOGO</div>
+                  <div class="m-thumb-meta"><b>logo-gym.svg</b><span>512×512 · 4 KB</span></div>
+                </div>
+                <div class="m-thumb">
+                  <div class="m-thumb-img" style="background:var(--accent-bg);color:var(--accent)">SƠ ĐỒ</div>
+                  <div class="m-thumb-meta"><b>kien-truc-tong-the.svg</b><span>1920×1080 · 96 KB</span></div>
+                </div>
+                <div class="m-thumb">
+                  <div class="m-thumb-img" style="background:var(--st-private-bg);color:var(--st-private)">ẢNH CHỤP</div>
+                  <div class="m-thumb-meta"><b>man-hinh-dong-y.png</b><span>2560×1440 · 271 KB</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 06 — ĐĂNG NHẬP ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">06</span><h2 class="g-section-title">Đăng nhập quản trị</h2></div>
+    <p class="g-note">Hôm nay là một tài khoản duy nhất. Dòng chân trang ghi sẵn ý định đổi sang IDMS — để sáu tháng sau mở lại vẫn nhớ vì sao màn này đơn giản đến vậy.</p>
+    <div class="g-frame">
+      <div class="g-frame-bar">
+        <div class="g-dots"><i></i><i></i><i></i></div>
+        <div class="g-url">atlas.levananhduc.dev/admin/login</div>
+        <div class="g-vp">1280</div>
+      </div>
+      <div class="g-body"><div class="g-canvas m">
+        <div class="m-login">
+          <div class="m-login-card">
+            <div class="m-brand"><span class="m-brand-mark">A</span>Atlas</div>
+            <h2>Đăng nhập quản trị</h2>
+            <p class="sub">Trang này chỉ dành cho người quản lý nội dung.</p>
+            <div class="m-field"><label>Email</label><div class="m-input">anhduc.levan@citynow.vn</div></div>
+            <div class="m-field"><label>Mật khẩu</label><div class="m-input">••••••••••••</div></div>
+            <button class="m-btn primary">Đăng nhập</button>
+            <p class="m-login-foot">Sau này đổi sang đăng nhập qua IDMS.<br>Chỉ cần thay tệp providers/ — phần còn lại giữ nguyên.</p>
+          </div>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════════ 07 — MOBILE ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">07</span><h2 class="g-section-title">Trên điện thoại</h2></div>
+    <p class="g-note">Ba cột gập thành một. Sơ đồ đấu nối thu hẹp — bỏ phần mô tả, giữ nguyên kiểu nét vì đó mới là phần mang thông tin. Mục lục trở thành khối gập ngay đầu bài.</p>
+    <div class="g-phones">
+
+      <div class="g-phone">
+        <div class="g-phone-bar"></div>
+        <div class="m mb">
+          <div class="mb-top">
+            <span class="mb-burger">☰</span>
+            <div class="m-brand" style="font-size:14px"><span class="m-brand-mark">A</span>Atlas</div>
+            <div class="m-top-right"><div class="m-lang"><span class="on">VI</span><span>EN</span></div></div>
+          </div>
+          <div class="mb-hero">
+            <p class="m-hero-eyebrow" style="margin-bottom:0">6 ứng dụng · 1 máy chủ định danh</p>
+            <h1>Một tài khoản, mọi ứng dụng.</h1>
+            <p>IDMS cấp danh tính cho toàn hệ sinh thái.</p>
+            <div class="m-wire mb-wire">
+              <div class="m-wire-spine"><span class="m-wire-core" style="font-size:9px;padding:3px 6px">IDMS</span></div>
+              <ul class="m-wire-rows">
+                <li class="m-wire-row"><i class="m-lead"></i><div><span class="m-wire-name" style="font-size:11px">web-store-apps</span></div><span class="m-badge b-core">Lõi</span></li>
+                <li class="m-wire-row"><i class="m-lead planned"></i><div><span class="m-wire-name" style="font-size:11px">match-cv</span></div><span class="m-badge b-planned">Dự kiến</span></li>
+                <li class="m-wire-row"><i class="m-lead planned"></i><div><span class="m-wire-name" style="font-size:11px">app-manage-gym</span></div><span class="m-badge b-planned">Dự kiến</span></li>
+                <li class="m-wire-row"><i class="m-lead private"></i><div><span class="m-wire-name" style="font-size:11px">shorten-link</span></div><span class="m-badge b-private">Riêng tư</span></li>
+                <li class="m-wire-row"><i class="m-lead none"></i><div><span class="m-wire-name" style="font-size:11px">app-calculate-badminton</span></div><span class="m-badge b-standalone">Độc lập</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="mb-sec">
+            <p class="m-sec-label">Bắt đầu từ đâu</p>
+            <div class="mb-cards">
+              <div class="m-card">
+                <div class="m-card-top"><span class="m-card-name">web-store-apps</span><span class="m-badge b-core">Lõi</span></div>
+                <p>Trang đăng nhập, màn hình đồng ý quyền và bảng khởi chạy ứng dụng.</p>
+                <div class="m-chips"><span class="m-chip">Next.js 15</span><span class="m-chip">shadcn/ui</span></div>
+              </div>
+              <div class="m-card">
+                <div class="m-card-top"><span class="m-card-name">match-cv</span><span class="m-badge b-planned">Dự kiến</span></div>
+                <p>Chấm độ khớp giữa CV và mô tả công việc bằng nhúng vector.</p>
+                <div class="m-chips"><span class="m-chip">NestJS 11</span><span class="m-chip">pgvector</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g-phone">
+        <div class="g-phone-bar"></div>
+        <div class="m mb">
+          <div class="mb-top">
+            <span class="mb-burger">☰</span>
+            <div class="m-brand" style="font-size:14px"><span class="m-brand-mark">A</span>Atlas</div>
+            <div class="m-top-right"><div class="m-lang"><span class="on">VI</span><span>EN</span></div></div>
+          </div>
+          <div class="mb-main">
+            <p class="m-crumb">Ứng dụng / Lõi</p>
+            <h1 class="m-h1">web-store-apps</h1>
+            <p class="m-tag" style="font-size:13.5px">Cổng đăng nhập và bảng khởi chạy ứng dụng</p>
+            <div class="m-metarow" style="padding-bottom:16px">
+              <span class="m-badge b-core">Lõi</span>
+              <span class="m-chip">Next.js 15</span>
+              <span class="m-chip">React 19</span>
+            </div>
+            <div class="mb-toc" style="margin-top:18px">
+              <p class="m-toc-h" style="margin-bottom:8px">Trong trang · 4 mục ▾</p>
+              <a href="#" style="display:block;font-size:12.5px;color:var(--muted);text-decoration:none;padding:3px 0">Là gì</a>
+              <a href="#" style="display:block;font-size:12.5px;color:var(--accent);text-decoration:none;padding:3px 0">Tính năng</a>
+            </div>
+            <h2 class="m-h2" style="margin-top:20px;font-size:17px">Tính năng</h2>
+            <div class="m-feats">
+              <div class="m-feat"><h4>Đăng nhập bằng email và mã OTP</h4><p>Gửi mã sáu chữ số qua email, hết hạn sau năm phút.</p></div>
+              <div class="m-feat"><h4>Liên kết đăng nhập một chạm</h4><p>Nhận liên kết qua email, bấm là vào, không cần mật khẩu.</p></div>
+            </div>
+            <h2 class="m-h2" style="font-size:17px">Chạy thử trong 5 phút</h2>
+            <div class="m-pre"><code>git clone https://github.com/...
+cd web-store-apps
+npm install &amp;&amp; npm run dev</code></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ CẦN QUYẾT ══════════ -->
+  <section class="g-section">
+    <div class="g-section-head"><span class="g-num">08</span><h2 class="g-section-title">Bốn chỗ cần bạn quyết</h2></div>
+    <p class="g-note">Những chỗ mình tự chọn và có thể bạn muốn khác.</p>
+    <div class="g-frame" style="box-shadow:none">
+      <div style="padding:4px 22px 10px">
+        <table class="m-tbl" style="font-size:13.5px">
+          <thead><tr><th style="width:130px">Chỗ</th><th>Mình chọn</th><th style="width:290px">Cách khác</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Tên trang</td>
+              <td><strong>Atlas</strong> — hệ sinh thái là một chòm sao, trang này là tấm bản đồ. Ngắn, gõ được, không đụng tên repo nào.</td>
+              <td>Dùng thẳng “app-store-doc”, hoặc một tên khác bạn thích hơn.</td>
+            </tr>
+            <tr>
+              <td>Sơ đồ đấu nối</td>
+              <td>Trục dọc + nhánh ngang, kiểu nét mang trạng thái. Chính xác, dựng bằng CSS thuần, thêm ứng dụng chỉ là thêm một dòng.</td>
+              <td>Sơ đồ quỹ đạo tròn — đẹp mắt hơn nhưng khó đọc khi có trên 8 ứng dụng và tốn công dựng.</td>
+            </tr>
+            <tr>
+              <td>Nói thật về trạng thái</td>
+              <td>Hiện rõ “chưa ứng dụng nào nối IDMS” ngay trên trang chủ và trang hướng dẫn.</td>
+              <td>Ẩn đi, chỉ vẽ kiến trúc mục tiêu. Trang trông hoàn thiện hơn nhưng gây hiểu nhầm.</td>
+            </tr>
+            <tr>
+              <td>Không dùng webfont</td>
+              <td>Chữ hệ thống. Trang mở tức thì, dấu tiếng Việt luôn đúng trên mọi máy.</td>
+              <td>Nhúng Be Vietnam Pro. Cá tính hơn, nhưng thêm ~180 KB và có rủi ro nháy chữ khi tải.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</div>
