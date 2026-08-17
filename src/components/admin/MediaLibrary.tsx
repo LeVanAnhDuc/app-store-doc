@@ -28,13 +28,26 @@ export type MediaLibraryProps = {
   accept: readonly string[];
   upload: (formData: FormData) => Promise<unknown>;
   remove: (input: { id: string }) => Promise<void>;
+  /**
+   * Ẩn vùng kéo-thả khi kho ảnh chưa cấu hình được. Hiện một vùng bấm được mà
+   * upload chắc chắn đổ là nói dối về hiện trạng — trang gọi tự kiểm bằng
+   * `missingR2Env()` rồi nói rõ thiếu biến nào.
+   */
+  uploadDisabled?: boolean;
 };
 
 function reasonOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-export function MediaLibrary({ items, maxBytes, accept, upload, remove }: MediaLibraryProps) {
+export function MediaLibrary({
+  items,
+  maxBytes,
+  accept,
+  upload,
+  remove,
+  uploadDisabled = false,
+}: MediaLibraryProps) {
   const t = useTranslations();
   const router = useRouter();
 
@@ -84,12 +97,14 @@ export function MediaLibrary({ items, maxBytes, accept, upload, remove }: MediaL
       </div>
 
       <div className={styles.grid}>
-        <UploadDropzone
-          upload={upload}
-          maxBytes={maxBytes}
-          accept={accept}
-          onUploaded={() => router.refresh()}
-        />
+        {uploadDisabled ? null : (
+          <UploadDropzone
+            upload={upload}
+            maxBytes={maxBytes}
+            accept={accept}
+            onUploaded={() => router.refresh()}
+          />
+        )}
 
         {shown.map((item) => {
           const label = mediaLabel(item);

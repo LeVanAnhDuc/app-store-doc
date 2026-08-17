@@ -26,32 +26,45 @@ type R2Config = {
   publicBaseUrl: string;
 };
 
-function readConfig(): R2Config {
-  const env = {
-    accountId: process.env.R2_ACCOUNT_ID,
-    accessKeyId: process.env.R2_ACCESS_KEY_ID,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    bucket: process.env.R2_BUCKET,
-    publicBaseUrl: process.env.R2_PUBLIC_BASE_URL,
-  };
-
-  const missing = (
+/** Biến nào còn thiếu để dùng được kho ảnh. Rỗng nghĩa là đủ. */
+export function missingR2Env(): string[] {
+  return (
     [
-      ["R2_ACCOUNT_ID", env.accountId],
-      ["R2_ACCESS_KEY_ID", env.accessKeyId],
-      ["R2_SECRET_ACCESS_KEY", env.secretAccessKey],
-      ["R2_BUCKET", env.bucket],
-      ["R2_PUBLIC_BASE_URL", env.publicBaseUrl],
+      ["R2_ACCOUNT_ID", process.env.R2_ACCOUNT_ID],
+      ["R2_ACCESS_KEY_ID", process.env.R2_ACCESS_KEY_ID],
+      ["R2_SECRET_ACCESS_KEY", process.env.R2_SECRET_ACCESS_KEY],
+      ["R2_BUCKET", process.env.R2_BUCKET],
+      ["R2_PUBLIC_BASE_URL", process.env.R2_PUBLIC_BASE_URL],
     ] as const
   )
     .filter(([, value]) => !value)
     .map(([name]) => name);
+}
 
+/**
+ * Kho ảnh đã dùng được chưa.
+ *
+ * Trang quản trị phải hỏi hàm này **trước** khi dựng vùng kéo-thả. Không hỏi thì
+ * người dùng chọn tệp xong mới ăn lỗi — trong khi thiếu biến môi trường là thứ
+ * biết được ngay từ đầu. Quy tắc thiết kế §7: nói thật về hiện trạng.
+ */
+export function isMediaConfigured(): boolean {
+  return missingR2Env().length === 0;
+}
+
+function readConfig(): R2Config {
+  const missing = missingR2Env();
   if (missing.length > 0) {
     throw new Error(`Chưa cấu hình kho ảnh R2. Thiếu biến môi trường: ${missing.join(", ")}.`);
   }
 
-  return env as R2Config;
+  return {
+    accountId: process.env.R2_ACCOUNT_ID as string,
+    accessKeyId: process.env.R2_ACCESS_KEY_ID as string,
+    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY as string,
+    bucket: process.env.R2_BUCKET as string,
+    publicBaseUrl: process.env.R2_PUBLIC_BASE_URL as string,
+  };
 }
 
 let client: S3Client | undefined;

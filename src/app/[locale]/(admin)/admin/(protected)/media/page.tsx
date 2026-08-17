@@ -11,7 +11,7 @@ import {
 import { MediaLibrary } from "@/components/admin/MediaLibrary";
 import { formatBytes } from "@/components/admin/media";
 import { hasContentDatabase } from "@/server/content/queries";
-import { MAX_IMAGE_BYTES } from "@/server/media";
+import { MAX_IMAGE_BYTES, missingR2Env } from "@/server/media";
 import { deleteMedia, listMedia, uploadMedia } from "../../actions";
 import styles from "./page.module.css";
 
@@ -74,6 +74,10 @@ export default async function AdminMediaPage({ params }: PageParams) {
 
   const totalBytes = items.reduce((sum, item) => sum + item.sizeBytes, 0);
 
+  // Thiếu biến R2 thì upload chắc chắn đổ. Nói trước, ở đây, thay vì để người
+  // dùng chọn tệp xong mới ăn lỗi — thiếu biến môi trường là thứ biết được ngay.
+  const missingR2 = missingR2Env();
+
   return (
     <>
       <AdminBar>
@@ -88,12 +92,18 @@ export default async function AdminMediaPage({ params }: PageParams) {
           heading={t("admin.media.title")}
           scope={t("admin.media.limitScope", { max: formatBytes(MAX_IMAGE_BYTES) })}
         >
+          {missingR2.length > 0 ? (
+            <p className={styles.notice}>
+              {t("admin.media.noStorage", { vars: missingR2.join(", ") })}
+            </p>
+          ) : null}
           <MediaLibrary
             items={items}
             maxBytes={MAX_IMAGE_BYTES}
             accept={ACCEPTED_MIME}
             upload={uploadMedia}
             remove={deleteMedia}
+            uploadDisabled={missingR2.length > 0}
           />
         </AdminBlock>
       </AdminBody>

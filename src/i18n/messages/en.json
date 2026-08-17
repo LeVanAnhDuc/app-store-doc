@@ -296,7 +296,8 @@
       "pickEmpty": "The library is empty. Open the Images section to upload the first one.",
       "loading": "Loading the image list…",
       "listFailed": "Could not read the image library. {reason}",
-      "close": "Close"
+      "close": "Close",
+      "noStorage": "Image storage is not configured yet, so uploads are unavailable. Missing environment variables: {vars}. See docs/operations.md section 2."
     },
     "locales": {
       "title": "Languages",

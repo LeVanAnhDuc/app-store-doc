@@ -296,7 +296,8 @@
       "pickEmpty": "Thư viện chưa có ảnh nào. Mở mục Ảnh để tải ảnh đầu tiên lên.",
       "loading": "Đang tải danh sách ảnh…",
       "listFailed": "Không đọc được thư viện ảnh. {reason}",
-      "close": "Đóng"
+      "close": "Đóng",
+      "noStorage": "Chưa cấu hình kho ảnh nên chưa tải ảnh lên được. Thiếu biến môi trường: {vars}. Xem docs/operations.md mục 2."
     },
     "locales": {
       "title": "Ngôn ngữ",

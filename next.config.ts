@@ -5,6 +5,9 @@ const nextConfig: NextConfig = {
   // Kiểu và lint chạy riêng bằng `npm run typecheck` / `npm run lint`,
   // nhưng vẫn để build tự kiểm để không lọt lỗi lên Vercel.
   typedRoutes: false,
+  // Huy hiệu dev của Next nằm đè lên nút Đăng xuất ở góc dưới trái trang quản trị,
+  // che mất chữ khi soát giao diện. Chỉ ảnh hưởng `next dev`.
+  devIndicators: false,
 };
 
 /**
