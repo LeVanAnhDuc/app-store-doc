@@ -4,19 +4,35 @@ import vi from "./messages/vi.json";
 import en from "./messages/en.json";
 import { locales, defaultLocale } from "./locales.generated";
 
-const flatten = (o: any, p = ""): string[] =>
-  Object.entries(o).flatMap(([k, v]) =>
-    typeof v === "object" && v !== null ? flatten(v, `${p}${k}.`) : [`${p}${k}`]);
+/** Cây chuỗi giao diện: lá là chuỗi, nhánh là nhóm khoá lồng nhau. */
+type MessageTree = { [key: string]: string | MessageTree };
+
+const isTree = (value: string | MessageTree): value is MessageTree =>
+  typeof value === "object" && value !== null;
+
+/** Trả mọi đường dẫn khoá dạng `admin.login.title` để so hai locale với nhau. */
+const flatten = (tree: MessageTree, prefix = ""): string[] =>
+  Object.entries(tree).flatMap(([key, value]) =>
+    isTree(value) ? flatten(value, `${prefix}${key}.`) : [`${prefix}${key}`],
+  );
+
+const lookup = (tree: MessageTree, path: string): string | MessageTree | undefined =>
+  path.split(".").reduce<string | MessageTree | undefined>(
+    (node, key) => (node !== undefined && isTree(node) ? node[key] : undefined),
+    tree,
+  );
+
+const viTree: MessageTree = vi;
+const enTree: MessageTree = en;
 
 describe("chuỗi giao diện", () => {
   it("vi và en có đúng cùng bộ khoá — thiếu khoá là deploy ra bản trống chữ", () => {
-    expect(flatten(en).sort()).toEqual(flatten(vi).sort());
+    expect(flatten(enTree).sort()).toEqual(flatten(viTree).sort());
   });
   it("không giá trị nào rỗng", () => {
-    for (const msgs of [vi, en]) {
+    for (const msgs of [viTree, enTree]) {
       for (const key of flatten(msgs)) {
-        const val = key.split(".").reduce<any>((a, k) => a[k], msgs);
-        expect(val, key).not.toBe("");
+        expect(lookup(msgs, key), key).not.toBe("");
       }
     }
   });

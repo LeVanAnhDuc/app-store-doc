@@ -17,7 +17,10 @@ import { defineConfig } from "prisma/config";
  */
 export default defineConfig({
   schema: "prisma/schema.prisma",
-  migrations: { path: "prisma/migrations" },
+  // `seed` phải khai ở đây. Prisma 7 đã bỏ hỗ trợ khối `prisma` trong
+  // package.json, nên để ở đó thì `prisma db seed` chỉ in
+  // "No seed command configured" và thoát — trông như không có gì để seed.
+  migrations: { path: "prisma/migrations", seed: "tsx prisma/seed.ts" },
   datasource: {
     url: process.env.DATABASE_URL ?? "postgresql://localhost:5432/app_store_doc",
   },
