@@ -12,7 +12,8 @@
     "test:run": "vitest run --maxWorkers=1",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "postinstall": "prisma generate"
   },
   "repository": {
     "type": "git",
@@ -27,11 +28,13 @@
   "homepage": "https://github.com/LeVanAnhDuc/app-store-doc#readme",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1111.0",
+    "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",
     "bcryptjs": "^3.0.3",
     "next": "^16.3.1",
     "next-auth": "^5.0.0-beta.32",
     "next-intl": "^4.13.6",
+    "pg": "^8.23.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "rehype-pretty-code": "^0.14.5",
@@ -52,6 +55,7 @@
     "@testing-library/react": "^16.3.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^26.2.0",
+    "@types/pg": "^8.21.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",
@@ -64,5 +68,8 @@
     "tsx": "^4.23.12",
     "typescript": "^5.9.3",
     "vitest": "^4.1.10"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }

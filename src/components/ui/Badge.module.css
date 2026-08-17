@@ -1,0 +1,44 @@
+/* Huy hiệu trạng thái — chép hình khối từ .m-badge / .b-* trong mockup đã duyệt.
+   Màu chọn bằng bộ chọn thuộc tính [data-kind], KHÔNG map trong JS:
+   đổi màu một trạng thái chỉ cần sửa src/styles/tokens.css. */
+
+.badge {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 3px;
+  white-space: nowrap;
+
+  /* Mặc định trung tính, để thiếu data-kind không bao giờ ra chữ vô hình. */
+  background: var(--surface-2);
+  color: var(--muted);
+}
+
+.badge[data-kind="core"] {
+  background: var(--st-core-bg);
+  color: var(--st-core);
+}
+
+.badge[data-kind="connected"] {
+  background: var(--st-connected-bg);
+  color: var(--st-connected);
+}
+
+.badge[data-kind="planned"] {
+  background: var(--st-planned-bg);
+  color: var(--st-planned);
+}
+
+.badge[data-kind="standalone"] {
+  background: var(--st-standalone-bg);
+  color: var(--st-standalone);
+}
+
+.badge[data-kind="private"] {
+  background: var(--st-private-bg);
+  color: var(--st-private);
+}

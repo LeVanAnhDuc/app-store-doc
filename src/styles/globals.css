@@ -48,6 +48,32 @@ a {
   color: var(--accent);
 }
 
+/*
+ * Màu khối mã.
+ *
+ * `renderMarkdown` chạy shiki ở chế độ hai chủ đề, nên mỗi token mang sẵn
+ * `--shiki-light` và `--shiki-dark` dưới dạng biến nội tuyến chứ không phải màu
+ * cứng. Ba khối dưới đây quyết định lấy biến nào — thiếu chúng thì khối mã ra
+ * đơn sắc. Cùng cấu trúc ba trạng thái như tokens.css.
+ */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: transparent;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .shiki,
+  :root:not([data-theme="light"]) .shiki span {
+    color: var(--shiki-dark);
+  }
+}
+
+:root[data-theme="dark"] .shiki,
+:root[data-theme="dark"] .shiki span {
+  color: var(--shiki-dark);
+}
+
 /* Tiêu điểm bàn phím phải thấy được ở mọi phần tử tương tác. */
 :focus-visible {
   outline: 2px solid var(--accent);

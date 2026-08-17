@@ -1,0 +1,32 @@
+/* Khối mã — hình khối chép từ .m-pre trong mockup đã duyệt.
+   Cuộn ngang nằm trong hộp riêng: thân trang không bao giờ cuộn ngang. */
+
+.scroll {
+  overflow-x: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 0;
+}
+
+/* Hộp cuộn được nhận tiêu điểm để cuộn bằng bàn phím — phải thấy được. */
+.scroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.scroll pre {
+  margin: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.scroll code {
+  display: block;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.85;
+  white-space: pre;
+  color: var(--ink);
+}

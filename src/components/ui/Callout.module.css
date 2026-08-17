@@ -1,0 +1,52 @@
+/* Callout — hình khối chép từ .m-callout trong mockup đã duyệt.
+   Sắc thái chọn qua [data-tone], không map màu trong JS. */
+
+.callout {
+  display: block;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  background: var(--accent-bg);
+  border-radius: 0 6px 6px 0;
+  padding: 13px 16px;
+  margin: 0;
+}
+
+.callout[data-tone="note"] {
+  border-left-color: var(--accent);
+  background: var(--accent-bg);
+}
+
+/* Mockup dùng đúng cặp màu này cho khối "Lưu ý" và "Trạng thái". */
+.callout[data-tone="warning"] {
+  border-left-color: var(--st-standalone);
+  background: var(--st-standalone-bg);
+}
+
+.title {
+  display: block;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+  color: var(--accent);
+}
+
+.callout[data-tone="warning"] .title {
+  color: var(--st-standalone);
+}
+
+/* Văn xuôi: leading không bao giờ dưới 1.7 vì dấu tiếng Việt chồng nhau. */
+.body {
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+  color: var(--ink);
+}
+
+.body > :first-child {
+  margin-top: 0;
+}
+
+.body > :last-child {
+  margin-bottom: 0;
+}

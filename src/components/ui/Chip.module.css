@@ -1,0 +1,17 @@
+/* Chip kỹ thuật — hình khối chép từ .m-chip trong mockup đã duyệt.
+   Trung tính: chip nói về công nghệ, không nói về trạng thái, nên
+   không bao giờ mượn màu trạng thái. */
+
+.chip {
+  display: inline-block;
+  font-family: var(--mono);
+  font-size: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 2px 6px;
+  white-space: nowrap;
+}

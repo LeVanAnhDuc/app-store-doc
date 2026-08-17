@@ -1,0 +1,133 @@
+/**
+ * Cài đặt auth hiện tại: Auth.js Credentials, một tài khoản quản trị duy nhất.
+ *
+ * Đây là **file duy nhất** trong dự án biết tới `next-auth`. Khi chuyển sang
+ * IDMS OAuth, thêm `providers/idms-oauth.ts` cài đúng ba hàm `getCurrentUser`,
+ * `requireAdmin`, `signOut` rồi đổi một dòng re-export trong `../index.ts`.
+ * Không file nào khác phải sửa.
+ */
+import NextAuth, { type User } from "next-auth";
+import Credentials from "next-auth/providers/credentials";
+import { redirect } from "next/navigation";
+import bcrypt from "bcryptjs";
+import type { SessionUser } from "../types";
+
+/** Vai trò duy nhất hiện có. `requireAdmin` kiểm tra đúng chuỗi này. */
+const ADMIN_ROLE = "admin";
+
+/** Trang đăng nhập, dùng cho cả `pages.signIn` lẫn nơi `requireAdmin` đá về. */
+const LOGIN_PATH = "/admin/login";
+
+const isProduction = process.env.NODE_ENV === "production";
+
+/** Đọc mảng vai trò từ payload không rõ kiểu của JWT/session. */
+function readRoles(value: unknown): string[] {
+  return Array.isArray(value) ? value.filter((r): r is string => typeof r === "string") : [];
+}
+
+const {
+  handlers: authHandlers,
+  auth,
+  signOut: authSignOut,
+} = NextAuth({
+  // Vercel đặt sẵn host qua header; không bật thì preview deployment gãy callback.
+  trustHost: true,
+  // Không có bảng session trong DB — token nằm gọn trong cookie.
+  session: { strategy: "jwt" },
+  pages: { signIn: LOGIN_PATH },
+  cookies: {
+    sessionToken: {
+      name: isProduction ? "__Secure-authjs.session-token" : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        // `secure` chỉ bật ngoài môi trường dev: localhost chạy http, đặt cứng
+        // `true` thì trình duyệt vứt cookie và không ai đăng nhập được khi dev.
+        secure: isProduction,
+      },
+    },
+  },
+  providers: [
+    Credentials({
+      name: "Tài khoản quản trị",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Mật khẩu", type: "password" },
+      },
+      async authorize(credentials) {
+        const email = typeof credentials?.email === "string" ? credentials.email : "";
+        const password = typeof credentials?.password === "string" ? credentials.password : "";
+
+        const adminEmail = process.env.ADMIN_EMAIL ?? "";
+        const passwordHash = process.env.ADMIN_PASSWORD_HASH ?? "";
+
+        // Thiếu cấu hình thì từ chối, tuyệt đối không mở cửa.
+        if (!email || !password || !adminEmail || !passwordHash) return null;
+        if (email.trim().toLowerCase() !== adminEmail.trim().toLowerCase()) return null;
+
+        // Env chứa **hash bcrypt**. Không bao giờ so sánh mật khẩu thô.
+        const matched = await bcrypt.compare(password, passwordHash);
+        if (!matched) return null;
+
+        const user: User & { roles: string[] } = {
+          id: ADMIN_ROLE,
+          email: adminEmail,
+          name: "Quản trị viên",
+          roles: [ADMIN_ROLE],
+        };
+        return user;
+      },
+    }),
+  ],
+  callbacks: {
+    // Vai trò chỉ có mặt ở lần đăng nhập đầu; gắn vào token để các request sau còn thấy.
+    jwt({ token, user }) {
+      if (user) token.roles = readRoles((user as { roles?: unknown }).roles);
+      return token;
+    },
+    session({ session, token }) {
+      // `Object.assign` thay vì gán trực tiếp: kiểu `User` của Auth.js không có
+      // `roles`, và ta cố ý không augment module để tránh lệ thuộc kiểu của nó.
+      Object.assign(session.user, { id: token.sub ?? ADMIN_ROLE, roles: readRoles(token.roles) });
+      return session;
+    },
+  },
+});
+
+/** Route handler cho `/api/auth/*`. Chỉ `src/app/api/auth/[...nextauth]` dùng. */
+export const handlers = authHandlers;
+
+/** Người dùng đang đăng nhập, hoặc `null`. Không ném lỗi. */
+export async function getCurrentUser(): Promise<SessionUser | null> {
+  const session = await auth();
+  const user = session?.user as
+    | { id?: string; email?: string | null; name?: string | null; roles?: unknown }
+    | undefined;
+
+  if (!user?.email) return null;
+
+  return {
+    id: user.id ?? user.email,
+    email: user.email,
+    name: user.name ?? undefined,
+    roles: readRoles(user.roles),
+  };
+}
+
+/**
+ * Bắt buộc là quản trị viên.
+ *
+ * Server Action là endpoint HTTP riêng — bảo vệ layout không bảo vệ action.
+ * Mọi action ghi dữ liệu phải gọi hàm này ở dòng đầu tiên.
+ */
+export async function requireAdmin(): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (!user || !user.roles.includes(ADMIN_ROLE)) redirect(LOGIN_PATH);
+  return user;
+}
+
+/** Đăng xuất rồi đưa về trang đăng nhập. */
+export async function signOut(): Promise<void> {
+  await authSignOut({ redirectTo: LOGIN_PATH });
+}

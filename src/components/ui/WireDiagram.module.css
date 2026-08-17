@@ -1,0 +1,173 @@
+/* Sơ đồ đấu nối — điểm nhấn của trang (design-rules §6).
+   Dựng bằng CSS thuần: trục dọc là ::after của phần tử rỗng, mỗi nhánh là
+   border-top của một <i> cao 0. Không SVG vẽ tay, không thư viện.
+   Kiểu nét mang thông tin, chọn qua [data-integration] — không map màu trong JS. */
+
+.wire {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 0;
+}
+
+/* -- trục dọc IDMS -- */
+.spine {
+  position: relative;
+}
+
+.spine::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 16px;
+  bottom: 26px;
+  width: 2px;
+  background: var(--accent);
+}
+
+/* Không có ứng dụng nào thì không vẽ trục treo lơ lửng. */
+.wire[data-empty="true"] .spine::after {
+  display: none;
+}
+
+.core {
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translate(50%, 0);
+  background: var(--accent);
+  /* --bg là nền trang: gần trắng ở chủ đề sáng, gần đen ở chủ đề tối —
+     luôn tương phản với --accent ở cả hai chiều. Không viết mã màu tay. */
+  color: var(--bg);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  padding: 4px 9px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+
+/* -- các nhánh -- */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 0;
+}
+
+/* Nhánh nối: phần tử rỗng cao 0, toàn bộ hình thù nằm ở border-top. */
+.lead {
+  height: 0;
+  border-top: 2px solid var(--accent);
+}
+
+.lead[data-integration="core"],
+.lead[data-integration="connected"] {
+  border-top: 2px solid var(--accent);
+}
+
+.lead[data-integration="planned"] {
+  border-top-style: dashed;
+  border-top-color: var(--st-planned);
+}
+
+.lead[data-integration="private"] {
+  border-top-style: dashed;
+  border-top-color: var(--st-private);
+}
+
+/* Chạy độc lập: không có nét. Giữ chỗ bằng nét trong suốt để hàng không xô. */
+.lead[data-integration="standalone"] {
+  border-top: 2px dotted transparent;
+}
+
+.text {
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  letter-spacing: -0.006em;
+}
+
+.desc {
+  color: var(--muted);
+  font-size: 12.5px;
+  margin-left: 10px;
+}
+
+/* -- chú giải: bắt buộc, kiểu nét vô nghĩa nếu không giải thích -- */
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  margin: 26px 0 0;
+  padding: 18px 0 0;
+  border-top: 1px solid var(--line-soft);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+.swatch {
+  width: 26px;
+  height: 0;
+  display: block;
+  flex: none;
+  border-top: 2px solid var(--accent);
+}
+
+.swatch[data-kind="core"],
+.swatch[data-kind="connected"] {
+  border-top: 2px solid var(--accent);
+}
+
+.swatch[data-kind="planned"] {
+  border-top-style: dashed;
+  border-top-color: var(--st-planned);
+}
+
+.swatch[data-kind="private"] {
+  border-top-style: dashed;
+  border-top-color: var(--st-private);
+}
+
+.swatch[data-kind="standalone"] {
+  border-top: 2px dotted var(--line);
+}
+
+/* Đáp ứng tới 375px: trục hẹp lại, mô tả nhường chỗ cho tên và huy hiệu. */
+@media (max-width: 720px) {
+  .wire {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .row {
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    gap: 10px;
+    padding: 7px 0;
+  }
+
+  .desc {
+    display: none;
+  }
+
+  .legend {
+    gap: 12px 18px;
+  }
+}

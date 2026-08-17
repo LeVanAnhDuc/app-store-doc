@@ -1,0 +1,148 @@
+// Data model của app-store-doc.
+// Chép nguyên văn từ docs/superpowers/specs/2026-08-17-app-store-doc-design.md §6.
+//
+// Prisma 7 bắt buộc khai báo `output` cho generator. Trỏ vào `node_modules/.prisma/client`
+// để `@prisma/client` vẫn là đường dẫn import công khai duy nhất — phần còn lại của
+// dự án không phải biết client được sinh ở đâu.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+// Prisma 7 không còn nhận `url` trong datasource. Chuỗi kết nối được truyền cho
+// PrismaClient qua driver adapter (xem src/server/db.ts); migrate lấy từ prisma.config.ts.
+datasource db {
+  provider = "postgresql"
+}
+
+enum Status {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum AppKind {
+  CORE
+  SATELLITE
+}
+
+model Locale {
+  code      String  @id // "vi" | "en" | "ja" ...
+  label     String // "Tiếng Việt"
+  enabled   Boolean @default(true)
+  isDefault Boolean @default(false)
+  order     Int     @default(0)
+}
+
+model App {
+  id            String           @id @default(cuid())
+  slug          String           @unique // "web-store-apps"
+  kind          AppKind          @default(SATELLITE)
+  status        Status           @default(DRAFT)
+  order         Int              @default(0)
+  logoUrl       String?
+  repoUrl       String?
+  apiRepoUrl    String? // cho app có cặp client/api
+  demoUrl       String?
+  isRepoPrivate Boolean          @default(false) // ẩn link, hiện badge "Private"
+  techStack     String[]
+  translations  AppTranslation[]
+  features      Feature[]
+  sections      Section[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model AppTranslation {
+  id      String  @id @default(cuid())
+  appId   String
+  locale  String
+  name    String
+  tagline String?
+  summary String? // markdown ngắn: card + meta description
+  app     App     @relation(fields: [appId], references: [id], onDelete: Cascade)
+
+  @@unique([appId, locale])
+}
+
+model Feature {
+  id           String               @id @default(cuid())
+  appId        String
+  order        Int                  @default(0)
+  icon         String? // tên icon lucide
+  app          App                  @relation(fields: [appId], references: [id], onDelete: Cascade)
+  translations FeatureTranslation[]
+}
+
+model FeatureTranslation {
+  id          String  @id @default(cuid())
+  featureId   String
+  locale      String
+  title       String
+  description String?
+  feature     Feature @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  @@unique([featureId, locale])
+}
+
+model DocPage {
+  id           String               @id @default(cuid())
+  slug         String               @unique // "home", "oauth-integration-guide"
+  group        String? // nhóm trong sidebar
+  order        Int                  @default(0)
+  status       Status               @default(DRAFT)
+  translations DocPageTranslation[]
+  sections     Section[]
+}
+
+model DocPageTranslation {
+  id          String  @id @default(cuid())
+  docPageId   String
+  locale      String
+  title       String
+  description String?
+  docPage     DocPage @relation(fields: [docPageId], references: [id], onDelete: Cascade)
+
+  @@unique([docPageId, locale])
+}
+
+// DÙNG CHUNG cho App và DocPage.
+// Quan hệ đa hình qua hai FK nullable; CHECK constraint `section_single_owner`
+// nằm trong migration vì Prisma không diễn đạt được ràng buộc này.
+model Section {
+  id           String               @id @default(cuid())
+  appId        String?
+  docPageId    String?
+  order        Int                  @default(0)
+  anchor       String // "quick-start" → #quick-start, dựng ToC
+  app          App?                 @relation(fields: [appId], references: [id], onDelete: Cascade)
+  docPage      DocPage?             @relation(fields: [docPageId], references: [id], onDelete: Cascade)
+  translations SectionTranslation[]
+}
+
+model SectionTranslation {
+  id        String  @id @default(cuid())
+  sectionId String
+  locale    String
+  title     String
+  // JSON có discriminator "type"; hôm nay chỉ tồn tại type = "markdown" kèm "content".
+  // Không viết ví dụ JSON nguyên khối ở đây: dấu ngoặc nhọn đóng sẽ cắt cụt khối model
+  // khi công cụ khác quét file theo dấu ngoặc.
+  body      Json
+  section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+
+  @@unique([sectionId, locale])
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String // URL công khai của R2
+  pathname  String   @unique
+  alt       String?
+  width     Int?
+  height    Int?
+  sizeBytes Int
+  mimeType  String
+  createdAt DateTime @default(now())
+}
