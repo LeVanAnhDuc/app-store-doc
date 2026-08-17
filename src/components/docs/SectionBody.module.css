@@ -1,0 +1,152 @@
+/* Một mục nội dung — hình khối chép từ `.m-h2`, `.m-p`, `.m-pre`, `.m-tbl`
+   trong mockup đã duyệt. */
+
+.section {
+  margin-top: 30px;
+  /* Neo nhảy tới không bị thanh trên cùng che mất tiêu đề. */
+  scroll-margin-top: 16px;
+}
+
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: var(--t-xl);
+  font-weight: 650;
+  line-height: var(--lh-head);
+  /* Không tracking âm ở đây: 21px dưới ngưỡng 24px của design-rules §3, ép lại
+     thì dấu tiếng Việt chồng vào nhau. */
+  text-wrap: balance;
+}
+
+/* Liên kết neo: mono, muted, chỉ hiện rõ khi rê chuột hoặc có tiêu điểm. */
+.anchor {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--muted);
+  text-decoration: none;
+  opacity: 0;
+}
+
+.heading:hover .anchor,
+.anchor:focus-visible {
+  opacity: 1;
+}
+
+.code {
+  margin: 16px 0;
+}
+
+/* Bảng cuộn ngang trong hộp riêng: thân trang không bao giờ cuộn ngang. */
+.tableScroll {
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.tableScroll:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.tableScroll table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  /* Số liệu xếp cột phải thẳng hàng. */
+  font-variant-numeric: tabular-nums;
+}
+
+.tableScroll th {
+  text-align: left;
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.tableScroll td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: var(--lh-body);
+}
+
+/* -- văn xuôi kết xuất từ Markdown -------------------------------------- */
+
+.prose {
+  font-size: 14.5px;
+  line-height: var(--lh-body);
+  color: var(--ink);
+}
+
+.prose p,
+.prose ul,
+.prose ol,
+.prose blockquote {
+  margin: 0 0 14px;
+  /* Đo dòng văn xuôi tối đa 66ch (design-rules §3). */
+  max-width: var(--measure);
+}
+
+.prose > :last-child {
+  margin-bottom: 0;
+}
+
+.prose h3,
+.prose h4 {
+  margin: 22px 0 8px;
+  font-size: var(--t-lg);
+  font-weight: 620;
+  line-height: var(--lh-head);
+}
+
+.prose h4 {
+  font-size: 14.5px;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 22px;
+}
+
+.prose li {
+  margin-bottom: 5px;
+}
+
+.prose a {
+  color: var(--accent);
+}
+
+.prose code {
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+}
+
+.prose blockquote {
+  padding-left: 14px;
+  border-left: 2px solid var(--line);
+  color: var(--muted);
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 6px;
+}
+
+.prose hr {
+  margin: 22px 0;
+  border: 0;
+  border-top: 1px solid var(--line);
+}

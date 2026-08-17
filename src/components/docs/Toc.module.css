@@ -1,0 +1,73 @@
+/* Mục lục — hình khối chép từ `.m-toc` (màn 02) và `.mb-toc` (màn 07).
+   Vị trí trong lưới và cách gập cột do `DocsShell` lo; ở đây chỉ là dáng vẻ. */
+
+.toc {
+  padding: 30px 18px;
+  border-left: 1px solid var(--line);
+}
+
+.box {
+  margin: 0;
+}
+
+/* Nhãn mono viết hoa, giãn chữ — bậc 10–11.5px của design-rules §3. */
+.summary {
+  margin-bottom: 12px;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.link {
+  display: block;
+  padding: 4px 0 4px 11px;
+  border-left: 2px solid var(--line-soft);
+  font-size: 12.5px;
+  /* Tiêu đề mục là văn xuôi có dấu tiếng Việt — leading không dưới 1.7. */
+  line-height: 1.7;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.link:hover {
+  color: var(--accent);
+  border-left-color: var(--accent);
+}
+
+/* Một cột: mục lục thành khối gập có viền ngay đầu bài (mockup màn 07). */
+@media (max-width: 980px) {
+  .toc {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .box {
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 11px 13px;
+  }
+
+  /* Đóng lại thì tiêu đề không còn khoảng trống thừa phía dưới. */
+  .box:not([open]) .summary {
+    margin-bottom: 0;
+  }
+
+  .link {
+    padding-left: 0;
+    border-left: 0;
+  }
+}

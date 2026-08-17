@@ -49,12 +49,37 @@
     "emptyBody": "Add the first app in the admin area and it shows up on this page right away.",
     "description": "Public documentation for the app ecosystem around the IDMS identity server."
   },
+  "apps": {
+    "eyebrow": "{count, plural, =0 {No apps yet} one {# app} other {# apps}}",
+    "title": "Apps",
+    "lede": "Every app in the ecosystem, with how it connects to IDMS and what it is built with.",
+    "description": "The apps in the ecosystem, with their IDMS integration status.",
+    "emptyTitle": "No apps here yet",
+    "emptyBody": "Add the first app in the admin area and it shows up on this page right away."
+  },
   "app": {
     "features": "Features",
     "techStack": "Tech stack",
     "viewRepo": "View repo",
     "viewRepoOnGithub": "View on GitHub",
+    "viewApiRepo": "View server repo",
+    "viewDemo": "Open the demo",
     "privateRepo": "Private repo"
+  },
+  "doc": {
+    "guides": "Guides"
+  },
+  "sidebar": {
+    "label": "Documentation navigation",
+    "core": "Core",
+    "satellites": "Satellite apps"
+  },
+  "section": {
+    "permalink": "Link to section {title}"
+  },
+  "a11y": {
+    "codeBlock": "Code block, scrolls horizontally",
+    "table": "Data table, scrolls horizontally"
   },
   "toc": {
     "title": "On this page"
@@ -64,7 +89,8 @@
   },
   "notFound": {
     "title": "Page not found",
-    "body": "This address does not exist, or the content has been removed."
+    "body": "This address does not exist, or the content has been removed.",
+    "backHome": "Back to home"
   },
   "admin": {
     "save": "Save",
@@ -77,6 +103,8 @@
     "signOut": "Sign out"
   },
   "error": {
+    "title": "This page is broken",
+    "body": "The content failed to load. Try once more; if it still fails, the fault is on the server, not on your machine.",
     "retry": "Retry"
   }
 }

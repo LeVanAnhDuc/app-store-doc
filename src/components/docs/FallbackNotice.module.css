@@ -1,0 +1,30 @@
+/* Ghi chú bản dịch — nhỏ, nằm sát nội dung nó nói về, không cướp chỗ của bài. */
+
+.notice {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin: 0 0 10px;
+  font-size: var(--t-xs);
+  line-height: 1.7;
+  color: var(--muted);
+}
+
+/* Mã ngôn ngữ: nhãn mono viết hoa, cùng ngôn ngữ hình khối với huy hiệu. */
+.code {
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1px 5px;
+  background: var(--surface-2);
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.label {
+  min-width: 0;
+}

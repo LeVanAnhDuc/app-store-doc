@@ -49,12 +49,37 @@
     "emptyBody": "Thêm ứng dụng đầu tiên trong trang quản trị, nó hiện ra ngay trên trang này.",
     "description": "Tài liệu công khai cho hệ sinh thái ứng dụng quanh máy chủ định danh IDMS."
   },
+  "apps": {
+    "eyebrow": "{count, plural, =0 {Chưa có ứng dụng nào} other {# ứng dụng}}",
+    "title": "Ứng dụng",
+    "lede": "Từng ứng dụng trong hệ sinh thái, kèm trạng thái nối vào IDMS và công nghệ đang dùng.",
+    "description": "Danh sách ứng dụng trong hệ sinh thái, kèm trạng thái tích hợp IDMS.",
+    "emptyTitle": "Chưa có ứng dụng nào ở đây",
+    "emptyBody": "Thêm ứng dụng đầu tiên trong trang quản trị, nó hiện ra ngay trên trang này."
+  },
   "app": {
     "features": "Tính năng",
     "techStack": "Công nghệ sử dụng",
     "viewRepo": "Xem repo",
     "viewRepoOnGithub": "Xem trên GitHub",
+    "viewApiRepo": "Xem repo máy chủ",
+    "viewDemo": "Mở bản chạy thử",
     "privateRepo": "Repo riêng tư"
+  },
+  "doc": {
+    "guides": "Hướng dẫn"
+  },
+  "sidebar": {
+    "label": "Điều hướng tài liệu",
+    "core": "Lõi",
+    "satellites": "Ứng dụng vệ tinh"
+  },
+  "section": {
+    "permalink": "Liên kết tới mục {title}"
+  },
+  "a11y": {
+    "codeBlock": "Khối mã, cuộn ngang được",
+    "table": "Bảng dữ liệu, cuộn ngang được"
   },
   "toc": {
     "title": "Trong trang này"
@@ -64,7 +89,8 @@
   },
   "notFound": {
     "title": "Không tìm thấy trang",
-    "body": "Đường dẫn này không tồn tại hoặc nội dung đã được gỡ."
+    "body": "Đường dẫn này không tồn tại hoặc nội dung đã được gỡ.",
+    "backHome": "Về trang chủ"
   },
   "admin": {
     "save": "Lưu",
@@ -77,6 +103,8 @@
     "signOut": "Đăng xuất"
   },
   "error": {
+    "title": "Trang này đang lỗi",
+    "body": "Nội dung không tải được. Thử lại một lần; nếu vẫn vậy thì lỗi nằm ở máy chủ chứ không phải ở máy bạn.",
     "retry": "Thử lại"
   }
 }

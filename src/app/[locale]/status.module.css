@@ -1,0 +1,68 @@
+/* Trang trạng thái (404 và lỗi). Dùng chung cho `not-found.tsx` và `error.tsx`:
+   hai trang khác nhau về nguyên nhân, giống nhau hoàn toàn về hình khối. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 100vh;
+  padding: 80px 44px;
+  max-width: 62ch;
+  background: var(--bg);
+  color: var(--ink);
+}
+
+/* Mã trạng thái là nhãn mono, không phải tiêu đề — chữ mới nói chuyện gì xảy ra. */
+.code {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.15em;
+  color: var(--muted);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--t-2xl);
+  font-weight: 700;
+  line-height: var(--lh-head);
+  letter-spacing: -0.022em;
+  text-wrap: balance;
+}
+
+.body {
+  margin: 0;
+  font-size: var(--t-md);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+.action {
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 8px 14px;
+  background: var(--surface);
+  font-family: inherit;
+  font-size: var(--t-sm);
+  color: var(--accent);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.action:hover {
+  border-color: var(--accent);
+}
+
+@media (max-width: 720px) {
+  .wrap {
+    padding: 56px 16px;
+  }
+
+  .title {
+    font-size: var(--t-xl);
+    /* Xuống 21px thì bỏ tracking âm: dưới 24px nó ép dấu tiếng Việt (§3). */
+    letter-spacing: normal;
+  }
+}

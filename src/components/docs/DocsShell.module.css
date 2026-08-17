@@ -1,0 +1,69 @@
+/* Bố cục ba cột — chép từ `.m-docs` trong mockup đã duyệt.
+   Bề rộng cột: 208px điều hướng · phần còn lại nội dung · 178px mục lục. */
+
+.shell {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: start;
+  min-height: 100%;
+}
+
+.shell[data-sidebar="yes"] {
+  grid-template-columns: 208px minmax(0, 1fr);
+}
+
+.shell[data-toc="yes"] {
+  grid-template-columns: minmax(0, 1fr) 178px;
+}
+
+.shell[data-sidebar="yes"][data-toc="yes"] {
+  grid-template-columns: 208px minmax(0, 1fr) 178px;
+}
+
+/* Hai cột ngoài đi theo người đọc suốt bài dài. Đây là bố cục, không phải
+   hiệu ứng cuộn — không có gì chuyển động. */
+.sidebarSlot,
+.tocSlot {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+.mainSlot {
+  min-width: 0;
+}
+
+/* Ba cột gập thành một (design-rules §9). Mục lục lên đầu bài; điều hướng
+   xuống cuối trang vì thanh trên cùng và ô tìm kiếm đã lo việc đi lại ở đây. */
+@media (max-width: 980px) {
+  .shell,
+  .shell[data-sidebar="yes"],
+  .shell[data-toc="yes"],
+  .shell[data-sidebar="yes"][data-toc="yes"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebarSlot,
+  .tocSlot {
+    position: static;
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  .tocSlot {
+    order: -1;
+    padding: 20px 24px 0;
+  }
+
+  .sidebarSlot {
+    order: 2;
+  }
+}
+
+@media (max-width: 720px) {
+  .tocSlot {
+    padding: 16px 16px 0;
+  }
+}

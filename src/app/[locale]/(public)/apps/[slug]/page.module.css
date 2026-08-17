@@ -1,0 +1,18 @@
+/* Cột nội dung — lề chép từ `.m-main` trong mockup đã duyệt. */
+
+.main {
+  padding: 30px 40px 48px;
+  min-width: 0;
+}
+
+@media (max-width: 980px) {
+  .main {
+    padding: 20px 24px 40px;
+  }
+}
+
+@media (max-width: 720px) {
+  .main {
+    padding: 18px 16px 32px;
+  }
+}
