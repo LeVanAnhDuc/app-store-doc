@@ -228,8 +228,10 @@ body {
 .m-lead.planned { border-top-style: dashed; border-color: var(--st-planned); }
 .m-lead.private { border-top-style: dashed; border-color: var(--st-private); }
 .m-lead.none { border-top: 2px dotted transparent; }
-.m-wire-name { font-family: var(--mono); font-size: 12.5px; }
+.m-wire-name { font-size: 13.5px; font-weight: 600; letter-spacing: -.006em; }
 .m-wire-desc { color: var(--muted); font-size: 12.5px; margin-left: 10px; font-family: var(--sans); }
+/* Slug repo luôn là chữ mono phụ, không bao giờ là tên hiển thị */
+.m-slug { font-family: var(--mono); font-size: 10.5px; color: var(--muted); letter-spacing: .01em; }
 
 .m-legend { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--line-soft); }
 .m-legend div { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); }
@@ -257,7 +259,7 @@ body {
 .m-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
 .m-card { border: 1px solid var(--line); border-radius: 6px; padding: 16px; background: var(--surface); }
 .m-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 9px; }
-.m-card-name { font-family: var(--mono); font-size: 12.5px; font-weight: 600; }
+.m-card-name { font-size: 14.5px; font-weight: 650; letter-spacing: -.012em; }
 .m-card p { margin: 0 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
 .m-chips { display: flex; flex-wrap: wrap; gap: 5px; }
 .m-chip {
@@ -539,32 +541,32 @@ body {
             <ul class="m-wire-rows">
               <li class="m-wire-row">
                 <i class="m-lead"></i>
-                <div><span class="m-wire-name">web-store-apps</span><span class="m-wire-desc">Đăng nhập, consent, bảng khởi chạy</span></div>
+                <div><span class="m-wire-name">Web Store Apps</span><span class="m-wire-desc">Đăng nhập, đồng ý quyền, bảng khởi chạy</span></div>
                 <span class="m-badge b-core">Lõi</span>
               </li>
               <li class="m-wire-row">
                 <i class="m-lead planned"></i>
-                <div><span class="m-wire-name">match-cv</span><span class="m-wire-desc">Đối chiếu CV với mô tả công việc</span></div>
+                <div><span class="m-wire-name">Match CV</span><span class="m-wire-desc">Đối chiếu CV với mô tả công việc</span></div>
                 <span class="m-badge b-planned">Dự kiến nối</span>
               </li>
               <li class="m-wire-row">
                 <i class="m-lead planned"></i>
-                <div><span class="m-wire-name">app-manage-gym</span><span class="m-wire-desc">Nhật ký tập luyện</span></div>
+                <div><span class="m-wire-name">Manage Gym</span><span class="m-wire-desc">Nhật ký tập luyện</span></div>
                 <span class="m-badge b-planned">Dự kiến nối</span>
               </li>
               <li class="m-wire-row">
                 <i class="m-lead planned"></i>
-                <div><span class="m-wire-name">app-AI-study-coach</span><span class="m-wire-desc">Trợ lý học tập</span></div>
+                <div><span class="m-wire-name">AI Study Coach</span><span class="m-wire-desc">Trợ lý học tập</span></div>
                 <span class="m-badge b-planned">Dự kiến nối</span>
               </li>
               <li class="m-wire-row">
                 <i class="m-lead private"></i>
-                <div><span class="m-wire-name">shorten-link</span><span class="m-wire-desc">Rút gọn liên kết</span></div>
+                <div><span class="m-wire-name">Shorten Link</span><span class="m-wire-desc">Rút gọn liên kết</span></div>
                 <span class="m-badge b-private">Repo riêng tư</span>
               </li>
               <li class="m-wire-row">
                 <i class="m-lead none"></i>
-                <div><span class="m-wire-name">app-calculate-badminton</span><span class="m-wire-desc">Chia tiền sân cầu lông, lưu trên máy</span></div>
+                <div><span class="m-wire-name">Calculate Badminton</span><span class="m-wire-desc">Chia tiền sân cầu lông, lưu trên máy</span></div>
                 <span class="m-badge b-standalone">Độc lập</span>
               </li>
             </ul>
@@ -581,17 +583,20 @@ body {
           <p class="m-sec-label">Bắt đầu từ đâu</p>
           <div class="m-cards">
             <div class="m-card">
-              <div class="m-card-top"><span class="m-card-name">web-store-apps</span><span class="m-badge b-core">Lõi</span></div>
+              <div class="m-card-top"><span class="m-card-name">Web Store Apps</span><span class="m-badge b-core">Lõi</span></div>
+              <p class="m-slug" style="margin:0 0 9px">LeVanAnhDuc/web-store-apps</p>
               <p>Trang đăng nhập, màn hình đồng ý quyền và bảng khởi chạy ứng dụng cho toàn hệ sinh thái.</p>
               <div class="m-chips"><span class="m-chip">Next.js 15</span><span class="m-chip">shadcn/ui</span><span class="m-chip">next-intl</span></div>
             </div>
             <div class="m-card">
-              <div class="m-card-top"><span class="m-card-name">api-web-store-apps</span><span class="m-badge b-core">Lõi</span></div>
+              <div class="m-card-top"><span class="m-card-name">API Web Store Apps</span><span class="m-badge b-core">Lõi</span></div>
+              <p class="m-slug" style="margin:0 0 9px">LeVanAnhDuc/api-web-store-apps</p>
               <p>Máy chủ OAuth 2.0 / OIDC: cấp token, xác thực nhiều lớp, quản lý danh bạ ứng dụng.</p>
               <div class="m-chips"><span class="m-chip">Express</span><span class="m-chip">MongoDB</span><span class="m-chip">Redis</span></div>
             </div>
             <div class="m-card">
-              <div class="m-card-top"><span class="m-card-name">match-cv</span><span class="m-badge b-planned">Dự kiến</span></div>
+              <div class="m-card-top"><span class="m-card-name">Match CV</span><span class="m-badge b-planned">Dự kiến</span></div>
+              <p class="m-slug" style="margin:0 0 9px">LeVanAnhDuc/client-web-app-match-cv</p>
               <p>Chấm độ khớp giữa CV và mô tả công việc bằng nhúng vector, sinh thư ứng tuyển.</p>
               <div class="m-chips"><span class="m-chip">NestJS 11</span><span class="m-chip">pgvector</span><span class="m-chip">TanStack</span></div>
             </div>
@@ -627,16 +632,16 @@ body {
           <aside class="m-side">
             <div class="m-side-group">
               <p class="m-side-h">Lõi</p>
-              <a href="#" class="on">web-store-apps</a>
-              <a href="#">api-web-store-apps</a>
+              <a href="#" class="on">Web Store Apps</a>
+              <a href="#">API Web Store Apps</a>
             </div>
             <div class="m-side-group">
               <p class="m-side-h">Ứng dụng vệ tinh</p>
-              <a href="#">match-cv</a>
-              <a href="#">app-manage-gym</a>
-              <a href="#">app-AI-study-coach</a>
-              <a href="#">app-calculate-badminton</a>
-              <a href="#">shorten-link</a>
+              <a href="#">Match CV</a>
+              <a href="#">Manage Gym</a>
+              <a href="#">AI Study Coach</a>
+              <a href="#">Calculate Badminton</a>
+              <a href="#">Shorten Link</a>
             </div>
             <div class="m-side-group">
               <p class="m-side-h">Hướng dẫn</p>
@@ -648,9 +653,10 @@ body {
 
           <main class="m-main">
             <p class="m-crumb">Ứng dụng / Lõi</p>
-            <h1 class="m-h1">web-store-apps</h1>
+            <h1 class="m-h1">Web Store Apps</h1>
             <p class="m-tag">Cổng đăng nhập và bảng khởi chạy ứng dụng</p>
             <div class="m-metarow">
+              <span class="m-slug">LeVanAnhDuc/web-store-apps</span>
               <span class="m-badge b-core">Lõi</span>
               <span class="m-chip">Next.js 15</span>
               <span class="m-chip">React 19</span>
@@ -833,7 +839,8 @@ grant_type=authorization_code
           <div class="m-adm-main">
             <div class="m-adm-bar">
               <a href="#" class="m-back">← Ứng dụng</a>
-              <span class="m-adm-title">web-store-apps</span>
+              <span class="m-adm-title">Web Store Apps</span>
+              <span class="m-slug">web-store-apps</span>
               <span class="m-badge b-planned">Bản nháp</span>
               <div class="m-adm-actions">
                 <div class="m-trans">
@@ -871,7 +878,7 @@ grant_type=authorization_code
                 </div>
                 <div class="m-block-body">
                   <div class="m-fields" style="grid-template-columns:1fr 1fr">
-                    <div class="m-field"><label>Tên hiển thị</label><div class="m-input">web-store-apps</div></div>
+                    <div class="m-field"><label>Tên hiển thị</label><div class="m-input">Web Store Apps</div></div>
                     <div class="m-field"><label>Mô tả một dòng</label><div class="m-input">Cổng đăng nhập và bảng khởi chạy ứng dụng</div></div>
                   </div>
                   <div class="m-field" style="margin-top:12px"><label>Tóm tắt</label><div class="m-input ta">Giao diện của IDMS. Người dùng đăng nhập một lần ở đây, sau đó mở được mọi ứng dụng trong hệ sinh thái…</div></div>
@@ -1049,11 +1056,11 @@ cd web-store-apps &amp;&amp; npm install
             <div class="m-wire mb-wire">
               <div class="m-wire-spine"><span class="m-wire-core" style="font-size:9px;padding:3px 6px">IDMS</span></div>
               <ul class="m-wire-rows">
-                <li class="m-wire-row"><i class="m-lead"></i><div><span class="m-wire-name" style="font-size:11px">web-store-apps</span></div><span class="m-badge b-core">Lõi</span></li>
-                <li class="m-wire-row"><i class="m-lead planned"></i><div><span class="m-wire-name" style="font-size:11px">match-cv</span></div><span class="m-badge b-planned">Dự kiến</span></li>
-                <li class="m-wire-row"><i class="m-lead planned"></i><div><span class="m-wire-name" style="font-size:11px">app-manage-gym</span></div><span class="m-badge b-planned">Dự kiến</span></li>
-                <li class="m-wire-row"><i class="m-lead private"></i><div><span class="m-wire-name" style="font-size:11px">shorten-link</span></div><span class="m-badge b-private">Riêng tư</span></li>
-                <li class="m-wire-row"><i class="m-lead none"></i><div><span class="m-wire-name" style="font-size:11px">app-calculate-badminton</span></div><span class="m-badge b-standalone">Độc lập</span></li>
+                <li class="m-wire-row"><i class="m-lead"></i><div><span class="m-wire-name" style="font-size:12px">Web Store Apps</span></div><span class="m-badge b-core">Lõi</span></li>
+                <li class="m-wire-row"><i class="m-lead planned"></i><div><span class="m-wire-name" style="font-size:12px">Match CV</span></div><span class="m-badge b-planned">Dự kiến</span></li>
+                <li class="m-wire-row"><i class="m-lead planned"></i><div><span class="m-wire-name" style="font-size:12px">Manage Gym</span></div><span class="m-badge b-planned">Dự kiến</span></li>
+                <li class="m-wire-row"><i class="m-lead private"></i><div><span class="m-wire-name" style="font-size:12px">Shorten Link</span></div><span class="m-badge b-private">Riêng tư</span></li>
+                <li class="m-wire-row"><i class="m-lead none"></i><div><span class="m-wire-name" style="font-size:12px">Calculate Badminton</span></div><span class="m-badge b-standalone">Độc lập</span></li>
               </ul>
             </div>
           </div>
@@ -1061,12 +1068,14 @@ cd web-store-apps &amp;&amp; npm install
             <p class="m-sec-label">Bắt đầu từ đâu</p>
             <div class="mb-cards">
               <div class="m-card">
-                <div class="m-card-top"><span class="m-card-name">web-store-apps</span><span class="m-badge b-core">Lõi</span></div>
+                <div class="m-card-top"><span class="m-card-name">Web Store Apps</span><span class="m-badge b-core">Lõi</span></div>
+                <p class="m-slug" style="margin:0 0 9px">LeVanAnhDuc/web-store-apps</p>
                 <p>Trang đăng nhập, màn hình đồng ý quyền và bảng khởi chạy ứng dụng.</p>
                 <div class="m-chips"><span class="m-chip">Next.js 15</span><span class="m-chip">shadcn/ui</span></div>
               </div>
               <div class="m-card">
-                <div class="m-card-top"><span class="m-card-name">match-cv</span><span class="m-badge b-planned">Dự kiến</span></div>
+                <div class="m-card-top"><span class="m-card-name">Match CV</span><span class="m-badge b-planned">Dự kiến</span></div>
+                <p class="m-slug" style="margin:0 0 9px">LeVanAnhDuc/client-web-app-match-cv</p>
                 <p>Chấm độ khớp giữa CV và mô tả công việc bằng nhúng vector.</p>
                 <div class="m-chips"><span class="m-chip">NestJS 11</span><span class="m-chip">pgvector</span></div>
               </div>
@@ -1085,9 +1094,10 @@ cd web-store-apps &amp;&amp; npm install
           </div>
           <div class="mb-main">
             <p class="m-crumb">Ứng dụng / Lõi</p>
-            <h1 class="m-h1">web-store-apps</h1>
+            <h1 class="m-h1">Web Store Apps</h1>
             <p class="m-tag" style="font-size:13.5px">Cổng đăng nhập và bảng khởi chạy ứng dụng</p>
             <div class="m-metarow" style="padding-bottom:16px">
+              <span class="m-slug">LeVanAnhDuc/web-store-apps</span>
               <span class="m-badge b-core">Lõi</span>
               <span class="m-chip">Next.js 15</span>
               <span class="m-chip">React 19</span>
@@ -1122,6 +1132,11 @@ npm install &amp;&amp; npm run dev</code></div>
         <table class="m-tbl" style="font-size:13.5px">
           <thead><tr><th style="width:130px">Chỗ</th><th>Mình chọn</th><th style="width:290px">Cách khác</th></tr></thead>
           <tbody>
+            <tr>
+              <td>Tên ứng dụng</td>
+              <td><strong>Viết hoa đầu từ, bỏ tiền tố thừa</strong> — <em>Manage Gym</em> chứ không phải <code style="font-family:var(--mono);font-size:12px">app-manage-gym</code>. Slug repo vẫn hiện dưới dạng chữ mono xám, vì còn cần để tra GitHub.</td>
+              <td>Giữ nguyên tiền tố: “App Manage Gym”, “Client Web App Match CV”. Trung thành với tên repo hơn nhưng đọc nặng.</td>
+            </tr>
             <tr>
               <td>Tên trang</td>
               <td><strong>Atlas</strong> — hệ sinh thái là một chòm sao, trang này là tấm bản đồ. Ngắn, gõ được, không đụng tên repo nào.</td>
