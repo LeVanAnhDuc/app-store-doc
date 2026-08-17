@@ -112,9 +112,39 @@
   font-size: 14.5px;
 }
 
+/*
+ * Phải khai lại `list-style`. Preflight của Tailwind đặt `list-style: none` cho
+ * `ul`/`ol`, nên chỉ thêm `padding-left` thì danh sách thụt vào mà không có dấu
+ * đầu dòng lẫn số. Lỗi này lộ ra khi xem tận mắt trang Hướng dẫn tích hợp OAuth:
+ * mục "Luồng năm bước" mất hết số, tức mất luôn thông tin thứ tự — đúng thứ mà
+ * design-rules §"Structure is information" nói phải giữ.
+ */
 .prose ul,
 .prose ol {
   padding-left: 22px;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li {
+  margin-bottom: 6px;
+  max-width: var(--measure);
+}
+
+.prose li::marker {
+  color: var(--muted);
+}
+
+/* Số của danh sách thứ tự dùng chữ mono để cột số thẳng hàng. */
+.prose ol > li::marker {
+  font-family: var(--mono);
+  font-size: 12.5px;
 }
 
 .prose li {

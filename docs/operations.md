@@ -197,6 +197,37 @@ Kiểm chứng hash trước khi đem đi deploy:
 node -e "console.log(require('bcryptjs').compareSync(process.argv[1], process.argv[2]))" 'mat-khau-thuc-cua-ban' '$2b$10$...hash-vua-sinh...'
 ```
 
+### 3.1 Bẫy nặng nhất của cả tài liệu này: `$` trong `.env`
+
+Đã trả giá để biết, và **không có lỗi nào để lần theo**.
+
+Next expand biến khi nạp `.env`, nên mọi `$x` bị coi là **tên biến** và thay bằng rỗng. Hash bcrypt **luôn** chứa ba dấu `$`, nên để trần thì hash 60 ký tự bị cắt còn 48, `bcrypt.compare` trả `false`, và trang đăng nhập chỉ nói "Email hoặc mật khẩu không đúng" — y như khi bạn gõ sai mật khẩu thật.
+
+Đã thử cả bốn cách, kết quả thật:
+
+| Viết trong `.env` | App đọc được | Đăng nhập |
+|---|---|---|
+| `ADMIN_PASSWORD_HASH=$2b$10$abc…` | 48 ký tự | ✗ |
+| `ADMIN_PASSWORD_HASH='$2b$10$abc…'` | 48 ký tự | ✗ **nháy đơn không cứu được** |
+| `ADMIN_PASSWORD_HASH="\$2b\$10\$abc…"` | 60 ký tự | ✓ |
+| `ADMIN_PASSWORD_HASH=\$2b\$10\$abc…` | 60 ký tự | ✓ |
+
+**Chỉ escape `\$` mới sống.** Cách sinh sẵn giá trị đã escape:
+
+```powershell
+node -e "console.log(require('bcryptjs').hashSync(process.argv[1],10).replaceAll(String.fromCharCode(36), String.fromCharCode(92,36)))" 'mat-khau-cua-ban'
+```
+
+Dán nguyên văn kết quả vào `.env`. Kiểm lại bằng chính đường mà app đi:
+
+```powershell
+node -e "require('@next/env').loadEnvConfig(process.cwd(),true); const h=process.env.ADMIN_PASSWORD_HASH||''; console.log('dài', h.length, '| khớp:', require('bcryptjs').compareSync(process.argv[1], h))" 'mat-khau-cua-ban'
+```
+
+Phải ra `dài 60 | khớp: true`. Ra 48 là chưa escape.
+
+> **Chỉ áp dụng cho file `.env`.** Trên Vercel bạn khai qua dashboard, không qua dotenv, nên **dán hash nguyên văn, không escape**. Escape ở đó sẽ đưa dấu `\` vào hash và lại sai theo chiều ngược lại.
+
 In ra `true` là đúng.
 
 Lưu mật khẩu thô vào trình quản lý mật khẩu. Nó cần cho hai việc: đăng nhập `/admin`, và biến `ADMIN_PASSWORD` khi chạy e2e (mục 7.3).

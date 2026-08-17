@@ -110,7 +110,10 @@ Xếp theo mức đáng làm.
 | Kiến trúc, data model, rủi ro | [`superpowers/specs/2026-08-17-app-store-doc-design.md`](superpowers/specs/2026-08-17-app-store-doc-design.md) |
 | Hạ tầng, deploy, test cần DB | [`operations.md`](operations.md) |
 
-**Bốn cái bẫy đã trả giá để biết** (chi tiết trong `CLAUDE.md` và `operations.md`):
+**Năm cái bẫy đã trả giá để biết** (chi tiết trong `CLAUDE.md` và `operations.md`):
+
+0. **Dấu `$` trong `.env` phải escape thành `\$`.** Next expand biến khi nạp `.env`, nên hash bcrypt (luôn chứa `$`) bị cắt từ 60 ký tự còn 48, và trang đăng nhập chỉ nói "sai mật khẩu". Nháy đơn **không** cứu được. Chi tiết `operations.md` §3.1.
+
 
 1. **Server Action là endpoint HTTP riêng.** Bảo vệ `layout.tsx` **không** bảo vệ action. Mọi action ghi dữ liệu phải `await requireAdmin()` ở dòng đầu.
 2. **`vitest` không typecheck.** Suite xanh không chứng minh `tsc` sạch. Luôn chạy `npm run typecheck` riêng.

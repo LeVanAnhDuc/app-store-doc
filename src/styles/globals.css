@@ -56,21 +56,38 @@ a {
  * cứng. Ba khối dưới đây quyết định lấy biến nào — thiếu chúng thì khối mã ra
  * đơn sắc. Cùng cấu trúc ba trạng thái như tokens.css.
  */
-.shiki,
-.shiki span {
+/*
+ * Selector phải là `code[data-theme]`, KHÔNG phải `.shiki`.
+ * rehype-pretty-code không gắn class `shiki` nào — nó gắn `data-theme` và đặt
+ * `--shiki-light`/`--shiki-dark` vào `style` nội tuyến của từng token. Bản đầu
+ * viết `.shiki` theo phỏng đoán nên không khớp gì cả và khối mã ra đơn sắc,
+ * lỗi chỉ lộ khi xem tận mắt vì CSS không khớp thì không báo lỗi.
+ * Hợp đồng này được `src/lib/markdown.test.ts` canh.
+ *
+ * Không dùng `[data-theme]` trần: nó sẽ khớp luôn `:root[data-theme="dark"]`
+ * của nút chuyển chủ đề và nhuộm cả trang theo màu token mã.
+ */
+code[data-theme],
+code[data-theme] span,
+pre[data-theme],
+pre[data-theme] span {
   color: var(--shiki-light);
   background-color: transparent;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .shiki,
-  :root:not([data-theme="light"]) .shiki span {
+  :root:not([data-theme="light"]) code[data-theme],
+  :root:not([data-theme="light"]) code[data-theme] span,
+  :root:not([data-theme="light"]) pre[data-theme],
+  :root:not([data-theme="light"]) pre[data-theme] span {
     color: var(--shiki-dark);
   }
 }
 
-:root[data-theme="dark"] .shiki,
-:root[data-theme="dark"] .shiki span {
+:root[data-theme="dark"] code[data-theme],
+:root[data-theme="dark"] code[data-theme] span,
+:root[data-theme="dark"] pre[data-theme],
+:root[data-theme="dark"] pre[data-theme] span {
   color: var(--shiki-dark);
 }
 

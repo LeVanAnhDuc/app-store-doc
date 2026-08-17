@@ -1,4 +1,5 @@
 // src/lib/markdown.test.ts
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import { renderMarkdown } from "./markdown";
 
@@ -34,5 +35,30 @@ describe("renderMarkdown", () => {
 
   it("giữ nguyên dấu tiếng Việt", async () => {
     expect(await renderMarkdown("Biến môi trường của ứng dụng")).toContain("Biến môi trường của ứng dụng");
+  });
+});
+
+// Canh hợp đồng giữa markdown và CSS. Thêm sau khi xem tận mắt phát hiện khối mã
+// ra đơn sắc: globals.css viết selector `.shiki` theo phỏng đoán, mà markup thật
+// không có class đó. CSS không khớp thì không báo lỗi, nên phải có test.
+describe("hợp đồng với globals.css", () => {
+  it("token mang biến màu trên phần tử mà selector của globals.css khớp", async () => {
+    const html = await renderMarkdown("```bash\nnpm install\n```");
+    // Biến màu nằm ở `style` nội tuyến, không phải class.
+    expect(html).toContain("--shiki-light");
+    expect(html).toContain("--shiki-dark");
+    // Và phần tử bọc chúng phải mang `data-theme` — đó là chỗ CSS bám vào.
+    expect(html).toMatch(/<code[^>]*data-theme=/);
+  });
+
+  it("không sinh class `shiki` — đừng viết CSS bám vào nó", async () => {
+    const html = await renderMarkdown("```bash\nnpm install\n```");
+    expect(html).not.toMatch(/class="[^"]*\bshiki\b/);
+  });
+
+  it("globals.css bám vào code[data-theme], không bám vào .shiki", () => {
+    const css = readFileSync("src/styles/globals.css", "utf8");
+    expect(css).toContain("code[data-theme]");
+    expect(css).not.toMatch(/^\s*\.shiki[\s,{]/m);
   });
 });
