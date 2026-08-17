@@ -6,7 +6,7 @@
  * `requireAdmin`, `signOut` rồi đổi một dòng re-export trong `../index.ts`.
  * Không file nào khác phải sửa.
  */
-import NextAuth, { type User } from "next-auth";
+import NextAuth, { AuthError, type User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
@@ -28,6 +28,7 @@ function readRoles(value: unknown): string[] {
 const {
   handlers: authHandlers,
   auth,
+  signIn: authSignIn,
   signOut: authSignOut,
 } = NextAuth({
   // Vercel đặt sẵn host qua header; không bật thì preview deployment gãy callback.
@@ -125,6 +126,31 @@ export async function requireAdmin(): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user || !user.roles.includes(ADMIN_ROLE)) redirect(LOGIN_PATH);
   return user;
+}
+
+/**
+ * Thử đăng nhập bằng email và mật khẩu. `true` là thành công (cookie phiên đã
+ * được đặt), `false` là sai thông tin.
+ *
+ * Hàm này tồn tại để trang đăng nhập **không** phải biết tới Auth.js. Nó không
+ * chuyển hướng: nơi gọi còn phải giới hạn tần suất trước, rồi tự quyết đi đâu
+ * sau khi thành công. Ngày đổi sang IDMS OAuth, hàm này biến thành lệnh chuyển
+ * hướng tới nhà cung cấp và trang đăng nhập không đổi một dòng nào.
+ *
+ * `redirect: false` là bắt buộc: để mặc định thì Auth.js ném `NEXT_REDIRECT`
+ * ngay bên trong, và khối `catch` dưới đây sẽ nuốt mất chuyển hướng thật.
+ */
+export async function signInWithPassword(email: string, password: string): Promise<boolean> {
+  try {
+    await authSignIn("credentials", { email, password, redirect: false });
+    return true;
+  } catch (error) {
+    // Sai email hoặc mật khẩu: Auth.js ném `CredentialsSignin`, một `AuthError`.
+    if (error instanceof AuthError) return false;
+    // Mọi lỗi khác (thiếu `AUTH_SECRET`, mạng, cấu hình) phải nổi lên: nuốt nó
+    // thì người dùng chỉ thấy "sai mật khẩu" và không bao giờ lần ra nguyên nhân.
+    throw error;
+  }
 }
 
 /** Đăng xuất rồi đưa về trang đăng nhập. */

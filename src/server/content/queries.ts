@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 
-import { defaultLocale as fallbackLocaleOfLastResort } from "@/i18n/locales.generated";
+import { defaultLocale as fallbackLocaleOfLastResort, locales } from "@/i18n/locales.generated";
 import { appKindValues, sectionBodySchema, statusValues, type SectionBody } from "@/lib/schemas";
 import { buildSearchIndex, type SearchDoc, type SearchIndexInput } from "@/lib/search-index";
 import { hasDatabase, prisma } from "@/server/db";
@@ -316,6 +316,97 @@ export function listApps(locale: string): Promise<AppCard[]> {
   return unstable_cache(() => loadApps(locale), ["apps-list", locale], {
     tags: [tags.appsList()],
   })();
+}
+
+// ---------------------------------------------------------------------------
+// Danh sách cho trang quản trị
+// ---------------------------------------------------------------------------
+
+/** Một dòng trong bảng ứng dụng của CMS. Gồm cả `DRAFT` và `ARCHIVED`. */
+export type AdminAppRow = {
+  id: string;
+  slug: string;
+  kind: AppKind;
+  status: Status;
+  order: number;
+  /** Tên hiển thị theo `locale` đang xem; `null` khi ngôn ngữ đó chưa có bản dịch. */
+  name: string | null;
+  /** Ngôn ngữ site đang phục vụ nhưng ứng dụng này chưa có bản dịch. */
+  missingLocales: string[];
+};
+
+/**
+ * Toàn bộ ứng dụng cho CMS, **không lọc theo trạng thái và không qua cache**.
+ *
+ * Hai điểm khác `listApps` là lý do hàm này tồn tại chứ không phải thêm tham số
+ * vào hàm kia:
+ *
+ * 1. Trang quản trị phải thấy `DRAFT` — đó chính là thứ màn Tổng quan báo cáo.
+ * 2. Bọc `unstable_cache` ở đây sẽ khiến người vừa bấm Lưu tải lại trang và thấy
+ *    bản cũ. `revalidateTag` chỉ giải quyết được nếu mọi lối ghi đều nhớ gọi
+ *    đúng tag; không cache thì không có gì phải nhớ.
+ *
+ * `missingLocales` so với `locales.generated.ts` — đúng tập ngôn ngữ mà định
+ * tuyến đang phục vụ. Đọc bảng `Locale` sẽ chính xác hơn về ý định, nhưng lệch
+ * với thực tế cho tới lần redeploy kế tiếp (spec §9.3), mà màn Tổng quan là chỗ
+ * nói thật về hiện trạng.
+ */
+export async function listAppsForAdmin(locale: string): Promise<AdminAppRow[]> {
+  if (!hasDatabase()) return [];
+
+  const rows = await prisma.app.findMany({
+    orderBy: [{ order: "asc" }, { slug: "asc" }],
+    select: {
+      id: true,
+      slug: true,
+      kind: true,
+      status: true,
+      order: true,
+      translations: { select: { locale: true, name: true } },
+    },
+  });
+
+  return rows.map((app) => {
+    const byLocale = new Map(app.translations.map((tr) => [tr.locale, tr.name]));
+
+    return {
+      id: app.id,
+      slug: app.slug,
+      kind: app.kind,
+      status: app.status,
+      order: app.order,
+      // Không bịa nhãn từ slug, kể cả trong CMS: thiếu bản dịch là thông tin cần
+      // thấy, không phải chỗ để lấp bằng chuỗi trông như tên thật.
+      name: byLocale.get(locale) ?? null,
+      missingLocales: locales.filter((code) => !byLocale.has(code)),
+    };
+  });
+}
+
+/** Số đếm cho cột điều hướng bên trái của CMS. */
+export type AdminCounts = {
+  apps: number;
+  docs: number;
+  media: number;
+  locales: number;
+};
+
+/**
+ * Số đếm cạnh từng mục trong cột điều hướng quản trị. Đếm **mọi** trạng thái:
+ * con số ở đây nói "có bao nhiêu bản ghi để quản lý", không phải "bao nhiêu bản
+ * ghi công khai".
+ */
+export async function getAdminCounts(): Promise<AdminCounts> {
+  if (!hasDatabase()) return { apps: 0, docs: 0, media: 0, locales: 0 };
+
+  const [apps, docs, media, localeCount] = await Promise.all([
+    prisma.app.count(),
+    prisma.docPage.count({ where: { slug: { not: LANDING_DOC_SLUG } } }),
+    prisma.media.count(),
+    prisma.locale.count(),
+  ]);
+
+  return { apps, docs, media, locales: localeCount };
 }
 
 // ---------------------------------------------------------------------------

@@ -100,7 +100,77 @@
     "addSection": "Thêm mục",
     "missingTranslation": "Thiếu bản dịch",
     "signIn": "Đăng nhập",
-    "signOut": "Đăng xuất"
+    "signOut": "Đăng xuất",
+    "signedInAs": "Đang đăng nhập",
+    "notReady": "Mục này chưa dựng xong",
+    "nav": {
+      "label": "Điều hướng quản trị",
+      "overview": "Tổng quan",
+      "apps": "Ứng dụng",
+      "docs": "Trang hướng dẫn",
+      "media": "Ảnh",
+      "locales": "Ngôn ngữ"
+    },
+    "kind": {
+      "core": "Lõi",
+      "satellite": "Vệ tinh"
+    },
+    "publishState": {
+      "draft": "Bản nháp",
+      "published": "Công khai",
+      "archived": "Đã lưu trữ"
+    },
+    "login": {
+      "title": "Đăng nhập quản trị",
+      "subtitle": "Trang này chỉ dành cho người quản lý nội dung.",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "submit": "Đăng nhập",
+      "submitting": "Đang kiểm tra…",
+      "futureIdms": "Sau này đổi sang đăng nhập qua IDMS.",
+      "futureProviders": "Chỉ cần thay tệp providers/ — phần còn lại giữ nguyên.",
+      "errorMissing": "Chưa điền email hoặc mật khẩu. Điền cả hai ô rồi bấm Đăng nhập.",
+      "errorWrong": "Email hoặc mật khẩu không đúng. Gõ lại rồi bấm Đăng nhập. Sai 5 lần thì địa chỉ này bị chặn 15 phút.",
+      "errorRateLimited": "Địa chỉ này đã thử 5 lần trong 15 phút. Chờ {minutes} phút rồi bấm Đăng nhập lần nữa."
+    },
+    "overview": {
+      "title": "Tổng quan",
+      "scope": "{count, plural, =0 {Chưa có ứng dụng nào} other {# ứng dụng}}",
+      "draftsTitle": "Chưa công khai",
+      "draftsScope": "{count, plural, =0 {Không còn mục nào} other {# ứng dụng}}",
+      "draftsHint": "Những ứng dụng dưới đây không xuất hiện trên trang công khai. Mở mục Ứng dụng để bật công khai.",
+      "draftsEmpty": "Mọi ứng dụng đều đã công khai.",
+      "missingTitle": "Thiếu bản dịch",
+      "missingScope": "{count, plural, =0 {Không còn mục nào} other {# ứng dụng}}",
+      "missingHint": "Những ứng dụng dưới đây chưa có tên ở ngôn ngữ được liệt kê, nên trang công khai đang lùi về ngôn ngữ mặc định.",
+      "missingEmpty": "Mọi ứng dụng đều có tên ở đủ ngôn ngữ.",
+      "emptyTitle": "Chưa có ứng dụng nào",
+      "emptyBody": "Thêm ứng dụng đầu tiên ở mục Ứng dụng; nó hiện ra ngay trên trang công khai.",
+      "goToApps": "Mở danh sách ứng dụng"
+    },
+    "apps": {
+      "title": "Ứng dụng",
+      "scope": "{count, plural, =0 {Chưa có ứng dụng nào} other {# ứng dụng}}",
+      "orderHint": "Đổi thứ tự bằng hai nút mũi tên; lưu ngay sau mỗi lần bấm.",
+      "tableLabel": "Bảng ứng dụng, cuộn ngang được",
+      "colOrder": "Thứ tự",
+      "colName": "Tên hiển thị",
+      "colKind": "Phân loại",
+      "colStatus": "Trạng thái",
+      "colTranslations": "Bản dịch",
+      "colActions": "Hành động",
+      "noName": "Chưa có tên ở ngôn ngữ này",
+      "translationsComplete": "Đủ",
+      "moveUp": "Đưa {name} lên trên",
+      "moveDown": "Đưa {name} xuống dưới",
+      "publish": "Công khai",
+      "unpublish": "Chuyển về nháp",
+      "orderSaved": "Đã lưu thứ tự",
+      "statusSaved": "Đã lưu trạng thái",
+      "failed": "Không lưu được. {reason}",
+      "emptyTitle": "Chưa có ứng dụng nào",
+      "emptyBody": "Ứng dụng đầu tiên bạn thêm sẽ xuất hiện ở đây và trên trang công khai."
+    }
   },
   "error": {
     "title": "Trang này đang lỗi",

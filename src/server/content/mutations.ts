@@ -161,6 +161,71 @@ export async function saveApp(input: SaveAppInput): Promise<SavedApp> {
   return result.app;
 }
 
+/**
+ * Đổi riêng trạng thái publish của một ứng dụng.
+ *
+ * Không dùng `saveApp` cho việc này: `saveApp` ghi **toàn bộ** khối thông tin
+ * chung và cố tình đổi trường vắng mặt thành `null`. Bật/tắt publish từ bảng
+ * danh sách — nơi chỉ có slug, tên và trạng thái — mà đi qua `saveApp` sẽ xoá
+ * sạch `repoUrl`, `techStack`, `logoUrl` của ứng dụng đó mà không báo gì.
+ */
+export async function setAppStatus(id: string, status: AppInput["status"]): Promise<SavedApp> {
+  const app = await prisma.app.update({
+    where: { id },
+    data: { status },
+    select: { id: true, slug: true },
+  });
+
+  // Trạng thái publish quyết định app có trong danh sách công khai hay không:
+  // hàng thứ hai của bảng §8.3.
+  revalidateApp(app.slug);
+  revalidate(tags.nav());
+  revalidate(tags.appsList());
+
+  return app;
+}
+
+/**
+ * Sắp lại thứ tự ứng dụng. `ids` là danh sách **đầy đủ** theo đúng thứ tự mới;
+ * `order` lấy từ vị trí trong mảng, cùng quy ước với `saveFeatures`.
+ *
+ * Kiểm đủ số lượng trước khi ghi: gửi lên thiếu một id nghĩa là bảng phía trình
+ * duyệt đã cũ, và ghi tiếp sẽ để lại hai ứng dụng cùng `order`.
+ */
+export async function reorderApps(ids: string[]): Promise<void> {
+  const unique = new Set(ids);
+  if (unique.size !== ids.length) {
+    throw new Error("Danh sách thứ tự có ứng dụng bị lặp. Hãy tải lại trang rồi thử lại.");
+  }
+
+  const slugs = await prisma.$transaction(async (tx) => {
+    const total = await tx.app.count();
+    if (total !== ids.length) {
+      throw new Error(
+        `Danh sách thứ tự có ${ids.length} ứng dụng nhưng cơ sở dữ liệu có ${total}. ` +
+          "Có người vừa thêm hoặc xoá ứng dụng — hãy tải lại trang rồi sắp lại.",
+      );
+    }
+
+    const rows = await tx.app.findMany({ where: { id: { in: ids } }, select: { slug: true } });
+    if (rows.length !== ids.length) {
+      throw new Error("Danh sách thứ tự có ứng dụng không tồn tại. Hãy tải lại trang rồi thử lại.");
+    }
+
+    for (const [index, id] of ids.entries()) {
+      await tx.app.update({ where: { id }, data: { order: index } });
+    }
+
+    return rows.map((row) => row.slug);
+  });
+
+  // Thứ tự đổi làm lệch cả trang chủ, trang danh sách và sidebar.
+  for (const slug of slugs) revalidate(tags.app(slug));
+  revalidate(tags.searchIndex());
+  revalidate(tags.nav());
+  revalidate(tags.appsList());
+}
+
 /** Làm mới nội dung một app; slug đổi thì làm mới cả tag cũ. */
 function revalidateApp(slug: string, previousSlug?: string | null): void {
   revalidate(tags.app(slug));

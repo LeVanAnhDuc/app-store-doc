@@ -100,7 +100,77 @@
     "addSection": "Add section",
     "missingTranslation": "Missing translation",
     "signIn": "Sign in",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "signedInAs": "Signed in as",
+    "notReady": "This section is not built yet",
+    "nav": {
+      "label": "Admin navigation",
+      "overview": "Overview",
+      "apps": "Apps",
+      "docs": "Guide pages",
+      "media": "Images",
+      "locales": "Languages"
+    },
+    "kind": {
+      "core": "Core",
+      "satellite": "Satellite"
+    },
+    "publishState": {
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived"
+    },
+    "login": {
+      "title": "Admin sign-in",
+      "subtitle": "This page is for content managers only.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Sign in",
+      "submitting": "Checking…",
+      "futureIdms": "This will move to signing in through IDMS.",
+      "futureProviders": "Only the providers/ files change — everything else stays.",
+      "errorMissing": "Email or password is empty. Fill both fields, then press Sign in.",
+      "errorWrong": "That email and password do not match. Retype them and press Sign in. After 5 failures this address is blocked for 15 minutes.",
+      "errorRateLimited": "This address has made 5 attempts in 15 minutes. Wait {minutes} minutes, then press Sign in again."
+    },
+    "overview": {
+      "title": "Overview",
+      "scope": "{count, plural, =0 {No apps yet} one {# app} other {# apps}}",
+      "draftsTitle": "Not published",
+      "draftsScope": "{count, plural, =0 {Nothing left} one {# app} other {# apps}}",
+      "draftsHint": "These apps do not appear on the public site. Open the Apps section to publish them.",
+      "draftsEmpty": "Every app is published.",
+      "missingTitle": "Missing translations",
+      "missingScope": "{count, plural, =0 {Nothing left} one {# app} other {# apps}}",
+      "missingHint": "These apps have no name in the languages listed, so the public site falls back to the default language.",
+      "missingEmpty": "Every app has a name in every language.",
+      "emptyTitle": "No apps yet",
+      "emptyBody": "Add the first app in the Apps section; it shows up on the public site right away.",
+      "goToApps": "Open the app list"
+    },
+    "apps": {
+      "title": "Apps",
+      "scope": "{count, plural, =0 {No apps yet} one {# app} other {# apps}}",
+      "orderHint": "Reorder with the two arrow buttons; each press saves immediately.",
+      "tableLabel": "App table, scrolls horizontally",
+      "colOrder": "Order",
+      "colName": "Display name",
+      "colKind": "Kind",
+      "colStatus": "Status",
+      "colTranslations": "Translations",
+      "colActions": "Actions",
+      "noName": "No name in this language yet",
+      "translationsComplete": "Complete",
+      "moveUp": "Move {name} up",
+      "moveDown": "Move {name} down",
+      "publish": "Publish",
+      "unpublish": "Back to draft",
+      "orderSaved": "Order saved",
+      "statusSaved": "Status saved",
+      "failed": "Not saved. {reason}",
+      "emptyTitle": "No apps yet",
+      "emptyBody": "The first app you add shows up here and on the public site."
+    }
   },
   "error": {
     "title": "This page is broken",
