@@ -30,6 +30,7 @@ CREATE TABLE "App" (
     "apiRepoUrl" TEXT,
     "demoUrl" TEXT,
     "isRepoPrivate" BOOLEAN NOT NULL DEFAULT false,
+    "isStandalone" BOOLEAN NOT NULL DEFAULT false,
     "techStack" TEXT[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,

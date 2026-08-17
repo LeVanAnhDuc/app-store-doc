@@ -33,6 +33,9 @@ export const appInputSchema = z.object({
   demoUrl: externalUrlSchema,
   // Repo private thì ẩn liên kết và hiện badge thay vì để link 404 (spec §6.3).
   isRepoPrivate: z.boolean().default(false),
+  // Chạy độc lập, không backend, không dự kiến nối IDMS. Người viết nội dung bật
+  // tay: hệ thống không tự suy diễn trạng thái tích hợp (spec §2, R7).
+  isStandalone: z.boolean().default(false),
   techStack: z.array(z.string()).default([]),
 });
 

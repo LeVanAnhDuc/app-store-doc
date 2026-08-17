@@ -46,6 +46,10 @@ model App {
   apiRepoUrl    String? // cho app có cặp client/api
   demoUrl       String?
   isRepoPrivate Boolean          @default(false) // ẩn link, hiện badge "Private"
+  // Ứng dụng chạy độc lập, không có backend và không dự kiến nối IDMS.
+  // Cờ này do người viết nội dung bật, KHÔNG suy diễn từ dữ liệu khác (spec §2, R7):
+  // "không có apiRepoUrl" không đồng nghĩa với "không có backend".
+  isStandalone  Boolean          @default(false)
   techStack     String[]
   translations  AppTranslation[]
   features      Feature[]
