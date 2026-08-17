@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "ecosystem": "Hệ sinh thái",
+    "apps": "Ứng dụng",
+    "guides": "Hướng dẫn",
+    "api": "API"
+  },
+  "search": {
+    "placeholder": "Tìm ứng dụng, hướng dẫn…",
+    "empty": "Không tìm thấy kết quả nào."
+  },
+  "app": {
+    "features": "Tính năng",
+    "techStack": "Công nghệ sử dụng",
+    "viewRepo": "Xem repo",
+    "privateRepo": "Repo riêng tư"
+  },
+  "toc": {
+    "title": "Trong trang này"
+  },
+  "fallback": {
+    "notice": "Nội dung này chưa có bản dịch, đang hiển thị theo ngôn ngữ mặc định."
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "body": "Đường dẫn này không tồn tại hoặc nội dung đã được gỡ."
+  },
+  "admin": {
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "preview": "Xem trước",
+    "addFeature": "Thêm tính năng",
+    "addSection": "Thêm mục",
+    "missingTranslation": "Thiếu bản dịch",
+    "signIn": "Đăng nhập",
+    "signOut": "Đăng xuất"
+  },
+  "error": {
+    "retry": "Thử lại"
+  }
+}

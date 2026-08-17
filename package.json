@@ -5,7 +5,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node -e \"console.log('prebuild: chưa có bước sinh locale, xem Task 7')\"",
+    "prebuild": "tsx scripts/generate-locales.ts",
     "build": "next build",
     "start": "next start",
     "test": "vitest",

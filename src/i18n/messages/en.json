@@ -1,0 +1,41 @@
+{
+  "nav": {
+    "ecosystem": "Ecosystem",
+    "apps": "Apps",
+    "guides": "Guides",
+    "api": "API"
+  },
+  "search": {
+    "placeholder": "Search apps, guides…",
+    "empty": "No results found."
+  },
+  "app": {
+    "features": "Features",
+    "techStack": "Tech stack",
+    "viewRepo": "View repo",
+    "privateRepo": "Private repo"
+  },
+  "toc": {
+    "title": "On this page"
+  },
+  "fallback": {
+    "notice": "This content has not been translated yet; showing the default language."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This address does not exist, or the content has been removed."
+  },
+  "admin": {
+    "save": "Save",
+    "saved": "Saved",
+    "preview": "Preview",
+    "addFeature": "Add feature",
+    "addSection": "Add section",
+    "missingTranslation": "Missing translation",
+    "signIn": "Sign in",
+    "signOut": "Sign out"
+  },
+  "error": {
+    "retry": "Retry"
+  }
+}
