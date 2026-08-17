@@ -1,0 +1,104 @@
+/* ============================================================
+   TOKENS — nguồn duy nhất cho màu và chữ của toàn site.
+   Sáng là bảng gốc. Hai khối tối chỉ ĐỊNH NGHĨA LẠI token,
+   không bao giờ style component.
+   Giá trị chép từ docs/design/design-rules.md §2, §3
+   và mockup đã duyệt docs/design/mockups/index.html.
+   ============================================================ */
+:root {
+  --bg:        #FBFBFD;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F4F8;
+  --line:      #E3E3EC;
+  --line-soft: #EEEEF4;
+  --ink:       #15151E;
+  --muted:     #6A6A7C;
+  --accent:    #4B2ED4;
+  --accent-bg: #EEEBFC;
+
+  /* Bốn màu trạng thái chỉ dùng cho trạng thái, không trang trí. */
+  --st-core:         #4B2ED4;
+  --st-core-bg:      #EEEBFC;
+  --st-connected:    #0E7C63;
+  --st-connected-bg: #E2F3EE;
+  --st-standalone:   #8A5A08;
+  --st-standalone-bg:#F8EFDD;
+  --st-planned:      #6A6A7C;
+  --st-planned-bg:   #EEEEF4;
+  --st-private:      #A82F49;
+  --st-private-bg:   #FAE7EB;
+
+  --shadow: 0 1px 2px rgba(21, 21, 30, .05), 0 8px 24px -12px rgba(21, 21, 30, .14);
+
+  /* Không webfont: bộ chữ phủ đủ dấu tiếng Việt đều nặng. */
+  --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", "Cascadia Code", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  /* Bậc cỡ chữ — đừng chèn cỡ ngoài bậc. */
+  --t-xs:  11.5px;
+  --t-sm:  13px;
+  --t-md:  15px;
+  --t-lg:  17px;
+  --t-xl:  21px;
+  --t-2xl: 28px;
+  --t-3xl: 38px;
+
+  /* Tiếng Việt có dấu chồng (ế ữ ộ ằ ể) — leading rộng để dấu không chạm dòng trên. */
+  --lh-body: 1.75;
+  --lh-head: 1.18;
+
+  /* Đo dòng văn xuôi tối đa. */
+  --measure: 66ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #0B0B11;
+    --surface:   #13131B;
+    --surface-2: #1A1A24;
+    --line:      #272733;
+    --line-soft: #1F1F29;
+    --ink:       #ECECF3;
+    --muted:     #8E8EA3;
+    --accent:    #9B7CFF;
+    --accent-bg: #211A3D;
+
+    --st-core:         #9B7CFF;
+    --st-core-bg:      #211A3D;
+    --st-connected:    #3FBE9C;
+    --st-connected-bg: #10322A;
+    --st-standalone:   #D9A441;
+    --st-standalone-bg:#332714;
+    --st-planned:      #8E8EA3;
+    --st-planned-bg:   #22222D;
+    --st-private:      #E2647E;
+    --st-private-bg:   #37151F;
+
+    --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0B0B11;
+  --surface:   #13131B;
+  --surface-2: #1A1A24;
+  --line:      #272733;
+  --line-soft: #1F1F29;
+  --ink:       #ECECF3;
+  --muted:     #8E8EA3;
+  --accent:    #9B7CFF;
+  --accent-bg: #211A3D;
+
+  --st-core:         #9B7CFF;
+  --st-core-bg:      #211A3D;
+  --st-connected:    #3FBE9C;
+  --st-connected-bg: #10322A;
+  --st-standalone:   #D9A441;
+  --st-standalone-bg:#332714;
+  --st-planned:      #8E8EA3;
+  --st-planned-bg:   #22222D;
+  --st-private:      #E2647E;
+  --st-private-bg:   #37151F;
+
+  --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 8px 24px -12px rgba(0, 0, 0, .7);
+}

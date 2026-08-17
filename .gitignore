@@ -24,3 +24,6 @@ next-env.d.ts
 *.tsbuildinfo
 
 superdesign/design_iterations/
+
+# next
+.next/

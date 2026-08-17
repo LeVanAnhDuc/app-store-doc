@@ -1,0 +1,66 @@
+@import "tailwindcss";
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  /* Neo màu nền ngay ở gốc để không loé nền trắng khi chủ đề tối. */
+  background: var(--bg);
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: var(--t-md);
+  line-height: var(--lh-body);
+  -webkit-font-smoothing: antialiased;
+  /* Thân trang không bao giờ cuộn ngang — bảng và khối mã tự cuộn trong hộp riêng. */
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  line-height: var(--lh-head);
+  text-wrap: balance;
+}
+
+/* Tracking âm chỉ áp cho cỡ từ 24px trở lên; cỡ nhỏ hơn sẽ ép dấu tiếng Việt. */
+h1 {
+  letter-spacing: -0.022em;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: var(--mono);
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Tiêu điểm bàn phím phải thấy được ở mọi phần tử tương tác. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
