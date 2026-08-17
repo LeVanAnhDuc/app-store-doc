@@ -61,6 +61,7 @@ Tính đến 17.08.2026, chưa ứng dụng vệ tinh nào thực sự nối và
 
 | Việc | Tài liệu |
 |---|---|
+| **Quay lại dự án — đang làm tới đâu, còn nợ gì** | **[`docs/status.md`](docs/status.md) — mở file này trước** |
 | **Dựng hạ tầng, deploy, chạy test cần DB** | **[`docs/operations.md`](docs/operations.md)** |
 | **Dựng bất kỳ giao diện nào** | **[`docs/design/design-rules.md`](docs/design/design-rules.md) — bắt buộc** |
 | Giao diện đã được duyệt | [`docs/design/mockups/index.html`](docs/design/mockups/index.html) — mở trực tiếp bằng trình duyệt |

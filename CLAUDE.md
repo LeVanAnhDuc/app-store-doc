@@ -7,6 +7,7 @@ Next.js 16 · Prisma 7 · PostgreSQL (Neon) · Auth.js · next-intl · Cloudflar
 
 | Việc | Tài liệu |
 |---|---|
+| **Bắt đầu phiên mới — đang làm tới đâu, còn nợ gì** | **[`docs/status.md`](docs/status.md) — đọc trước tiên** |
 | **Dựng bất kỳ giao diện nào** | **[`docs/design/design-rules.md`](docs/design/design-rules.md) — bắt buộc** |
 | Kiến trúc, data model, i18n, auth | [`docs/superpowers/specs/2026-08-17-app-store-doc-design.md`](docs/superpowers/specs/2026-08-17-app-store-doc-design.md) |
 | Giao diện đã được duyệt | [`docs/design/mockups/index.html`](docs/design/mockups/index.html) — mở bằng trình duyệt |
