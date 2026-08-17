@@ -1,0 +1,77 @@
+/* Thẻ ứng dụng — hình khối chép từ `.m-card` trong mockup đã duyệt.
+   Đường kẻ thay cho đổ bóng (design-rules §5): thẻ nằm trong luồng, không nổi lên. */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 16px;
+  background: var(--surface);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Tên hiển thị: đây là tiêu đề của thẻ, và chỉ có tên hiển thị ở đây. */
+.name {
+  margin: 0;
+  min-width: 0;
+  font-size: 14.5px;
+  font-weight: 650;
+  line-height: var(--lh-head);
+  letter-spacing: -0.012em;
+}
+
+.nameLink {
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.nameLink:hover {
+  color: var(--accent);
+}
+
+/* Slug repo luôn ở vai phụ: mono, cỡ nhỏ, màu --muted (design-rules §1). */
+.slug {
+  margin: 0;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.slugLink {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid var(--line);
+}
+
+.slugLink:hover {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+.tagline {
+  margin: 0;
+  font-size: 12.5px;
+  /* Văn xuôi: leading không dưới 1.7 vì dấu tiếng Việt chồng nhau. */
+  line-height: 1.7;
+  color: var(--muted);
+  overflow-wrap: break-word;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 3px;
+}

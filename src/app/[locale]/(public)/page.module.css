@@ -1,0 +1,124 @@
+/* Trang chủ — bố cục chép từ mockup màn 01: hero (eyebrow → h1 → lede → sơ đồ
+   đấu nối → chú giải) rồi tới lưới thẻ ứng dụng. */
+
+.hero {
+  padding: 52px 44px 44px;
+  border-bottom: 1px solid var(--line);
+}
+
+/* Nhãn mono viết hoa, giãn chữ — bậc 11.5px của design-rules §3. */
+.eyebrow {
+  margin: 0 0 16px;
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.title {
+  margin: 0 0 14px;
+  max-width: 20ch;
+  font-size: var(--t-3xl);
+  font-weight: 700;
+  line-height: var(--lh-head);
+  letter-spacing: -0.025em;
+  text-wrap: balance;
+}
+
+.lede {
+  margin: 0;
+  max-width: 58ch;
+  font-size: var(--t-md);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+.wire {
+  margin-top: 38px;
+  /* Sơ đồ tự co ở màn hẹp, nhưng nếu nội dung vẫn tràn thì cuộn trong hộp
+     riêng chứ không đẩy cả thân trang cuộn ngang (design-rules §5, §9). */
+  overflow-x: auto;
+}
+
+/* -- màn hình trống: lời mời hành động, không phải chỗ than thở -- */
+.empty {
+  margin-top: 38px;
+  max-width: 58ch;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 20px;
+  background: var(--surface);
+}
+
+.emptyTitle {
+  margin: 0 0 6px;
+  font-size: var(--t-lg);
+  font-weight: 600;
+  line-height: var(--lh-head);
+}
+
+.emptyBody {
+  margin: 0;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+/* -- lưới thẻ ứng dụng -- */
+.apps {
+  padding: 40px 44px 48px;
+}
+
+.sectionLabel {
+  margin: 0 0 18px;
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+@media (max-width: 980px) {
+  .hero {
+    padding: 40px 24px 32px;
+  }
+
+  .apps {
+    padding: 32px 24px 40px;
+  }
+
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Đáp ứng tới 375px: lưới gập thành một cột, tiêu đề lùi một bậc cỡ chữ. */
+@media (max-width: 720px) {
+  .hero {
+    padding: 32px 16px 28px;
+  }
+
+  .title {
+    font-size: var(--t-2xl);
+    max-width: none;
+  }
+
+  .wire {
+    margin-top: 28px;
+  }
+
+  .apps {
+    padding: 28px 16px 36px;
+  }
+
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

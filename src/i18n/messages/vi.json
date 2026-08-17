@@ -1,18 +1,59 @@
 {
+  "brand": {
+    "name": "Atlas",
+    "home": "Về trang chủ"
+  },
   "nav": {
+    "label": "Điều hướng chính",
     "ecosystem": "Hệ sinh thái",
     "apps": "Ứng dụng",
     "guides": "Hướng dẫn",
     "api": "API"
   },
+  "locale": {
+    "label": "Ngôn ngữ"
+  },
   "search": {
     "placeholder": "Tìm ứng dụng, hướng dẫn…",
-    "empty": "Không tìm thấy kết quả nào."
+    "empty": "Không tìm thấy kết quả nào.",
+    "open": "Tìm kiếm",
+    "shortcut": "⌘K",
+    "label": "Tìm trong tài liệu",
+    "hint": "Gõ để tìm ứng dụng và trang hướng dẫn.",
+    "loading": "Đang tải chỉ mục tìm kiếm…",
+    "error": "Không tải được chỉ mục tìm kiếm. Đóng hộp thoại rồi mở lại để thử lần nữa.",
+    "close": "Đóng"
+  },
+  "status": {
+    "core": "Lõi",
+    "connected": "Đã nối",
+    "planned": "Dự kiến nối",
+    "standalone": "Độc lập",
+    "private": "Repo riêng tư"
+  },
+  "legend": {
+    "title": "Chú giải",
+    "items": "Ứng dụng trong hệ sinh thái",
+    "connected": "Đã nối OAuth",
+    "planned": "Dự kiến nối",
+    "private": "Repo riêng tư",
+    "standalone": "Chạy độc lập"
+  },
+  "home": {
+    "eyebrow": "{count, plural, =0 {Chưa có ứng dụng nào} other {# ứng dụng}} · 1 máy chủ định danh",
+    "title": "Một tài khoản, mọi ứng dụng.",
+    "lede": "IDMS cấp danh tính cho toàn bộ hệ sinh thái. Trang này ghi lại từng ứng dụng làm gì, chạy thế nào, và nối vào IDMS ra sao.",
+    "core": "IDMS",
+    "appsLabel": "Bắt đầu từ đâu",
+    "emptyTitle": "Chưa có ứng dụng nào ở đây",
+    "emptyBody": "Thêm ứng dụng đầu tiên trong trang quản trị, nó hiện ra ngay trên trang này.",
+    "description": "Tài liệu công khai cho hệ sinh thái ứng dụng quanh máy chủ định danh IDMS."
   },
   "app": {
     "features": "Tính năng",
     "techStack": "Công nghệ sử dụng",
     "viewRepo": "Xem repo",
+    "viewRepoOnGithub": "Xem trên GitHub",
     "privateRepo": "Repo riêng tư"
   },
   "toc": {

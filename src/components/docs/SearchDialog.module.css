@@ -1,0 +1,159 @@
+/* Hộp tìm kiếm — nút bấm chép hình khối từ `.m-search` / `.m-kbd` của mockup.
+   Hộp thoại là vật thể thực sự nổi lên nên đây là một trong số ít chỗ được
+   dùng đổ bóng (design-rules §5). */
+
+.trigger {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 5px 10px;
+  background: var(--surface);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: 12.5px;
+  line-height: 1.7;
+  cursor: pointer;
+}
+
+.trigger:hover {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.kbd {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+
+/* -- hộp thoại -- */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  justify-content: center;
+  padding: 12vh 16px 16px;
+  /* Nền mờ lấy từ token, không mã màu tay. */
+  background: color-mix(in srgb, var(--ink) 32%, transparent);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: min(560px, 100%);
+  max-height: 70vh;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+
+.input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: var(--t-md);
+  line-height: var(--lh-body);
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+.close {
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 3px 8px;
+  background: var(--surface-2);
+  color: var(--muted);
+  font-family: inherit;
+  font-size: var(--t-xs);
+  cursor: pointer;
+}
+
+.close:hover {
+  color: var(--ink);
+}
+
+.body {
+  overflow-y: auto;
+  padding: 8px;
+}
+
+.note {
+  margin: 0;
+  padding: 10px 8px;
+  color: var(--muted);
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.results {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+
+.result {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 5px;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.result:hover {
+  background: var(--accent-bg);
+}
+
+.resultTitle {
+  font-size: var(--t-sm);
+  font-weight: 560;
+  line-height: 1.7;
+}
+
+/* Đường dẫn ở vai phụ: mono, cỡ nhỏ, màu --muted. */
+.resultHref {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 720px) {
+  /* Trên điện thoại, nhãn chữ nhường chỗ; giữ nút để vẫn bấm được. */
+  .trigger {
+    gap: 10px;
+  }
+
+  .kbd {
+    display: none;
+  }
+
+  .overlay {
+    padding: 6vh 10px 10px;
+  }
+}

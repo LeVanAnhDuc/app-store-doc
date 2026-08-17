@@ -1,0 +1,113 @@
+/* Thanh trên cùng — hình khối chép từ `.m-top` và các lớp con trong mockup đã duyệt. */
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 52px;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: var(--ink);
+  font-weight: 660;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.brandMark {
+  width: 18px;
+  height: 18px;
+  flex: none;
+  border-radius: 4px;
+  background: var(--accent);
+  /* --bg tương phản với --accent ở cả chủ đề sáng lẫn tối. Không mã màu tay. */
+  color: var(--bg);
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  min-width: 0;
+}
+
+.navLink {
+  color: var(--muted);
+  font-size: 13.5px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navLink:hover {
+  color: var(--ink);
+}
+
+.navLink[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 560;
+}
+
+.right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.langs {
+  display: flex;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.lang {
+  padding: 4px 8px;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.lang:hover {
+  color: var(--ink);
+}
+
+.lang[aria-current="true"] {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Đáp ứng tới 375px: điều hướng xuống dòng dưới thương hiệu, không cuộn ngang. */
+@media (max-width: 720px) {
+  .top {
+    flex-wrap: wrap;
+    gap: 10px 14px;
+    padding: 10px 16px;
+  }
+
+  .nav {
+    order: 3;
+    width: 100%;
+    gap: 14px;
+    font-size: var(--t-sm);
+  }
+
+  .right {
+    gap: 8px;
+  }
+}
