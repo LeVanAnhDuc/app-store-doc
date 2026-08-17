@@ -1,0 +1,20 @@
+/* Khối "Mục nội dung" — `.m-add` và màn hình trống của mockup màn 04. */
+
+.add {
+  padding: 3px 9px;
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  background: none;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* Màn hình trống là lời mời hành động, không phải chỗ than thở. */
+.empty {
+  margin: 0;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}

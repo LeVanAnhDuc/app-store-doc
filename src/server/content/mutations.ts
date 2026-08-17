@@ -3,7 +3,7 @@ import { revalidateTag } from "next/cache";
 import { ensureUniqueAnchors } from "@/lib/slug";
 import type { AppInput, DocPageInput, FeatureInput, SectionInput } from "@/lib/schemas";
 import { prisma } from "@/server/db";
-import { assertSingleDefaultLocale } from "./resolve";
+import { assertSingleDefaultLocale, planContentSave } from "./resolve";
 import { tags } from "./tags";
 
 /**
@@ -250,17 +250,25 @@ export type FeatureItemInput = FeatureInput & { id?: string };
 export type SaveFeaturesInput = {
   /** Ứng dụng sở hữu, định danh bằng slug vì đó là thứ tag cache dùng. */
   appSlug: string;
+  /** Ngôn ngữ của **tiêu đề và mô tả** trong danh sách; cấu trúc thì dùng chung. */
   locale: string;
-  /** Danh sách **đầy đủ** theo đúng thứ tự hiển thị. Thiếu mục nào là xoá mục đó. */
+  /**
+   * Cấu trúc **đầy đủ** theo đúng thứ tự hiển thị. Mục vắng mặt là mục bị xoá;
+   * mục có tiêu đề rỗng chỉ là mục chưa dịch sang `locale` — xem `planContentSave`.
+   */
   features: FeatureItemInput[];
 };
 
 /**
- * Ghi đè toàn bộ danh sách tính năng của một app.
+ * Ghi cấu trúc danh sách tính năng của một app, cộng bản dịch của **một** ngôn ngữ.
  *
  * Thứ tự lấy từ vị trí trong mảng, không lấy từ `order` gửi lên: kéo thả trong
  * CMS là thứ tự hiển thị thật (spec §8.2.4), và hai nguồn thứ tự song song thì
  * sớm muộn cũng lệch nhau.
+ *
+ * Tiêu đề rỗng **không** xoá mục: nó gỡ đúng bản dịch của `locale` và để nguyên
+ * bản dịch của mọi ngôn ngữ khác. Nhờ vậy dịch dần sang ngôn ngữ thứ hai là việc
+ * làm được — trước đây gửi danh sách còn mục chưa dịch là xoá sạch những mục đó.
  */
 export async function saveFeatures(input: SaveFeaturesInput): Promise<void> {
   const { appSlug, locale, features } = input;
@@ -269,43 +277,53 @@ export async function saveFeatures(input: SaveFeaturesInput): Promise<void> {
     const app = await tx.app.findUnique({ where: { slug: appSlug }, select: { id: true } });
     if (!app) throw new Error(`Không tìm thấy ứng dụng có slug "${appSlug}".`);
 
-    const keptIds = features.map((f) => f.id).filter((id): id is string => Boolean(id));
-    if (keptIds.length) {
-      const owned = await tx.feature.count({ where: { appId: app.id, id: { in: keptIds } } });
-      if (owned !== new Set(keptIds).size) {
-        throw new Error(
-          `Danh sách gửi lên có tính năng không thuộc ứng dụng "${appSlug}". ` +
-            "Hãy tải lại trang soạn thảo rồi thử lại.",
-        );
-      }
+    const existing = await tx.feature.findMany({
+      where: { appId: app.id },
+      select: { id: true },
+    });
+    const plan = planContentSave(features, existing.map((row) => row.id));
+
+    if (plan.foreignIds.length) {
+      throw new Error(
+        `Danh sách gửi lên có tính năng không thuộc ứng dụng "${appSlug}" ` +
+          `(${plan.foreignIds.join(", ")}). Hãy tải lại trang soạn thảo rồi thử lại.`,
+      );
     }
 
-    await tx.feature.deleteMany({
-      where: keptIds.length ? { appId: app.id, id: { notIn: keptIds } } : { appId: app.id },
-    });
+    if (plan.removedIds.length) {
+      await tx.feature.deleteMany({ where: { appId: app.id, id: { in: plan.removedIds } } });
+    }
 
-    for (const [index, feature] of features.entries()) {
-      const row = feature.id
+    for (const planned of plan.items) {
+      const feature = planned.item;
+      const row = planned.id
         ? await tx.feature.update({
-            where: { id: feature.id },
-            data: { order: index, icon: feature.icon ?? null },
+            where: { id: planned.id },
+            data: { order: planned.order, icon: feature.icon ?? null },
             select: { id: true },
           })
         : await tx.feature.create({
-            data: { appId: app.id, order: index, icon: feature.icon ?? null },
+            data: { appId: app.id, order: planned.order, icon: feature.icon ?? null },
             select: { id: true },
           });
 
-      await tx.featureTranslation.upsert({
-        where: { featureId_locale: { featureId: row.id, locale } },
-        create: {
-          featureId: row.id,
-          locale,
-          title: feature.title,
-          description: feature.description ?? null,
-        },
-        update: { title: feature.title, description: feature.description ?? null },
-      });
+      if (planned.translated) {
+        await tx.featureTranslation.upsert({
+          where: { featureId_locale: { featureId: row.id, locale } },
+          create: {
+            featureId: row.id,
+            locale,
+            title: feature.title.trim(),
+            description: feature.description ?? null,
+          },
+          update: { title: feature.title.trim(), description: feature.description ?? null },
+        });
+      } else {
+        // Chỉ gỡ bản dịch của đúng ngôn ngữ này. `deleteMany` chứ không `delete`:
+        // ngôn ngữ chưa từng được dịch thì không có gì để gỡ, và đó là chuyện
+        // bình thường, không phải lỗi.
+        await tx.featureTranslation.deleteMany({ where: { featureId: row.id, locale } });
+      }
     }
   });
 
@@ -324,17 +342,28 @@ export type SectionItemInput = SectionInput & { id?: string };
 
 export type SaveSectionsInput = {
   owner: SectionOwner;
+  /** Ngôn ngữ của **tiêu đề và thân bài**; anchor và thứ tự thì dùng chung. */
   locale: string;
-  /** Danh sách **đầy đủ** theo đúng thứ tự hiển thị. Thiếu mục nào là xoá mục đó. */
+  /**
+   * Cấu trúc **đầy đủ** theo đúng thứ tự hiển thị. Mục vắng mặt là mục bị xoá;
+   * mục có tiêu đề rỗng chỉ là mục chưa dịch sang `locale`.
+   */
   sections: SectionItemInput[];
 };
 
 /**
- * Ghi đè toàn bộ mục nội dung của một app hoặc một trang tài liệu.
+ * Ghi cấu trúc mục nội dung của một app hoặc một trang tài liệu, cộng bản dịch
+ * của **một** ngôn ngữ.
  *
  * Anchor trùng bị chặn **trước khi** ghi: trùng anchor thì trang vẫn render bình
  * thường, chỉ có mục lục và liên kết `#` nhảy sai chỗ — lỗi im lặng mà chỉ người
- * đọc phát hiện ra (spec §6.4).
+ * đọc phát hiện ra (spec §6.4). Anchor là cấu trúc nên nó bắt buộc ở mọi lần
+ * lưu, kể cả khi mục chưa có bản dịch nào.
+ *
+ * Tiêu đề rỗng gỡ đúng bản dịch của `locale` và giữ nguyên các ngôn ngữ khác.
+ * Thân bài đi cùng tiêu đề: một mục không có tiêu đề thì không có dòng mục lục
+ * và không có thẻ tiêu đề, nên nó không phải "bản dịch một nửa" mà là **chưa có
+ * bản dịch**.
  */
 export async function saveSections(input: SaveSectionsInput): Promise<void> {
   const { owner, locale, sections } = input;
@@ -350,38 +379,42 @@ export async function saveSections(input: SaveSectionsInput): Promise<void> {
   await prisma.$transaction(async (tx) => {
     const link = await resolveSectionOwner(tx, owner);
 
-    const keptIds = sections.map((s) => s.id).filter((id): id is string => Boolean(id));
-    if (keptIds.length) {
-      const owned = await tx.section.count({ where: { ...link, id: { in: keptIds } } });
-      if (owned !== new Set(keptIds).size) {
-        throw new Error(
-          "Danh sách gửi lên có mục nội dung không thuộc trang này. " +
-            "Hãy tải lại trang soạn thảo rồi thử lại.",
-        );
-      }
+    const existing = await tx.section.findMany({ where: link, select: { id: true } });
+    const plan = planContentSave(sections, existing.map((row) => row.id));
+
+    if (plan.foreignIds.length) {
+      throw new Error(
+        "Danh sách gửi lên có mục nội dung không thuộc trang này " +
+          `(${plan.foreignIds.join(", ")}). Hãy tải lại trang soạn thảo rồi thử lại.`,
+      );
     }
 
-    await tx.section.deleteMany({
-      where: keptIds.length ? { ...link, id: { notIn: keptIds } } : link,
-    });
+    if (plan.removedIds.length) {
+      await tx.section.deleteMany({ where: { ...link, id: { in: plan.removedIds } } });
+    }
 
-    for (const [index, section] of sections.entries()) {
-      const row = section.id
+    for (const planned of plan.items) {
+      const section = planned.item;
+      const row = planned.id
         ? await tx.section.update({
-            where: { id: section.id },
-            data: { order: index, anchor: section.anchor },
+            where: { id: planned.id },
+            data: { order: planned.order, anchor: section.anchor },
             select: { id: true },
           })
         : await tx.section.create({
-            data: { ...link, order: index, anchor: section.anchor },
+            data: { ...link, order: planned.order, anchor: section.anchor },
             select: { id: true },
           });
 
-      await tx.sectionTranslation.upsert({
-        where: { sectionId_locale: { sectionId: row.id, locale } },
-        create: { sectionId: row.id, locale, title: section.title, body: section.body },
-        update: { title: section.title, body: section.body },
-      });
+      if (planned.translated) {
+        await tx.sectionTranslation.upsert({
+          where: { sectionId_locale: { sectionId: row.id, locale } },
+          create: { sectionId: row.id, locale, title: section.title.trim(), body: section.body },
+          update: { title: section.title.trim(), body: section.body },
+        });
+      } else {
+        await tx.sectionTranslation.deleteMany({ where: { sectionId: row.id, locale } });
+      }
     }
   });
 
@@ -418,6 +451,14 @@ export type SaveDocPageInput = DocPageInput & { id?: string; locale: string };
 
 export type SavedDocPage = { id: string; slug: string };
 
+/**
+ * Ghi khối không theo ngôn ngữ của một trang tài liệu, cộng bản dịch của `locale`.
+ *
+ * `title` rỗng theo đúng quy ước của `saveFeatures`/`saveSections`: ngôn ngữ đó
+ * chưa có bản dịch, nên bản dịch của nó được gỡ và các ngôn ngữ khác giữ nguyên.
+ * Trang không còn bản dịch nào ở ngôn ngữ mặc định sẽ không hiện trên site công
+ * khai (`resolveTranslation` trả `null`) — đó là hiện trạng đúng, không phải lỗi.
+ */
 export async function saveDocPage(input: SaveDocPageInput): Promise<SavedDocPage> {
   const { id, locale, title, description, ...general } = input;
 
@@ -442,11 +483,20 @@ export async function saveDocPage(input: SaveDocPageInput): Promise<SavedDocPage
           ? await tx.docPage.update({ where: { id }, data, select: { id: true, slug: true } })
           : await tx.docPage.create({ data, select: { id: true, slug: true } });
 
-        await tx.docPageTranslation.upsert({
-          where: { docPageId_locale: { docPageId: page.id, locale } },
-          create: { docPageId: page.id, locale, title, description: description ?? null },
-          update: { title, description: description ?? null },
-        });
+        if (title.trim() === "") {
+          await tx.docPageTranslation.deleteMany({ where: { docPageId: page.id, locale } });
+        } else {
+          await tx.docPageTranslation.upsert({
+            where: { docPageId_locale: { docPageId: page.id, locale } },
+            create: {
+              docPageId: page.id,
+              locale,
+              title: title.trim(),
+              description: description ?? null,
+            },
+            update: { title: title.trim(), description: description ?? null },
+          });
+        }
 
         return { page, previousSlug: before?.slug ?? null };
       }),
@@ -492,6 +542,51 @@ export async function setLocaleEnabled(code: string, enabled: boolean): Promise<
   // Spec §8.3 chỉ đòi `nav`. Làm mới thêm hai tag kia vì cả danh sách app lẫn
   // chỉ mục tìm kiếm đều được cache **theo locale**: bỏ sót chúng thì ngôn ngữ
   // vừa tắt vẫn tiếp tục được phục vụ từ cache cho tới lần ghi nội dung kế tiếp.
+  revalidate(tags.nav());
+  revalidate(tags.appsList());
+  revalidate(tags.searchIndex());
+}
+
+/**
+ * Đặt một ngôn ngữ làm mặc định.
+ *
+ * Mặc định là đích của toàn bộ cơ chế fallback, nên hai điều kiện phải đúng cùng
+ * lúc và cùng nằm trong một transaction: đúng **một** dòng `isDefault`, và dòng
+ * đó đang **bật**. `assertSingleDefaultLocale` kiểm cả hai ngay trước khi cam kết
+ * — hỏng thì transaction cuộn lại và DB không bao giờ ở trạng thái sai.
+ *
+ * Ngôn ngữ đang tắt bị từ chối thẳng thay vì tự bật giúp: tự bật là làm hai việc
+ * người dùng chỉ yêu cầu một, mà việc thứ hai thì đổi cả site công khai.
+ */
+export async function setDefaultLocale(code: string): Promise<void> {
+  await prisma.$transaction(async (tx) => {
+    const target = await tx.locale.findUnique({
+      where: { code },
+      select: { code: true, enabled: true, isDefault: true },
+    });
+    if (!target) throw new Error(`Không tìm thấy ngôn ngữ có mã "${code}".`);
+    if (!target.enabled) {
+      throw new Error(
+        `Ngôn ngữ "${code}" đang tắt nên không đặt làm mặc định được. ` +
+          "Bật nó lên trước, rồi đặt làm mặc định.",
+      );
+    }
+    if (target.isDefault) return; // Đã là mặc định: không ghi gì, không lỗi gì.
+
+    // Hạ mọi mặc định cũ trước khi dựng mặc định mới: làm ngược thứ tự sẽ có một
+    // khoảnh khắc hai dòng cùng `isDefault`.
+    await tx.locale.updateMany({ where: { isDefault: true }, data: { isDefault: false } });
+    await tx.locale.update({ where: { code }, data: { isDefault: true } });
+
+    const rows = await tx.locale.findMany({
+      select: { code: true, isDefault: true, enabled: true },
+    });
+    assertSingleDefaultLocale(rows);
+  });
+
+  // Đổi mặc định là đổi đích fallback của **mọi** trang ở **mọi** ngôn ngữ, nên
+  // ba tag cache theo locale đều phải hết hạn. Định tuyến thì vẫn cần một lần
+  // redeploy: `locales.generated.ts` mang `defaultLocale` cho middleware (§9.3).
   revalidate(tags.nav());
   revalidate(tags.appsList());
   revalidate(tags.searchIndex());

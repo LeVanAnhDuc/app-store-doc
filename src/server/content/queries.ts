@@ -25,7 +25,16 @@ import { tags } from "./tags";
  *    trông như dữ liệu thật nên sẽ lọt qua mọi vòng kiểm tra.
  */
 
-/** Trang chủ `/[locale]` render `DocPage(slug="home")`, nên nó không có mục riêng trong sidebar. */
+/**
+ * Slug dành riêng cho nội dung trang chủ.
+ *
+ * `/[locale]/docs/home` **không** tồn tại: `docs/[slug]/page.tsx` gọi `notFound()`
+ * cho slug này, và `listNav`/`getStaticSlugs` loại nó khỏi sidebar. Trang chủ
+ * `/[locale]` hiện dựng từ chuỗi giao diện cộng danh sách ứng dụng (mockup màn 01),
+ * nên bản ghi `DocPage(slug="home")` là chỗ chờ sẵn cho nội dung trang chủ chứ
+ * chưa được trang nào kết xuất — vì vậy seed để nó ở `DRAFT`: publish nó sẽ đưa
+ * `/…/docs/home` vào chỉ mục tìm kiếm trong khi route đó cố tình 404.
+ */
 export const LANDING_DOC_SLUG = "home";
 
 export type Status = (typeof statusValues)[number];
@@ -515,6 +524,179 @@ export async function getAppForEditor(idOrSlug: string): Promise<EditorApp | nul
   };
 }
 
+// ---------------------------------------------------------------------------
+// Trang hướng dẫn trong CMS
+// ---------------------------------------------------------------------------
+
+/** Một dòng trong bảng trang hướng dẫn của CMS. Gồm cả `DRAFT` và `ARCHIVED`. */
+export type AdminDocRow = {
+  id: string;
+  slug: string;
+  group: string | null;
+  order: number;
+  status: Status;
+  /** Tiêu đề theo `locale` đang xem; `null` khi ngôn ngữ đó chưa có bản dịch. */
+  title: string | null;
+  missingLocales: string[];
+  /** `true` với trang chủ (`slug = "home"`), trang duy nhất không có mục trong sidebar. */
+  isLanding: boolean;
+};
+
+/**
+ * Toàn bộ trang hướng dẫn cho CMS, **không lọc trạng thái và không qua cache** —
+ * cùng hai lý do như `listAppsForAdmin`.
+ *
+ * Trang chủ **có** trong danh sách. Nó là `DocPage(slug="home")` nên nội dung
+ * trang chủ chỉ sửa được ở đây; loại nó ra cho "gọn" nghĩa là trang chủ không bao
+ * giờ sửa được qua CMS. Nó được đánh dấu `isLanding` để bảng nói rõ nó hiện ở
+ * `/[locale]` chứ không phải `/[locale]/docs/home`.
+ */
+export async function listDocPagesForAdmin(locale: string): Promise<AdminDocRow[]> {
+  if (!hasDatabase()) return [];
+
+  const rows = await prisma.docPage.findMany({
+    orderBy: [{ order: "asc" }, { slug: "asc" }],
+    select: {
+      id: true,
+      slug: true,
+      group: true,
+      order: true,
+      status: true,
+      translations: { select: { locale: true, title: true } },
+    },
+  });
+
+  return rows.map((page) => {
+    const byLocale = new Map(page.translations.map((tr) => [tr.locale, tr.title]));
+
+    return {
+      id: page.id,
+      slug: page.slug,
+      group: page.group,
+      order: page.order,
+      status: page.status,
+      // Không bịa nhãn từ slug, kể cả trong CMS: thiếu bản dịch là thông tin cần thấy.
+      title: byLocale.get(locale) ?? null,
+      missingLocales: locales.filter((code) => !byLocale.has(code)),
+      isLanding: page.slug === LANDING_DOC_SLUG,
+    };
+  });
+}
+
+/** Phần theo ngôn ngữ của một trang hướng dẫn, dạng thô để đổ vào ô nhập. */
+export type EditorDocPageTranslation = {
+  title: string;
+  description: string;
+};
+
+export type EditorDocPage = {
+  id: string;
+  slug: string;
+  group: string | null;
+  order: number;
+  status: Status;
+  isLanding: boolean;
+
+  /** Khoá là mã ngôn ngữ; ngôn ngữ chưa có bản dịch thì không có khoá. */
+  translations: Record<string, EditorDocPageTranslation>;
+  sections: EditorSection[];
+};
+
+/**
+ * Toàn bộ nội dung một trang hướng dẫn ở **mọi ngôn ngữ**, dạng thô, **không cache**.
+ *
+ * `getAppForEditor` là khuôn mẫu, và ba lý do của nó giữ nguyên ở đây: trang soạn
+ * thảo phải thấy bản nháp, không được phục vụ từ cache, và **không** được chạy
+ * fallback ngôn ngữ — mở bản EN của một mục chưa dịch mà thấy chữ tiếng Việt
+ * trong ô nhập thì lần bấm Lưu kế tiếp ghi đúng chữ đó thành "bản dịch tiếng Anh".
+ */
+export async function getDocPageForEditor(idOrSlug: string): Promise<EditorDocPage | null> {
+  if (!hasDatabase()) return null;
+
+  const page = await prisma.docPage.findFirst({
+    where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+    include: {
+      translations: true,
+      sections: { orderBy: { order: "asc" }, include: { translations: true } },
+    },
+  });
+  if (!page) return null;
+
+  const translations: Record<string, EditorDocPageTranslation> = {};
+  for (const row of page.translations) {
+    translations[row.locale] = { title: row.title, description: row.description ?? "" };
+  }
+
+  return {
+    id: page.id,
+    slug: page.slug,
+    group: page.group,
+    order: page.order,
+    status: page.status,
+    isLanding: page.slug === LANDING_DOC_SLUG,
+    translations,
+    sections: page.sections.map((section) => ({
+      id: section.id,
+      anchor: section.anchor,
+      translations: Object.fromEntries(
+        section.translations.map((row) => [
+          row.locale,
+          // Thân bài sai định dạng thì trả chuỗi rỗng thay vì ném lỗi: trang soạn
+          // thảo là đúng chỗ để **sửa** mục hỏng, mà nó phải mở được mới sửa được.
+          { title: row.title, body: readSectionBody(row.body)?.content ?? "" },
+        ]),
+      ),
+    })),
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Ngôn ngữ trong CMS
+// ---------------------------------------------------------------------------
+
+export type AdminLocaleRow = {
+  code: string;
+  label: string;
+  enabled: boolean;
+  isDefault: boolean;
+  order: number;
+  /**
+   * Định tuyến **hiện tại** có phục vụ ngôn ngữ này hay không, tức là nó có trong
+   * `locales.generated.ts` chưa. Bật một ngôn ngữ mới trong DB chưa đủ để
+   * `/xx/...` có trang: middleware đọc file sinh sẵn, nên cần một lần redeploy
+   * (spec §9.3). Cột này để trang quản trị nói đúng hiện trạng đó.
+   */
+  routed: boolean;
+};
+
+/** Bảng `Locale` cho trang quản trị ngôn ngữ. Không cache, cùng lý do như trên. */
+export async function listLocalesForAdmin(): Promise<AdminLocaleRow[]> {
+  if (!hasDatabase()) return [];
+
+  const rows = await prisma.locale.findMany({
+    orderBy: [{ order: "asc" }, { code: "asc" }],
+    select: { code: true, label: true, enabled: true, isDefault: true, order: true },
+  });
+
+  return rows.map((row) => ({ ...row, routed: locales.includes(row.code) }));
+}
+
+/**
+ * Có cấu hình cơ sở dữ liệu hay không.
+ *
+ * Hàm đọc nội dung tự trả rỗng khi thiếu `DATABASE_URL`, nên trang không cần hỏi.
+ * Thư viện ảnh thì khác: `listImages` đọc thẳng Prisma và **phải** đổ khi thiếu
+ * cấu hình, vì một thư viện rỗng trông y như thư viện chưa có ảnh. Trang hỏi hàm
+ * này để nói ra nguyên nhân thay vì để lỗi máy chủ ném ra một trang trắng.
+ *
+ * Bọc lại ở đây thay vì cho trang `import { hasDatabase } from "@/server/db"`:
+ * `src/server/content` là cửa duy nhất của tầng dữ liệu, và giữ đúng cửa đó thì
+ * không có trang nào chạm `db.ts`.
+ */
+export function hasContentDatabase(): boolean {
+  return hasDatabase();
+}
+
 /** Số đếm cho cột điều hướng bên trái của CMS. */
 export type AdminCounts = {
   apps: number;
@@ -527,13 +709,17 @@ export type AdminCounts = {
  * Số đếm cạnh từng mục trong cột điều hướng quản trị. Đếm **mọi** trạng thái:
  * con số ở đây nói "có bao nhiêu bản ghi để quản lý", không phải "bao nhiêu bản
  * ghi công khai".
+ *
+ * `docs` đếm cả trang chủ, vì `/admin/docs` liệt kê cả nó: nội dung trang chủ là
+ * `DocPage(slug="home")` và chỉ sửa được ở đó. Con số cạnh mục điều hướng phải
+ * bằng số dòng người dùng thấy khi bấm vào mục đó.
  */
 export async function getAdminCounts(): Promise<AdminCounts> {
   if (!hasDatabase()) return { apps: 0, docs: 0, media: 0, locales: 0 };
 
   const [apps, docs, media, localeCount] = await Promise.all([
     prisma.app.count(),
-    prisma.docPage.count({ where: { slug: { not: LANDING_DOC_SLUG } } }),
+    prisma.docPage.count(),
     prisma.media.count(),
     prisma.locale.count(),
   ]);

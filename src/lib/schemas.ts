@@ -39,6 +39,13 @@ export const appInputSchema = z.object({
   techStack: z.array(z.string()).default([]),
 });
 
+/**
+ * `title` bắt buộc ở đây là hợp đồng của **một bản dịch đã có**.
+ *
+ * Khi lưu một danh sách nội dung thì tiêu đề rỗng lại có nghĩa "ngôn ngữ này
+ * chưa dịch mục đó", nên `admin/actions.ts` nới đúng trường này ở lược đồ đường
+ * truyền. Xem `planContentSave` trong `src/server/content/resolve.ts`.
+ */
 export const featureInputSchema = z.object({
   order: z.number().int().default(0),
   icon: z.string().optional(), // tên icon lucide
@@ -57,6 +64,7 @@ export const sectionBodySchema = z.discriminatedUnion("type", [
 
 export const sectionInputSchema = z.object({
   order: z.number().int().default(0),
+  // Anchor là cấu trúc, dùng chung cho mọi ngôn ngữ, nên luôn bắt buộc hợp lệ.
   anchor: slugSchema,
   title: z.string().min(1),
   body: sectionBodySchema,

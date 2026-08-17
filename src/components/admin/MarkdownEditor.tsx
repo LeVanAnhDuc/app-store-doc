@@ -3,6 +3,8 @@
 import { useRef, useState, useTransition } from "react";
 import { useTranslations } from "next-intl";
 
+import { mediaLabel, type MediaItem } from "./media";
+import { MediaPicker } from "./MediaPicker";
 import styles from "./MarkdownEditor.module.css";
 
 export type MarkdownEditorProps = {
@@ -16,6 +18,11 @@ export type MarkdownEditorProps = {
    * không có tab xem trước — thà không có tab còn hơn có một tab không chạy.
    */
   renderPreview?: (markdown: string) => Promise<string>;
+  /**
+   * Server action liệt kê ảnh trong thư viện. Vắng mặt thì **không có** nút Ảnh:
+   * một nút mở ra bảng trống là nói dối về hiện trạng (design-rules §7).
+   */
+  listMedia?: () => Promise<MediaItem[]>;
 };
 
 /** Một đoạn chèn nhanh: mã markdown và cách đặt lại con trỏ sau khi chèn. */
@@ -30,11 +37,18 @@ type Snippet = { before: string; after: string; placeholder: string };
  * lúc đó không còn là xem trước: nó cho thấy một thứ khác với trang thật, và
  * chênh lệch đó chỉ lộ ra sau khi đã publish.
  *
- * Mockup còn có nút **Ảnh**. Nó chưa có ở đây vì thư viện ảnh là Task 16 — nút
- * mở ra hộp thoại trống chỉ để "cho đủ mục" là nói dối về hiện trạng
- * (design-rules §7). Task 16 thêm nút đó cùng lúc với `MediaPicker`.
+ * Nút **Ảnh** của mockup mở `MediaPicker` và chèn `![alt](url)` tại con trỏ. Nó
+ * chỉ hiện khi có `listMedia`: trước Task 16 chưa có thư viện ảnh nên nút cũng
+ * không tồn tại, vì nút mở ra bảng trống là nói dối về hiện trạng (design-rules §7).
  */
-export function MarkdownEditor({ id, label, value, onChange, renderPreview }: MarkdownEditorProps) {
+export function MarkdownEditor({
+  id,
+  label,
+  value,
+  onChange,
+  renderPreview,
+  listMedia,
+}: MarkdownEditorProps) {
   const t = useTranslations();
   const area = useRef<HTMLTextAreaElement | null>(null);
 
@@ -63,6 +77,26 @@ export function MarkdownEditor({ id, label, value, onChange, renderPreview }: Ma
     requestAnimationFrame(() => {
       node.focus();
       node.setSelectionRange(start + before.length, start + before.length + selected.length);
+    });
+  }
+
+  /**
+   * Chèn một đoạn hoàn chỉnh tại con trỏ, thay cho phần đang chọn nếu có.
+   *
+   * Khác `insert`: chỗ này không bọc quanh phần đang chọn mà thay hẳn nó, vì
+   * `![alt](url)` không có "phần giữa" để người dùng gõ tiếp.
+   */
+  function insertBlock(text: string) {
+    const node = area.current;
+    const start = node ? node.selectionStart : value.length;
+    const end = node ? node.selectionEnd : value.length;
+
+    onChange(`${value.slice(0, start)}${text}${value.slice(end)}`);
+
+    requestAnimationFrame(() => {
+      if (!node) return;
+      node.focus();
+      node.setSelectionRange(start + text.length, start + text.length);
     });
   }
 
@@ -133,6 +167,18 @@ export function MarkdownEditor({ id, label, value, onChange, renderPreview }: Ma
         >
           {t("admin.editor.insertLink")}
         </button>
+
+        {listMedia ? (
+          <MediaPicker
+            listMedia={listMedia}
+            label={t("admin.editor.insertImage")}
+            onPick={(item) => {
+              // `alt` là chữ thay ảnh, nên nó phải nói ảnh vẽ gì. Thư viện đặt
+              // sẵn tên tệp làm `alt`; người soạn sửa lại ngay trong bài.
+              insertBlock(`![${mediaLabel(item)}](${item.url})`);
+            }}
+          />
+        ) : null}
       </div>
 
       <div className={styles.panel} id={panelId}>

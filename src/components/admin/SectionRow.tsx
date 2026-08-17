@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 
 import { slugify } from "@/lib/slug";
 import { MarkdownEditor } from "./MarkdownEditor";
+import type { MediaItem } from "./media";
 import styles from "./SectionRow.module.css";
 
 /** Nội dung một mục ở **ngôn ngữ đang sửa**, cộng `anchor` dùng chung. */
@@ -22,6 +23,8 @@ export type SectionRowProps = {
   locale: string;
   /** Server action kết xuất markdown cho tab xem trước. */
   renderPreview?: (markdown: string) => Promise<string>;
+  /** Server action liệt kê ảnh; đi tiếp xuống nút Ảnh của ô soạn markdown. */
+  listMedia?: () => Promise<MediaItem[]>;
 };
 
 /**
@@ -32,7 +35,14 @@ export type SectionRowProps = {
  * liên kết ai đó đã lưu. Chỉ khi ô còn trống thì bấm "Lấy từ tiêu đề" mới điền —
  * lúc đó chưa có liên kết nào để phá.
  */
-export function SectionRow({ id, value, onChange, locale, renderPreview }: SectionRowProps) {
+export function SectionRow({
+  id,
+  value,
+  onChange,
+  locale,
+  renderPreview,
+  listMedia,
+}: SectionRowProps) {
   const t = useTranslations();
   const code = locale.toUpperCase();
 
@@ -87,6 +97,7 @@ export function SectionRow({ id, value, onChange, locale, renderPreview }: Secti
         value={value.body}
         onChange={(body) => onChange({ body })}
         renderPreview={renderPreview}
+        listMedia={listMedia}
       />
     </div>
   );

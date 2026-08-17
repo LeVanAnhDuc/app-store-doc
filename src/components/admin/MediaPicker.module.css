@@ -1,0 +1,155 @@
+/* Bộ chọn ảnh — hình khối lấy từ `.m-thumb` / `.m-media` của mockup màn 05. */
+
+.wrap {
+  display: inline-block;
+}
+
+.trigger {
+  padding: 3px 9px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background: var(--surface-2);
+}
+
+/* Lớp phủ mờ nhẹ, dùng --ink cộng opacity nên không có mã màu tay nào. */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  background: var(--ink);
+  opacity: 0.14;
+}
+
+/*
+ * `position: fixed` là bắt buộc, không phải sở thích: `.block` của khung quản trị
+ * và `.wrap` của ô soạn markdown đều `overflow: hidden`, nên khối `absolute` bên
+ * trong chúng bị cắt khi nút nằm gần đáy khối.
+ *
+ * Đây là hộp thoại thật sự nổi lên, nên nó được phép có đổ bóng (design-rules §5).
+ */
+.panel {
+  position: fixed;
+  z-index: 31;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(520px, calc(100vw - 32px));
+  max-height: min(70vh, 520px);
+  overflow-y: auto;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.panel:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 9px;
+}
+
+.title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.close {
+  margin-left: auto;
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--t-xs);
+  cursor: pointer;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 0 0 7px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.item:hover {
+  border-color: var(--accent);
+}
+
+.thumb {
+  display: block;
+  width: 100%;
+  height: 62px;
+  object-fit: contain;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.name {
+  padding: 0 7px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.meta {
+  padding: 0 7px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.hint,
+.error {
+  margin: 0;
+  font-size: var(--t-xs);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+.error {
+  color: var(--st-private);
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

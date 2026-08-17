@@ -1,0 +1,33 @@
+/* Cột nội dung của bản xem thử — cùng lề với trang ứng dụng thật, để bản xem
+   thử không lệch một điểm ảnh nào so với trang công khai. */
+
+.main {
+  padding: 30px 40px 48px;
+  min-width: 0;
+}
+
+/* Dải "bản nháp" là phần tử duy nhất trang thật không có, nên chỉ nó mang lề
+   riêng: các khối bên dưới giữ nguyên `margin-top` của chính chúng, để khoảng
+   cách trong bản xem thử khớp từng điểm ảnh với trang công khai. */
+.banner {
+  margin-bottom: 22px;
+}
+
+.problem {
+  max-width: var(--measure);
+  padding: 30px 40px 48px;
+}
+
+@media (max-width: 980px) {
+  .main,
+  .problem {
+    padding: 20px 24px 40px;
+  }
+}
+
+@media (max-width: 720px) {
+  .main,
+  .problem {
+    padding: 18px 16px 32px;
+  }
+}

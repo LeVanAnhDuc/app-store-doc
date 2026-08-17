@@ -1,0 +1,172 @@
+/* Thư viện ảnh — `.m-media`, `.m-thumb*`, `.m-search` của mockup màn 05. */
+
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tools {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.searchLabel {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.search {
+  flex: 1;
+  max-width: 280px;
+  box-sizing: border-box;
+  padding: 5px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 12.5px;
+}
+
+/* Bốn cột như mockup; vùng kéo-thả là ô đầu tiên nên nó cùng lưới với ảnh. */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.thumb {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 88px;
+  object-fit: contain;
+  background: var(--surface-2);
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8px 10px;
+  border-top: 1px solid var(--line-soft);
+}
+
+.name {
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.size {
+  font-family: var(--mono);
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 3px;
+}
+
+.action,
+.danger {
+  padding: 2px 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--t-xs);
+  cursor: pointer;
+}
+
+.action:hover {
+  background: var(--surface-2);
+}
+
+/* Bước xác nhận dùng màu trạng thái "riêng tư" — cùng màu cảnh báo của site. */
+.danger {
+  border-color: var(--st-private);
+  color: var(--st-private);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.hint,
+.notice {
+  margin: 0;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+.notice {
+  min-height: 1.2em;
+}
+
+.notice[data-tone="ok"] {
+  color: var(--st-connected);
+}
+
+.notice[data-tone="error"] {
+  color: var(--st-private);
+}
+
+/* Đáp ứng tới 375px: bốn cột gập dần về một, thân trang không cuộn ngang. */
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 460px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .tools {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search {
+    max-width: none;
+    width: 100%;
+  }
+}

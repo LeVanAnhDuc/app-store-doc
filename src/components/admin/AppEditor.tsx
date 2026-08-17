@@ -9,7 +9,15 @@ import type { AppKind, EditorApp, Status } from "@/server/content/queries";
 import { AdminBar, AdminBlock, AdminBody, AdminScope, AdminTitle } from "./AdminShell";
 import { FeatureRow } from "./FeatureRow";
 import { LocaleSwitch } from "./LocaleSwitch";
-import { SectionRow } from "./SectionRow";
+import type { MediaItem } from "./media";
+import { MediaPicker } from "./MediaPicker";
+import {
+  SectionsEditor,
+  invalidAnchorIndexes,
+  newDraftKey,
+  sectionsPayload,
+  type SectionDraft,
+} from "./SectionsEditor";
 import { SortableList, type SortableItem } from "./SortableList";
 import { TranslationMeter } from "./TranslationMeter";
 import styles from "./AppEditor.module.css";
@@ -47,6 +55,8 @@ export type AppEditorProps = {
   saveFeatures: (raw: unknown) => Promise<void>;
   saveSections: (raw: unknown) => Promise<void>;
   renderPreview: (raw: unknown) => Promise<string>;
+  /** Server action liệt kê ảnh, cho nút Ảnh và ô chọn logo. */
+  listMedia: () => Promise<MediaItem[]>;
 };
 
 // ---------------------------------------------------------------------------
@@ -82,13 +92,6 @@ type FeatureDraft = {
   text: Record<string, { title: string; description: string }>;
 };
 
-type SectionDraft = {
-  key: string;
-  id?: string;
-  anchor: string;
-  text: Record<string, { title: string; body: string }>;
-};
-
 const EMPTY_CONTENT: ContentDraft = { name: "", tagline: "", summary: "" };
 
 /** Anchor hợp lệ — cùng biểu thức với `slugSchema` trong `src/lib/schemas.ts`. */
@@ -110,20 +113,6 @@ const KIND_LABEL_KEY: Record<AppKind, string> = {
   CORE: "admin.kind.core",
   SATELLITE: "admin.kind.satellite",
 };
-
-/**
- * Khoá cho mục vừa thêm.
- *
- * `crypto.randomUUID` chỉ có trong ngữ cảnh bảo mật (https hoặc localhost), nên
- * có nhánh dự phòng: chạy sau proxy http mà nút "Thêm tính năng" ném
- * `undefined is not a function` thì cả trang soạn thảo coi như hỏng.
- */
-function newKey(): string {
-  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
-    return crypto.randomUUID();
-  }
-  return `new-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
-}
 
 function generalFrom(app: EditorApp): GeneralDraft {
   return {
@@ -197,6 +186,7 @@ export function AppEditor({
   saveFeatures,
   saveSections,
   renderPreview,
+  listMedia,
 }: AppEditorProps) {
   const t = useTranslations();
   const router = useRouter();
@@ -293,27 +283,6 @@ export function AppEditor({
     );
   }
 
-  function patchSection(key: string, patch: Partial<{ anchor: string; title: string; body: string }>) {
-    setSections((rows) =>
-      rows.map((row) => {
-        if (row.key !== key) return row;
-
-        const text = row.text[editLocale] ?? { title: "", body: "" };
-        return {
-          ...row,
-          anchor: patch.anchor ?? row.anchor,
-          text: {
-            ...row.text,
-            [editLocale]: {
-              title: patch.title ?? text.title,
-              body: patch.body ?? text.body,
-            },
-          },
-        };
-      }),
-    );
-  }
-
   /** Sắp lại theo danh sách khoá mà `SortableList` gửi về. */
   function reorderBy<T extends { key: string }>(rows: T[], keys: string[]): T[] {
     return keys.flatMap((key) => rows.filter((row) => row.key === key));
@@ -342,31 +311,6 @@ export function AppEditor({
     };
   });
 
-  const sectionItems: SortableItem[] = sections.map((row) => {
-    const text = row.text[editLocale] ?? { title: "", body: "" };
-    const missing = missingLocalesOf(row.text);
-
-    return {
-      id: row.key,
-      label: text.title.trim() || t("admin.editor.untitledSection"),
-      meta: row.anchor ? `#${row.anchor}` : undefined,
-      note: missing.length
-        ? t("admin.editor.missingIn", {
-            locales: missing.map((lc) => lc.toUpperCase()).join(", "),
-          })
-        : undefined,
-      detail: (
-        <SectionRow
-          id={`section-${row.key}`}
-          locale={editLocale}
-          value={{ anchor: row.anchor, title: text.title, body: text.body }}
-          onChange={(patch) => patchSection(row.key, patch)}
-          renderPreview={renderPreview}
-        />
-      ),
-    };
-  });
-
   const listLabels = {
     handle: t("admin.editor.handle"),
     handleHint: t("admin.editor.handleHint"),
@@ -380,18 +324,21 @@ export function AppEditor({
   // -------------------------------------------------------------------------
 
   /**
-   * Ba lời gọi ghi, ba phạm vi khác nhau, nên chúng chặn nhau độc lập:
+   * Ba lời gọi ghi, ba phạm vi khác nhau:
    *
    * - `saveApp` luôn chạy (khối không theo ngôn ngữ). Kèm `translation` **chỉ khi**
-   *   ngôn ngữ đang sửa đã có tên hiển thị — `name` là trường bắt buộc, và một app
-   *   không có tên ở ngôn ngữ nào thì trang công khai của ngôn ngữ đó trống trơn.
-   * - `saveFeatures` và `saveSections` ghi **cả danh sách**: mục không có trong
-   *   danh sách gửi lên là mục bị xoá. Vì tầng ghi bắt buộc mỗi mục phải có tiêu
-   *   đề ở ngôn ngữ đang lưu, danh sách còn mục chưa dịch thì **không gửi gì cả**
-   *   thay vì gửi thiếu — gửi thiếu là xoá sạch những mục chưa dịch.
+   *   ngôn ngữ đang sửa đã có tên hiển thị — `name` là trường bắt buộc của một
+   *   `AppTranslation`, và một app không có tên ở ngôn ngữ nào thì trang công khai
+   *   của ngôn ngữ đó trống trơn.
+   * - `saveFeatures` **luôn chạy**, gửi cả danh sách kể cả những mục chưa dịch
+   *   sang ngôn ngữ đang sửa. Tầng ghi hiểu tiêu đề rỗng là "chưa có bản dịch cho
+   *   ngôn ngữ này" và giữ nguyên mục cùng bản dịch của các ngôn ngữ khác.
+   * - `saveSections` cũng vậy, chỉ dừng khi có **anchor sai** — anchor không theo
+   *   ngôn ngữ, nó là địa chỉ `#` công khai của mục, nên sai nó là lỗi cấu trúc.
    *
-   * Trường hợp chặn được nói thẳng ra, kèm cả việc thứ tự vừa kéo cũng chưa lưu.
-   * Không im lặng bỏ qua, và cũng không chặn luôn phần lẽ ra lưu được.
+   * Bản trước chặn cả hai danh sách khi còn mục chưa dịch, vì tầng ghi lúc đó coi
+   * tiêu đề rỗng là lệnh xoá. Cả hai chỗ đã sửa: xem `planContentSave` trong
+   * `src/server/content/resolve.ts`.
    */
   function save() {
     setNotice(null);
@@ -423,20 +370,10 @@ export function AppEditor({
 
     const nameMissing = current.name.trim() === "";
 
-    const blockers: string[] = [];
-    features.forEach((row, index) => {
-      if ((row.text[editLocale]?.title ?? "").trim() === "") {
-        blockers.push(t("admin.editor.blockFeature", { index: index + 1, locale: code }));
-      }
-    });
-    sections.forEach((row, index) => {
-      if ((row.text[editLocale]?.title ?? "").trim() === "") {
-        blockers.push(t("admin.editor.blockSection", { index: index + 1, locale: code }));
-      }
-      if (!ANCHOR_PATTERN.test(row.anchor.trim())) {
-        blockers.push(t("admin.editor.blockAnchor", { index: index + 1 }));
-      }
-    });
+    // Anchor là cấu trúc, không phải bản dịch: mục nào anchor sai thì cả khối Mục
+    // nội dung không gửi được, vì `saveSections` ghi cả danh sách trong một lần.
+    const badAnchors = invalidAnchorIndexes(sections);
+    const blockers = badAnchors.map((index) => t("admin.editor.blockAnchor", { index }));
 
     startTransition(async () => {
       try {
@@ -466,27 +403,24 @@ export function AppEditor({
               },
         });
 
-        if (blockers.length === 0) {
-          await saveFeatures({
-            appSlug: saved.slug,
-            locale: editLocale,
-            features: features.map((row) => ({
-              id: row.id,
-              icon: optional(row.icon),
-              title: (row.text[editLocale]?.title ?? "").trim(),
-              description: optional(row.text[editLocale]?.description ?? ""),
-            })),
-          });
+        // Danh sách đầy đủ, kể cả mục chưa dịch sang `editLocale`: tiêu đề rỗng
+        // nghĩa là "chưa có bản dịch", không phải "xoá mục này".
+        await saveFeatures({
+          appSlug: saved.slug,
+          locale: editLocale,
+          features: features.map((row) => ({
+            id: row.id,
+            icon: optional(row.icon),
+            title: (row.text[editLocale]?.title ?? "").trim(),
+            description: optional(row.text[editLocale]?.description ?? ""),
+          })),
+        });
 
+        if (blockers.length === 0) {
           await saveSections({
             owner: { appSlug: saved.slug },
             locale: editLocale,
-            sections: sections.map((row) => ({
-              id: row.id,
-              anchor: row.anchor.trim(),
-              title: (row.text[editLocale]?.title ?? "").trim(),
-              body: { type: "markdown", content: row.text[editLocale]?.body ?? "" },
-            })),
+            sections: sectionsPayload(sections, editLocale),
           });
         }
 
@@ -692,15 +626,23 @@ export function AppEditor({
               <label className={styles.label} htmlFor="app-logo">
                 {t("admin.editor.fieldLogo")}
               </label>
-              <input
-                className={`${styles.input} ${styles.mono}`}
-                id="app-logo"
-                name="logoUrl"
-                type="text"
-                value={general.logoUrl}
-                onChange={(event) => patchGeneral({ logoUrl: event.target.value })}
-                spellCheck={false}
-              />
+              <div className={styles.inline}>
+                <input
+                  className={`${styles.input} ${styles.mono}`}
+                  id="app-logo"
+                  name="logoUrl"
+                  type="text"
+                  value={general.logoUrl}
+                  onChange={(event) => patchGeneral({ logoUrl: event.target.value })}
+                  spellCheck={false}
+                />
+                {/* Ô nhập vẫn là ô nhập: logo có thể là đường dẫn tĩnh trong repo,
+                    không nhất thiết là ảnh trong thư viện. Bộ chọn chỉ điền hộ. */}
+                <MediaPicker
+                  listMedia={listMedia}
+                  onPick={(item) => patchGeneral({ logoUrl: item.url })}
+                />
+              </div>
             </div>
 
             <div className={styles.wide}>
@@ -803,7 +745,7 @@ export function AppEditor({
               className={styles.add}
               type="button"
               onClick={() =>
-                setFeatures((rows) => [...rows, { key: newKey(), icon: "", text: {} }])
+                setFeatures((rows) => [...rows, { key: newDraftKey(), icon: "", text: {} }])
               }
             >
               <span aria-hidden="true">＋</span> {t("admin.addFeature")}
@@ -822,32 +764,14 @@ export function AppEditor({
           )}
         </AdminBlock>
 
-        <AdminBlock
-          heading={t("admin.editor.sectionsTitle")}
-          scope={t("admin.editor.sectionsScope", { count: sections.length })}
-          right={
-            <button
-              className={styles.add}
-              type="button"
-              onClick={() =>
-                setSections((rows) => [...rows, { key: newKey(), anchor: "", text: {} }])
-              }
-            >
-              <span aria-hidden="true">＋</span> {t("admin.addSection")}
-            </button>
-          }
-        >
-          {sections.length === 0 ? (
-            <p className={styles.empty}>{t("admin.editor.sectionsEmpty")}</p>
-          ) : (
-            <SortableList
-              items={sectionItems}
-              labels={listLabels}
-              onReorder={(keys) => setSections((rows) => reorderBy(rows, keys))}
-              onRemove={(key) => setSections((rows) => rows.filter((row) => row.key !== key))}
-            />
-          )}
-        </AdminBlock>
+        <SectionsEditor
+          sections={sections}
+          onChange={setSections}
+          locale={editLocale}
+          locales={locales}
+          renderPreview={renderPreview}
+          listMedia={listMedia}
+        />
       </AdminBody>
     </>
   );

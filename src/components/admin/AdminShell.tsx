@@ -32,9 +32,12 @@ type NavItem = {
   /** Bỏ trống thì mục không có số đếm — "Tổng quan" trong mockup không có. */
   count?: number;
   /**
-   * `false` nghĩa là trang đích chưa được dựng (Task 15/16), nên mục hiện ra
-   * nhưng không bấm được. Đưa liên kết chết vào giao diện quản trị chỉ để "cho
-   * đủ mục" là nói dối về hiện trạng — xem design-rules §7.
+   * `false` nghĩa là trang đích chưa được dựng, nên mục hiện ra nhưng không bấm
+   * được. Đưa liên kết chết vào giao diện quản trị chỉ để "cho đủ mục" là nói dối
+   * về hiện trạng — xem design-rules §7.
+   *
+   * Tính từ Task 16 cả năm mục đều có trang thật, nên chỗ này đang là `true` hết.
+   * Cơ chế giữ lại vì mục thứ sáu nào đó cũng sẽ đi qua đúng trạng thái đó.
    */
   ready: boolean;
 };
@@ -75,21 +78,21 @@ export function AdminShell({
       label: t("admin.nav.docs"),
       href: `${root}/docs`,
       count: counts.docs,
-      ready: false,
+      ready: true,
     },
     {
       key: "media",
       label: t("admin.nav.media"),
       href: `${root}/media`,
       count: counts.media,
-      ready: false,
+      ready: true,
     },
     {
       key: "locales",
       label: t("admin.nav.locales"),
       href: `${root}/locales`,
       count: counts.locales,
-      ready: false,
+      ready: true,
     },
   ];
 

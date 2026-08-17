@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { resolveTranslation, assertSingleDefaultLocale, buildToc } from "./resolve";
+import {
+  resolveTranslation,
+  assertSingleDefaultLocale,
+  buildToc,
+  planContentSave,
+} from "./resolve";
 
 const rows = [
   { locale: "vi", title: "Tính năng" },
@@ -83,5 +88,65 @@ describe("buildToc", () => {
 
   it("không mục nào thì trả mảng rỗng, để trang không dựng khung trống", () => {
     expect(buildToc([])).toEqual([]);
+  });
+});
+
+// Sửa khiếm khuyết Task 15 phát hiện: cấu trúc và bản dịch là hai chuyện khác
+// nhau. Trước đây thiếu tiêu đề ở ngôn ngữ đang lưu là **xoá** mục, nên không
+// thể dịch dần — mà `TranslationMeter` tồn tại chính là để đo việc dịch dần.
+describe("planContentSave", () => {
+  it("mục chưa có tiêu đề ở ngôn ngữ đang lưu vẫn được giữ — chưa dịch không phải là xoá", () => {
+    const plan = planContentSave(
+      [
+        { id: "a", title: "Là gì" },
+        { id: "b", title: "" },
+      ],
+      ["a", "b"],
+    );
+
+    expect(plan.removedIds).toEqual([]);
+    expect(plan.items.map((row) => row.translated)).toEqual([true, false]);
+  });
+
+  it("mục vắng mặt khỏi danh sách gửi lên mới là mục bị xoá", () => {
+    const plan = planContentSave([{ id: "a", title: "Là gì" }], ["a", "b"]);
+    expect(plan.removedIds).toEqual(["b"]);
+  });
+
+  it("tiêu đề chỉ có khoảng trắng cũng là chưa dịch", () => {
+    const plan = planContentSave([{ id: "a", title: "   " }], ["a"]);
+    expect(plan.items[0].translated).toBe(false);
+    expect(plan.removedIds).toEqual([]);
+  });
+
+  it("mục mới chưa có id thì tạo mới, không tính vào danh sách xoá", () => {
+    const plan = planContentSave([{ title: "Mục mới" }], ["a"]);
+    expect(plan.items[0].id).toBeUndefined();
+    expect(plan.removedIds).toEqual(["a"]);
+  });
+
+  it("thứ tự lấy từ vị trí trong mảng — kéo thả trong CMS là thứ tự hiển thị thật", () => {
+    const plan = planContentSave(
+      [
+        { id: "b", title: "Hai" },
+        { id: "a", title: "Một" },
+      ],
+      ["a", "b"],
+    );
+    expect(plan.items.map((row) => [row.id, row.order])).toEqual([
+      ["b", 0],
+      ["a", 1],
+    ]);
+  });
+
+  it("id không thuộc chủ sở hữu này bị nêu ra, không âm thầm bỏ qua", () => {
+    const plan = planContentSave([{ id: "x", title: "Của trang khác" }], ["a"]);
+    expect(plan.foreignIds).toEqual(["x"]);
+  });
+
+  it("danh sách rỗng thì xoá hết — đó là cách xoá mục cuối cùng", () => {
+    const plan = planContentSave([], ["a", "b"]);
+    expect(plan.removedIds).toEqual(["a", "b"]);
+    expect(plan.items).toEqual([]);
   });
 });

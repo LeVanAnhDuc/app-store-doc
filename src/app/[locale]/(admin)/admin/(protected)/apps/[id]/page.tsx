@@ -5,7 +5,13 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AppEditor } from "@/components/admin/AppEditor";
 import { defaultLocale, locales } from "@/i18n/locales.generated";
 import { getAppForEditor } from "@/server/content/queries";
-import { renderMarkdownPreview, saveApp, saveFeatures, saveSections } from "../../../actions";
+import {
+  listMedia,
+  renderMarkdownPreview,
+  saveApp,
+  saveFeatures,
+  saveSections,
+} from "../../../actions";
 
 /**
  * `/[locale]/admin/apps/[id]` — trang soạn nội dung một ứng dụng (mockup màn 04).
@@ -67,6 +73,7 @@ export default async function AdminAppEditorPage({ params }: PageParams) {
       saveFeatures={saveFeatures}
       saveSections={saveSections}
       renderPreview={renderMarkdownPreview}
+      listMedia={listMedia}
     />
   );
 }
