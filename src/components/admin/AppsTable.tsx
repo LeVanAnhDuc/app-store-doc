@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 import { Badge, type StatusKind } from "@/components/ui/Badge";
 import { DataTable } from "@/components/ui/DataTable";
@@ -63,6 +63,9 @@ function reasonOf(error: unknown): string {
  */
 export function AppsTable({ rows, setStatus, reorder }: AppsTableProps) {
   const t = useTranslations();
+  // Đường dẫn trang soạn thảo cần tiền tố locale. Lấy từ next-intl thay vì thêm
+  // một prop nữa: bảng đã nằm trong `NextIntlClientProvider` của nhóm quản trị.
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [order, setOrder] = useState<AdminAppRow[]>(rows);
@@ -184,16 +187,23 @@ export function AppsTable({ rows, setStatus, reorder }: AppsTableProps) {
                 </td>
 
                 <td>
-                  <button
-                    className={styles.action}
-                    type="button"
-                    onClick={() => togglePublish(row)}
-                    disabled={pending}
-                  >
-                    {row.status === "PUBLISHED"
-                      ? t("admin.apps.unpublish")
-                      : t("admin.apps.publish")}
-                  </button>
+                  <div className={styles.moveGroup}>
+                    {/* Liên kết bằng slug: nó là thứ người vận hành đọc được
+                        trên URL. Trang soạn thảo nhận cả id lẫn slug. */}
+                    <a className={styles.action} href={`/${locale}/admin/apps/${row.slug}`}>
+                      {t("admin.apps.edit")}
+                    </a>
+                    <button
+                      className={styles.action}
+                      type="button"
+                      onClick={() => togglePublish(row)}
+                      disabled={pending}
+                    >
+                      {row.status === "PUBLISHED"
+                        ? t("admin.apps.unpublish")
+                        : t("admin.apps.publish")}
+                    </button>
+                  </div>
                 </td>
               </tr>
             );

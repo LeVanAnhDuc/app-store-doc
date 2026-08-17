@@ -383,6 +383,138 @@ export async function listAppsForAdmin(locale: string): Promise<AdminAppRow[]> {
   });
 }
 
+// ---------------------------------------------------------------------------
+// Dữ liệu cho trang soạn nội dung
+// ---------------------------------------------------------------------------
+
+/** Phần theo ngôn ngữ của một ứng dụng, dạng thô để đổ vào ô nhập. */
+export type EditorAppTranslation = {
+  name: string;
+  tagline: string;
+  summary: string;
+};
+
+export type EditorFeature = {
+  id: string;
+  /** Không theo ngôn ngữ. */
+  icon: string | null;
+  /** Khoá là mã ngôn ngữ. Ngôn ngữ chưa dịch thì **không có khoá**. */
+  translations: Record<string, { title: string; description: string }>;
+};
+
+export type EditorSection = {
+  id: string;
+  /** Không theo ngôn ngữ: `#anchor` phải giống nhau ở mọi bản dịch. */
+  anchor: string;
+  translations: Record<string, { title: string; body: string }>;
+};
+
+export type EditorApp = {
+  id: string;
+  slug: string;
+  kind: AppKind;
+  status: Status;
+  order: number;
+  logoUrl: string | null;
+  repoUrl: string | null;
+  apiRepoUrl: string | null;
+  demoUrl: string | null;
+  isRepoPrivate: boolean;
+  isStandalone: boolean;
+  techStack: string[];
+
+  /** Khoá là mã ngôn ngữ; ngôn ngữ chưa có bản dịch thì không có khoá. */
+  translations: Record<string, EditorAppTranslation>;
+  features: EditorFeature[];
+  sections: EditorSection[];
+};
+
+/**
+ * Toàn bộ nội dung của một ứng dụng ở **mọi ngôn ngữ**, dạng thô, **không cache**.
+ *
+ * Đây là truy vấn `TranslationMeter` cần. `AdminAppRow.missingLocales` chỉ trả
+ * lời "app này có `AppTranslation` ở locale đó không" — đủ cho bảng danh sách,
+ * nhưng vô dụng ở trang soạn thảo: một app có tên tiếng Anh vẫn có thể còn bảy
+ * mục nội dung chưa dịch, và đó mới là con số người soạn cần thấy. Vì vậy ở đây
+ * đọc bản dịch của **từng tính năng và từng mục**, ở **mọi** ngôn ngữ; phép đếm
+ * `1 + số tính năng + số mục` nằm trong `AppEditor` để con số còn phản ánh cả
+ * phần vừa gõ mà chưa lưu.
+ *
+ * Không dùng `getApp` cho trang soạn thảo, vì `getApp` đã chạy fallback ngôn ngữ:
+ * mở bản EN của một mục chưa dịch sẽ thấy chữ tiếng Việt nằm trong ô nhập, và
+ * lần bấm Lưu kế tiếp ghi đúng chữ đó thành "bản dịch tiếng Anh". Ở đây ngôn ngữ
+ * nào chưa có bản dịch thì **không có khoá** trong `translations`, nên ô nhập
+ * trống đúng như hiện trạng.
+ *
+ * Nhận `id` hoặc `slug`: bảng danh sách liên kết bằng slug vì đó là thứ người
+ * vận hành đọc được trên URL, còn tầng ghi định danh bằng `id` để slug đổi được.
+ */
+export async function getAppForEditor(idOrSlug: string): Promise<EditorApp | null> {
+  if (!hasDatabase()) return null;
+
+  const app = await prisma.app.findFirst({
+    where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
+    include: {
+      translations: true,
+      features: { orderBy: { order: "asc" }, include: { translations: true } },
+      sections: { orderBy: { order: "asc" }, include: { translations: true } },
+    },
+  });
+  if (!app) return null;
+
+  const translations: Record<string, EditorAppTranslation> = {};
+  for (const row of app.translations) {
+    translations[row.locale] = {
+      name: row.name,
+      tagline: row.tagline ?? "",
+      summary: row.summary ?? "",
+    };
+  }
+
+  const features: EditorFeature[] = app.features.map((feature) => ({
+    id: feature.id,
+    icon: feature.icon,
+    translations: Object.fromEntries(
+      feature.translations.map((row) => [
+        row.locale,
+        { title: row.title, description: row.description ?? "" },
+      ]),
+    ),
+  }));
+
+  const sections: EditorSection[] = app.sections.map((section) => ({
+    id: section.id,
+    anchor: section.anchor,
+    translations: Object.fromEntries(
+      section.translations.map((row) => [
+        row.locale,
+        // Thân bài sai định dạng thì trả chuỗi rỗng thay vì ném lỗi: trang công
+        // khai thà lộ lỗi còn hơn render mục trống, nhưng trang soạn thảo là
+        // đúng chỗ để **sửa** mục hỏng, mà nó phải mở được mới sửa được.
+        { title: row.title, body: readSectionBody(row.body)?.content ?? "" },
+      ]),
+    ),
+  }));
+
+  return {
+    id: app.id,
+    slug: app.slug,
+    kind: app.kind,
+    status: app.status,
+    order: app.order,
+    logoUrl: app.logoUrl,
+    repoUrl: app.repoUrl,
+    apiRepoUrl: app.apiRepoUrl,
+    demoUrl: app.demoUrl,
+    isRepoPrivate: app.isRepoPrivate,
+    isStandalone: app.isStandalone,
+    techStack: app.techStack,
+    translations,
+    features,
+    sections,
+  };
+}
+
 /** Số đếm cho cột điều hướng bên trái của CMS. */
 export type AdminCounts = {
   apps: number;

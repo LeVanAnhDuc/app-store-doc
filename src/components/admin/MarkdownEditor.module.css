@@ -1,0 +1,113 @@
+/* Ô soạn markdown — hình khối chép từ `.m-md` và `.m-mdbar` trong mockup (màn 04). */
+
+.wrap {
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-2);
+}
+
+.spacer {
+  margin-left: auto;
+}
+
+.tab,
+.tool {
+  padding: 2px 7px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: var(--muted);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  cursor: pointer;
+}
+
+.tab:hover,
+.tool:hover {
+  color: var(--ink);
+}
+
+/* `.m-mdbar span.on`: tab đang mở nổi lên bằng nền sáng và một đường kẻ. */
+.tab[aria-pressed="true"] {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.panel {
+  padding: 11px 13px;
+}
+
+.label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.area {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 160px;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  /* Markdown là văn xuôi: dấu tiếng Việt cần chỗ (design-rules §3). */
+  line-height: var(--lh-body);
+  resize: vertical;
+}
+
+.preview {
+  /* Đo dòng văn xuôi tối đa 66ch. */
+  max-width: 66ch;
+  line-height: var(--lh-body);
+  font-size: var(--t-sm);
+  color: var(--ink);
+}
+
+.rendered :global(pre),
+.rendered :global(table) {
+  /* Bảng và khối mã cuộn trong hộp riêng, thân trang không cuộn ngang. */
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.rendered :global(img) {
+  max-width: 100%;
+  height: auto;
+}
+
+.hint,
+.error {
+  margin: 0;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+.hint {
+  color: var(--muted);
+}
+
+.error {
+  color: var(--st-private);
+}

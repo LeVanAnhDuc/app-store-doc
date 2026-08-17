@@ -88,6 +88,12 @@
   cursor: pointer;
 }
 
+/* `.action` dùng cho cả `<button>` và liên kết "Soạn nội dung". */
+a.action {
+  display: inline-block;
+  text-decoration: none;
+}
+
 .action:hover:not(:disabled) {
   background: var(--surface-2);
 }

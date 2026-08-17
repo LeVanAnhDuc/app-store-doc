@@ -1,0 +1,19 @@
+/* Chỉ báo bản dịch — hình khối chép từ `.m-trans` trong mockup đã duyệt (màn 04). */
+
+.meter {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.05em;
+  /* Số liệu xếp cạnh nhau: chữ số cùng bề rộng để 3/8 và 11/12 không nhảy. */
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* Màu trạng thái chỉ dùng cho trạng thái — đây đúng là trạng thái của bản dịch. */
+.meter[data-tone="warn"] {
+  color: var(--st-standalone);
+}
+
+.meter[data-tone="ok"] {
+  color: var(--st-connected);
+}

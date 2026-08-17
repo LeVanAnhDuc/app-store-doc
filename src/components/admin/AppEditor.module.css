@@ -1,0 +1,180 @@
+/* Trang soạn nội dung — hình khối chép từ `.m-adm-bar`, `.m-trans`, `.m-btn`,
+   `.m-add`, `.m-fields`, `.m-field`, `.m-input` trong mockup đã duyệt (màn 04). */
+
+.back {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.back:hover {
+  color: var(--ink);
+}
+
+/* Nút chuyển ngôn ngữ và chỉ báo bản dịch đứng cạnh nhau — spec §8.2.2. */
+.trans {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.button,
+.primary {
+  display: inline-block;
+  padding: 6px 13px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 12.5px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--surface-2);
+}
+
+.primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  /* --bg tương phản với --accent ở cả hai chủ đề. Không mã màu tay. */
+  color: var(--bg);
+  font-weight: 560;
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.disabledNote {
+  max-width: 30ch;
+  font-size: var(--t-xs);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+.notice {
+  margin: 0;
+  min-height: 1.2em;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+.notice[data-tone="ok"] {
+  color: var(--st-connected);
+}
+
+.notice[data-tone="error"] {
+  color: var(--st-private);
+}
+
+/* `.m-fields`: ba cột ở khối thông tin chung. */
+.fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field {
+  min-width: 0;
+}
+
+.wide {
+  grid-column: 1 / -1;
+  min-width: 0;
+}
+
+.label {
+  display: block;
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+
+.input,
+.area {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 7px 10px;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 12.5px;
+}
+
+.area {
+  line-height: var(--lh-body);
+  resize: vertical;
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 11.5px;
+}
+
+.hint {
+  margin: 5px 0 0;
+  font-size: var(--t-xs);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-right: 18px;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+}
+
+/* `.m-add`: nút thêm là viền nét đứt màu accent. */
+.add {
+  padding: 3px 9px;
+  border: 1px dashed var(--accent);
+  border-radius: 4px;
+  background: none;
+  color: var(--accent);
+  font-family: var(--mono);
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* Màn hình trống là lời mời hành động, không phải chỗ than thở. */
+.empty {
+  margin: 0;
+  font-size: var(--t-sm);
+  line-height: var(--lh-body);
+  color: var(--muted);
+}
+
+/* Đáp ứng tới 375px: ba cột gập dần, thân trang không cuộn ngang. */
+@media (max-width: 900px) {
+  .fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .fields {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .check {
+    display: flex;
+    margin-right: 0;
+  }
+}
