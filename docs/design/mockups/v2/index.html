@@ -1,0 +1,701 @@
+<title>Atlas v2</title>
+
+<style>
+/* ============================================================
+   TOKENS — v2
+   Sáng gần như phi màu, tối ấm lên. Cam đất chỉ sống ở bản tối.
+   Giá trị lấy bằng cách đo điểm ảnh trên code.claude.com/docs.
+   ============================================================ */
+:root {
+  --bg:        #FDFDF7;
+  --surface:   #FFFFFF;
+  --fill:      #E4E4DE;
+  --fill-soft: #F1F1EA;
+  --line:      #E2E2DA;
+  --line-soft: #EDEDE5;
+  --ink:       #171717;
+  --ink-2:     #3E3E3E;
+  --muted:     #6B6B63;
+  --accent:    #8A4B24;
+  /* Eyebrow đổi vai theo chủ đề: sáng là mực (đo được #0E0E0E), tối là cam đất. */
+  --eyebrow:   #171717;
+  --accent-bg: #F2E9E1;
+
+  --st-core:        #6B3F8C;  --st-core-bg:       #EFE8F4;
+  --st-connected:   #2F6B4F;  --st-connected-bg:  #E4EFE8;
+  --st-standalone:  #8A6A24;  --st-standalone-bg: #F4EEDD;
+  --st-planned:     #6B6B63;  --st-planned-bg:    #ECECE4;
+  --st-private:     #9A3B3B;  --st-private-bg:    #F5E5E3;
+
+  --sans: "Segoe UI Variable Text", "Segoe UI", -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  /*
+   * Georgia BỊ LOẠI khỏi stack một cách cố ý — nó thiếu glyph tiếng Việt dựng
+   * sẵn, nên "ế" ra thành "ê" kèm dấu sắc rời lơ lửng. Trang tham chiếu dùng
+   * `Georgia, Times New Roman, serif` làm dự phòng; chép nguyên si thì mọi tiêu
+   * đề tiếng Việt trên Windows đều vỡ. Đã kiểm bằng cách render và nhìn tận mắt.
+   */
+  --serif: Constantia, "New York", "Iowan Old Style", Cambria, "Sitka Text", Charter, Palatino, "Palatino Linotype", "Times New Roman", serif;
+  --mono: "Cascadia Mono", "Cascadia Code", ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --t-xs: 11.5px; --t-sm: 13px; --t-md: 15px; --t-lg: 17px;
+  --t-xl: 21px;   --t-2xl: 27px; --t-3xl: 36px;
+
+  --lh-body: 1.75;
+  --lh-head: 1.25;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:        #09090B;
+    --surface:   #131316;
+    --fill:      #1E1916;
+    --fill-soft: #17171A;
+    --line:      #26262A;
+    --line-soft: #1C1C20;
+    --ink:       #EDEDE9;
+    --ink-2:     #DEDEDE;
+    --muted:     #94948B;
+    --accent:    #D4A27F;
+    --eyebrow:   #D4A27F;
+    --accent-bg: #241C16;
+
+    --st-core:        #C0A2DC;  --st-core-bg:       #211A2A;
+    --st-connected:   #79C6A0;  --st-connected-bg:  #14261D;
+    --st-standalone:  #D9B267;  --st-standalone-bg: #2A2314;
+    --st-planned:     #94948B;  --st-planned-bg:    #1F1F22;
+    --st-private:     #E08B87;  --st-private-bg:    #2C1918;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #09090B;
+  --surface:   #131316;
+  --fill:      #1E1916;
+  --fill-soft: #17171A;
+  --line:      #26262A;
+  --line-soft: #1C1C20;
+  --ink:       #EDEDE9;
+  --ink-2:     #DEDEDE;
+  --muted:     #94948B;
+  --accent:    #D4A27F;
+  --eyebrow:   #D4A27F;
+  --accent-bg: #241C16;
+
+  --st-core:        #C0A2DC;  --st-core-bg:       #211A2A;
+  --st-connected:   #79C6A0;  --st-connected-bg:  #14261D;
+  --st-standalone:  #D9B267;  --st-standalone-bg: #2A2314;
+  --st-planned:     #94948B;  --st-planned-bg:    #1F1F22;
+  --st-private:     #E08B87;  --st-private-bg:    #2C1918;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: var(--t-md); line-height: var(--lh-body); -webkit-font-smoothing: antialiased; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+@media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* ---------- khung gallery ---------- */
+.g { max-width: 1240px; margin: 0 auto; padding: 0 24px 96px; }
+.g-head { padding: 56px 0 36px; border-bottom: 1px solid var(--line); }
+.g-eyebrow { font-family: var(--mono); font-size: var(--t-xs); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 0 0 18px; }
+.g-title { font-family: var(--serif); font-weight: 400; font-size: var(--t-3xl); line-height: var(--lh-head); letter-spacing: 0; margin: 0 0 14px; text-wrap: balance; }
+.g-lede { font-size: var(--t-lg); color: var(--muted); max-width: 62ch; margin: 0; }
+.g-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+.g-chips span { font-family: var(--mono); font-size: var(--t-xs); letter-spacing: .05em; padding: 5px 9px; border: 1px solid var(--line); border-radius: 3px; color: var(--muted); }
+
+.g-sec { padding-top: 52px; }
+.g-sec-h { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 4px; }
+.g-num { font-family: var(--mono); font-size: var(--t-xs); color: var(--accent); letter-spacing: .12em; }
+.g-sec-t { font-family: var(--serif); font-weight: 400; font-size: var(--t-xl); margin: 0; line-height: 1.35; }
+.g-note { color: var(--muted); font-size: var(--t-sm); max-width: 74ch; margin: 6px 0 20px; }
+
+.g-frame { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.g-bar { display: flex; align-items: center; gap: 10px; padding: 9px 12px; background: var(--fill-soft); border-bottom: 1px solid var(--line); }
+.g-dots { display: flex; gap: 5px; }
+.g-dots i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); display: block; }
+.g-url { font-family: var(--mono); font-size: var(--t-xs); color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g-vp { font-family: var(--mono); font-size: var(--t-xs); color: var(--muted); }
+.g-body { overflow-x: auto; }
+.g-canvas { min-width: 1080px; }
+
+/* ============================================================
+   M — giao diện sản phẩm v2
+   ============================================================ */
+.m { font-size: 14px; background: var(--bg); }
+
+/* ---------- TẦNG 1: masthead ---------- */
+.m-mast { display: flex; align-items: center; gap: 16px; padding: 0 22px; height: 54px; background: var(--bg); }
+.m-brand { display: flex; align-items: baseline; gap: 8px; }
+.m-brand b { font-family: var(--serif); font-weight: 400; font-size: 20px; letter-spacing: 0; }
+.m-brand i { font-style: normal; font-family: var(--serif); font-size: 20px; color: var(--muted); }
+.m-mast-right { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+.m-search { display: flex; align-items: center; gap: 42px; border: 1px solid var(--line); border-radius: 6px; padding: 6px 10px; font-size: 12.5px; color: var(--muted); background: var(--surface); }
+.m-kbd { font-family: var(--mono); font-size: 10.5px; border: 1px solid var(--line); border-radius: 3px; padding: 1px 5px; }
+.m-lang { display: flex; align-items: center; gap: 5px; font-size: 12.5px; color: var(--muted); }
+.m-cta { background: var(--ink); color: var(--bg); font-size: 12.5px; font-weight: 560; padding: 7px 13px; border-radius: 6px; }
+
+/* ---------- TẦNG 2: dải tab ---------- */
+.m-tabs { display: flex; align-items: center; gap: 22px; padding: 0 22px; border-bottom: 1px solid var(--line); background: var(--bg); }
+.m-tab { padding: 10px 0 11px; font-size: 13.5px; color: var(--muted); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.m-tab.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--ink); }
+
+/* ---------- ba cột ---------- */
+.m-shell { display: grid; grid-template-columns: 236px minmax(0,1fr) 208px; min-height: 620px; }
+.m-side { padding: 22px 14px 40px; }
+.m-side-group { margin-bottom: 22px; }
+.m-side-h { font-size: 13px; font-weight: 660; margin: 0 0 8px; padding-left: 11px; }
+.m-side a { display: block; padding: 6px 11px; border-radius: 6px; font-size: 13.5px; color: var(--ink-2); text-decoration: none; }
+.m-side a.on { background: var(--fill); font-weight: 560; color: var(--ink); }
+.m-side .sub { font-family: var(--mono); font-size: 10.5px; color: var(--muted); display: block; padding: 0 11px 6px; }
+
+.m-main { padding: 26px 40px 56px; min-width: 0; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+.m-eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: .13em; text-transform: uppercase; color: var(--eyebrow); margin: 0 0 10px; }
+.m-h1 { font-family: var(--serif); font-weight: 400; font-size: 34px; line-height: 1.22; letter-spacing: 0; margin: 0 0 10px; }
+.m-tag { color: var(--muted); font-size: 15px; margin: 0 0 18px; max-width: 62ch; }
+.m-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-bottom: 22px; border-bottom: 1px solid var(--line-soft); }
+.m-slug { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+.m-link { font-family: var(--mono); font-size: 11.5px; color: var(--ink); text-decoration: none; border-bottom: 1px solid var(--line); }
+
+.m-h2 { font-family: var(--serif); font-weight: 400; font-size: 24px; line-height: 1.3; margin: 34px 0 12px; }
+.m-p { font-size: 15px; line-height: var(--lh-body); margin: 0 0 14px; max-width: 66ch; }
+.m-p.mut { color: var(--muted); }
+
+.m-badge { font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; padding: 3px 7px; border-radius: 3px; white-space: nowrap; }
+.b-core{background:var(--st-core-bg);color:var(--st-core)}
+.b-connected{background:var(--st-connected-bg);color:var(--st-connected)}
+.b-standalone{background:var(--st-standalone-bg);color:var(--st-standalone)}
+.b-planned{background:var(--st-planned-bg);color:var(--st-planned)}
+.b-private{background:var(--st-private-bg);color:var(--st-private)}
+.m-chip { font-family: var(--mono); font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 3px; padding: 2px 6px; }
+
+.m-feats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0 8px; }
+.m-feat { border: 1px solid var(--line); border-radius: 7px; padding: 13px 15px; background: var(--surface); }
+.m-feat h4 { margin: 0 0 4px; font-size: 13.5px; font-weight: 620; }
+.m-feat p { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+
+.m-pre { background: var(--fill-soft); border: 1px solid var(--line); border-radius: 7px; padding: 14px 16px; overflow-x: auto; margin: 0 0 14px; }
+.m-pre code { font-family: var(--mono); font-size: 12.5px; line-height: 1.85; white-space: pre; display: block; }
+.c-com { color: var(--muted); } .c-key { color: var(--accent); } .c-str { color: var(--st-connected); }
+
+.m-toc { padding: 26px 16px; }
+.m-toc-h { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+.m-toc a { display: block; font-size: 12.5px; color: var(--muted); text-decoration: none; padding: 5px 0; }
+.m-toc a.on { color: var(--ink); font-weight: 600; }
+
+/* ---------- sơ đồ đấu nối ---------- */
+.m-wire { margin-top: 34px; display: grid; grid-template-columns: 92px 1fr; }
+.m-spine { position: relative; }
+.m-spine::after { content: ""; position: absolute; right: 0; top: 15px; bottom: 26px; width: 2px; background: var(--ink); }
+.m-core { position: absolute; right: 0; top: 0; transform: translateX(50%); background: var(--ink); color: var(--bg); font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; padding: 4px 9px; border-radius: 3px; }
+.m-rows { list-style: none; margin: 0; padding: 0; }
+.m-row { display: grid; grid-template-columns: 70px 1fr auto; align-items: center; gap: 14px; padding: 9px 0; }
+.m-lead { height: 0; border-top: 2px solid var(--ink); }
+.m-lead.planned { border-top-style: dashed; border-color: var(--st-planned); }
+.m-lead.private { border-top-style: dashed; border-color: var(--st-private); }
+.m-lead.none { border-top: 2px dotted transparent; }
+.m-wname { font-size: 13.5px; font-weight: 620; }
+.m-wdesc { color: var(--muted); font-size: 12.5px; margin-left: 10px; }
+.m-legend { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line-soft); }
+.m-legend div { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--muted); }
+.m-legend i { width: 26px; height: 0; border-top: 2px solid var(--ink); display: block; }
+.m-legend i.planned { border-top-style: dashed; border-color: var(--st-planned); }
+.m-legend i.none { border-top: 2px dotted var(--line); }
+
+.m-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 20px; }
+.m-card { border: 1px solid var(--line); border-radius: 8px; padding: 16px; background: var(--surface); }
+.m-card-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+.m-card-name { font-family: var(--serif); font-weight: 400; font-size: 18px; }
+.m-card p { margin: 8px 0 12px; font-size: 12.5px; color: var(--muted); line-height: 1.6; }
+.m-chips2 { display: flex; flex-wrap: wrap; gap: 5px; }
+
+/* ---------- quản trị ---------- */
+.m-adm { display: grid; grid-template-columns: 236px minmax(0,1fr); min-height: 560px; }
+.m-adm-side { padding: 22px 14px; }
+.m-adm-side a { display: flex; justify-content: space-between; align-items: center; padding: 7px 11px; border-radius: 6px; font-size: 13.5px; color: var(--ink-2); text-decoration: none; }
+.m-adm-side a.on { background: var(--fill); font-weight: 560; color: var(--ink); }
+.m-adm-side .n { font-family: var(--mono); font-size: 10.5px; color: var(--muted); }
+.m-adm-main { border-left: 1px solid var(--line); min-width: 0; }
+.m-adm-bar { display: flex; align-items: center; gap: 12px; padding: 13px 22px; border-bottom: 1px solid var(--line); }
+.m-adm-t { font-family: var(--serif); font-weight: 400; font-size: 20px; }
+.m-adm-act { margin-left: auto; display: flex; align-items: center; gap: 9px; }
+.m-btn { font-size: 12.5px; padding: 6px 13px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
+.m-btn.pri { background: var(--ink); border-color: var(--ink); color: var(--bg); font-weight: 560; }
+.m-adm-body { padding: 18px 22px 40px; display: flex; flex-direction: column; gap: 13px; }
+.m-block { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.m-block-h { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-bottom: 1px solid var(--line-soft); background: var(--fill-soft); }
+.m-block-h b { font-size: 13px; font-weight: 640; }
+.m-scope { font-family: var(--mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.m-block-b { padding: 15px 16px; }
+.m-fields { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.m-field label { display: block; font-family: var(--mono); font-size: 10px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+.m-input { border: 1px solid var(--line); border-radius: 6px; padding: 7px 10px; font-size: 12.5px; background: var(--bg); }
+.m-input.mono { font-family: var(--mono); font-size: 11.5px; }
+.m-langsw { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; font-family: var(--mono); font-size: 11px; }
+.m-langsw span { padding: 5px 9px; color: var(--muted); }
+.m-langsw .on { background: var(--fill); color: var(--ink); }
+.m-list { display: flex; flex-direction: column; gap: 7px; }
+.m-item { display: flex; align-items: center; gap: 11px; border: 1px solid var(--line); border-radius: 6px; padding: 9px 12px; background: var(--bg); }
+.m-grip { font-family: var(--mono); color: var(--muted); letter-spacing: -1px; }
+.m-item b { font-size: 13px; font-weight: 560; }
+.m-item .r { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* ---------- mobile ---------- */
+.g-phones { display: flex; gap: 24px; flex-wrap: wrap; }
+.g-phone { width: 340px; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; background: var(--bg); }
+.g-phone-bar { height: 26px; background: var(--fill-soft); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+.g-phone-bar::after { content: ""; width: 62px; height: 5px; border-radius: 3px; background: var(--line); }
+.mb-mast { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.mb-tabs { display: flex; gap: 16px; padding: 0 14px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.mb-tabs .m-tab { font-size: 12.5px; white-space: nowrap; }
+.mb-main { padding: 18px 14px 26px; }
+.mb-main .m-h1 { font-size: 26px; }
+.mb-drawer { display: flex; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 7px; padding: 9px 12px; font-size: 12.5px; color: var(--muted); margin-bottom: 16px; }
+.mb-main .m-feats { grid-template-columns: 1fr; }
+
+/* ---------- bảng token ---------- */
+.g-cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 26px; }
+.g-ch { font-family: var(--mono); font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); margin: 0 0 12px; }
+.g-sw { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--line-soft); }
+.g-sw i { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line); display: block; flex: none; }
+.g-sw b { font-size: 12.5px; font-weight: 560; }
+.g-sw span { font-family: var(--mono); font-size: 10.5px; color: var(--muted); margin-left: auto; }
+
+.g-tbl { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.g-tbl th { text-align: left; font-family: var(--mono); font-size: 10.5px; letter-spacing: .09em; text-transform: uppercase; color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--line); }
+.g-tbl td { padding: 10px 10px; border-bottom: 1px solid var(--line-soft); vertical-align: top; }
+.g-scroll { overflow-x: auto; }
+
+@media (max-width: 720px) { .g { padding: 0 16px 64px; } .g-title { font-size: 27px; } }
+</style>
+
+<div class="g">
+
+  <header class="g-head">
+    <p class="g-eyebrow">app-store-doc · đề xuất giao diện v2 · 18.08.2026</p>
+    <h1 class="g-title">Atlas v2</h1>
+    <p class="g-lede">Lấy bố cục và ngôn ngữ thị giác từ trang tài liệu Claude Code: header hai tầng, sidebar trái theo tab, rail phải, tiêu đề chữ serif, nền ấm. Nội dung trong mockup vẫn là dữ liệu thật từ GitHub.</p>
+    <div class="g-chips">
+      <span>HEADER 2 TẦNG</span>
+      <span>SÁNG GẦN NHƯ PHI MÀU</span>
+      <span>TIÊU ĐỀ SERIF · WEIGHT 400</span>
+      <span>CHỜ DUYỆT</span>
+    </div>
+  </header>
+
+  <!-- ══════ 00 · KHÁC GÌ BẢN CŨ ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">00</span><h2 class="g-sec-t">Khác gì bản đang chạy</h2></div>
+    <p class="g-note">Năm thay đổi thật. Mọi giá trị dưới đây đo bằng cách lấy điểm ảnh trên chính trang tham chiếu, không phải phỏng đoán.</p>
+    <div class="g-scroll">
+      <table class="g-tbl">
+        <thead><tr><th style="width:150px">Hạng mục</th><th style="width:31%">Bản đang chạy</th><th style="width:31%">v2</th><th>Vì sao</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Điều hướng</td>
+            <td>Một thanh trên, gộp hết mục vào đó. Sidebar trái chỉ có ở trang app/docs.</td>
+            <td><strong>Hai tầng.</strong> Tầng trên: thương hiệu, tìm kiếm, ngôn ngữ. Tầng dưới: dải tab mục chính. Sidebar trái có ở mọi trang.</td>
+            <td>Đúng yêu cầu: cái quan trọng lên trên, danh mục xuống trái. Thanh trên cũ sẽ tràn khi CMS thêm nhóm.</td>
+          </tr>
+          <tr>
+            <td>Tiêu đề</td>
+            <td>Sans, đậm 700, tracking âm −0.022em.</td>
+            <td><strong>Serif, weight 400, tracking 0.</strong></td>
+            <td>Trang tham chiếu đặt H1 ở 36px/400/normal. Đây là thứ tạo ra cảm giác “tài liệu” chứ không phải “bảng điều khiển”.</td>
+          </tr>
+          <tr>
+            <td>Màu bản sáng</td>
+            <td>Tím điện <code style="font-family:var(--mono)">#4B2ED4</code> cho liên kết, mục đang xem, viền.</td>
+            <td><strong>Gần như phi màu.</strong> Mục đang xem là viên nền xám ấm <code style="font-family:var(--mono)">#E4E4DE</code>.</td>
+            <td>Đo trên trang tham chiếu: eyebrow <code style="font-family:var(--mono)">#0E0E0E</code>, liên kết <code style="font-family:var(--mono)">#101828</code> — bản sáng không có màu nhấn nào.</td>
+          </tr>
+          <tr>
+            <td>Màu bản tối</td>
+            <td>Tím nhạt <code style="font-family:var(--mono)">#9B7CFF</code>.</td>
+            <td><strong>Cam đất <code style="font-family:var(--mono)">#D4A27F</code></strong> trên nền <code style="font-family:var(--mono)">#09090B</code>, viên nền ấm <code style="font-family:var(--mono)">#1E1916</code>.</td>
+            <td>Màu duy nhất trong hệ. Sáng thì im lặng, tối thì ấm lên — nhấn mạnh đến từ cỡ và nền đầy, không từ hue.</td>
+          </tr>
+          <tr>
+            <td>Màu trạng thái</td>
+            <td>5 màu, giữ nguyên vai trò.</td>
+            <td><strong>Giữ cả 5, chỉnh lại cho hợp nền ấm.</strong></td>
+            <td>Chúng mang thông tin thật (đã nối / dự kiến / độc lập / riêng tư), không phải trang trí — bỏ đi là mất dữ liệu.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════ 01 · TOKEN ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">01</span><h2 class="g-sec-t">Màu và chữ</h2></div>
+    <div class="g-cols">
+      <div>
+        <p class="g-ch">Nền và mực — bản sáng</p>
+        <div class="g-sw"><i style="background:#FDFDF7"></i><b>Nền ấm</b><span>#FDFDF7</span></div>
+        <div class="g-sw"><i style="background:#FFFFFF"></i><b>Mặt phẳng</b><span>#FFFFFF</span></div>
+        <div class="g-sw"><i style="background:#E4E4DE"></i><b>Viên nền đang chọn</b><span>#E4E4DE</span></div>
+        <div class="g-sw"><i style="background:#171717"></i><b>Mực</b><span>#171717</span></div>
+        <div class="g-sw"><i style="background:#6B6B63"></i><b>Chữ mờ</b><span>#6B6B63</span></div>
+        <p class="g-note" style="margin-top:12px">Xám ngả vàng-lục nhẹ, không phải kem hồng. Không có màu nhấn ở bản sáng — đúng như trang tham chiếu.</p>
+      </div>
+
+      <div>
+        <p class="g-ch">Nền và mực — bản tối</p>
+        <div class="g-sw"><i style="background:#09090B"></i><b>Nền</b><span>#09090B</span></div>
+        <div class="g-sw"><i style="background:#1E1916"></i><b>Viên nền đang chọn</b><span>#1E1916</span></div>
+        <div class="g-sw"><i style="background:#D4A27F"></i><b>Cam đất</b><span>#D4A27F</span></div>
+        <div class="g-sw"><i style="background:#EDEDE9"></i><b>Mực</b><span>#EDEDE9</span></div>
+        <p class="g-note" style="margin-top:12px">Viên nền <code style="font-family:var(--mono)">#1E1916</code> ấm hơn nền <code style="font-family:var(--mono)">#09090B</code> — hơi ấm nằm ở chỗ đó chứ không ở nền.</p>
+      </div>
+
+      <div>
+        <p class="g-ch">Chữ</p>
+        <div style="padding:9px 0;border-bottom:1px solid var(--line-soft)">
+          <span class="g-ch" style="margin:0 0 4px">Tiêu đề — serif, 400, tracking 0</span>
+          <div style="font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.25">Một tài khoản, mọi ứng dụng</div>
+        </div>
+        <div style="padding:9px 0;border-bottom:1px solid var(--line-soft)">
+          <span class="g-ch" style="margin:0 0 4px">Thân bài — sans, leading 1.75</span>
+          <div style="font-size:14.5px;line-height:1.75;color:var(--muted)">Tiếng Việt có dấu chồng: ế ữ ộ ằ ể. Leading chật thì dấu mũ chạm chân dòng trên.</div>
+        </div>
+        <div style="padding:9px 0">
+          <span class="g-ch" style="margin:0 0 4px">Nhãn &amp; mã — mono, hoa, giãn</span>
+          <div style="font-family:var(--mono);font-size:11.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--accent)">QUICK START · REDIRECT_URI</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:26px;border:1px solid var(--st-standalone);background:var(--st-standalone-bg);border-radius:8px;padding:15px 18px">
+      <p style="margin:0 0 6px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--st-standalone)">Đã kiểm, không đoán</p>
+      <p style="margin:0;font-size:14px;line-height:1.7"><strong>Georgia bị loại khỏi stack serif một cách cố ý.</strong> Nó thiếu glyph tiếng Việt dựng sẵn: <span style="font-family:Georgia,serif;font-size:17px">“Tiếng Việt ế ằ”</span> render ra dấu rời lơ lửng. Mà stack dự phòng của chính trang tham chiếu là <code style="font-family:var(--mono);font-size:12.5px">Georgia, "Times New Roman", serif</code> — chép nguyên si thì mọi tiêu đề tiếng Việt trên Windows đều vỡ. Stack v2 dùng <code style="font-family:var(--mono);font-size:12.5px">Constantia → New York → Iowan Old Style → Cambria → Sitka Text</code>, đã render thử và nhìn tận mắt cả sáu phông.</p>
+    </div>
+  </section>
+
+  <!-- ══════ 02 · TRANG ỨNG DỤNG ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">02</span><h2 class="g-sec-t">Trang ứng dụng</h2></div>
+    <p class="g-note">Màn xương sống. Header hai tầng, sidebar trái là cây của tab <em>Ứng dụng</em>, rail phải là mục lục. Mục đang xem dùng viên nền đầy chứ không phải vạch màu.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">atlas.levananhduc.dev/vi/apps/web-store-apps</div><div class="g-vp">1440</div></div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-mast">
+          <div class="m-brand"><b>Atlas</b><i>·</i><i style="font-size:15px">Tài liệu hệ sinh thái</i></div>
+          <div class="m-mast-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang">Tiếng Việt ▾</div>
+            <span class="m-cta">Mở IDMS ↗</span>
+          </div>
+        </div>
+
+        <nav class="m-tabs">
+          <span class="m-tab">Hệ sinh thái</span>
+          <span class="m-tab on">Ứng dụng</span>
+          <span class="m-tab">Hướng dẫn</span>
+          <span class="m-tab">Tham chiếu</span>
+        </nav>
+
+        <div class="m-shell">
+          <aside class="m-side">
+            <div class="m-side-group">
+              <p class="m-side-h">Lõi</p>
+              <a href="#" class="on">Web Store Apps</a>
+              <a href="#">API Web Store Apps</a>
+            </div>
+            <div class="m-side-group">
+              <p class="m-side-h">Ứng dụng vệ tinh</p>
+              <a href="#">Match CV</a>
+              <a href="#">Manage Gym</a>
+              <a href="#">AI Study Coach</a>
+              <a href="#">Calculate Badminton</a>
+              <a href="#">Shorten Link</a>
+            </div>
+          </aside>
+
+          <main class="m-main">
+            <p class="m-eyebrow">Ứng dụng · Lõi</p>
+            <h1 class="m-h1">Web Store Apps</h1>
+            <p class="m-tag">Cổng đăng nhập và bảng khởi chạy ứng dụng cho toàn hệ sinh thái.</p>
+            <div class="m-meta">
+              <span class="m-slug">LeVanAnhDuc/web-store-apps</span>
+              <span class="m-badge b-core">Lõi</span>
+              <span class="m-chip">Next.js 15</span>
+              <span class="m-chip">React 19</span>
+              <span class="m-chip">Tailwind v4</span>
+              <span style="flex:1"></span>
+              <a href="#" class="m-link">Xem repo ↗</a>
+            </div>
+
+            <h2 class="m-h2">Là gì</h2>
+            <p class="m-p">Giao diện của IDMS. Người dùng đăng nhập một lần ở đây, sau đó mở được mọi ứng dụng trong hệ sinh thái mà không phải đăng nhập lại.</p>
+
+            <h2 class="m-h2">Tính năng</h2>
+            <div class="m-feats">
+              <div class="m-feat"><h4>Đăng nhập bằng email và mã OTP</h4><p>Mã dùng một lần gửi qua email, không cần đặt mật khẩu.</p></div>
+              <div class="m-feat"><h4>Liên kết đăng nhập một chạm</h4><p>Bấm liên kết trong email là vào được.</p></div>
+              <div class="m-feat"><h4>Màn hình đồng ý quyền</h4><p>Ứng dụng xin quyền nào thì hiện đúng danh sách đó.</p></div>
+              <div class="m-feat"><h4>Bảng khởi chạy ứng dụng</h4><p>Chỉ hiện ứng dụng tài khoản đang có quyền mở.</p></div>
+            </div>
+
+            <h2 class="m-h2">Chạy thử trong 5 phút</h2>
+            <p class="m-p">Cần Node 20 trở lên. Máy chủ <code style="font-family:var(--mono);font-size:13px">api-web-store-apps</code> phải chạy trước ở cổng 5000.</p>
+            <div class="m-pre"><code><span class="c-com"># lấy mã nguồn và cài gói</span>
+git clone https://github.com/LeVanAnhDuc/web-store-apps.git
+cd web-store-apps &amp;&amp; npm install
+
+<span class="c-com"># chạy</span>
+npm run dev   <span class="c-com"># → http://localhost:3000</span></code></div>
+          </main>
+
+          <nav class="m-toc">
+            <p class="m-toc-h">☰ Trong trang</p>
+            <a href="#">Là gì</a>
+            <a href="#" class="on">Tính năng</a>
+            <a href="#">Chạy thử trong 5 phút</a>
+            <a href="#">Biến môi trường</a>
+          </nav>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 03 · TRANG CHỦ ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">03</span><h2 class="g-sec-t">Trang chủ</h2></div>
+    <p class="g-note">Vẫn mở đầu bằng sơ đồ đấu nối — nó nói thật rằng chưa ứng dụng vệ tinh nào nối IDMS. Nhưng giờ nằm trong cùng khung ba cột, không còn là một trang có luật riêng.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">atlas.levananhduc.dev/vi</div><div class="g-vp">1440</div></div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-mast">
+          <div class="m-brand"><b>Atlas</b><i>·</i><i style="font-size:15px">Tài liệu hệ sinh thái</i></div>
+          <div class="m-mast-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang">Tiếng Việt ▾</div>
+            <span class="m-cta">Mở IDMS ↗</span>
+          </div>
+        </div>
+
+        <nav class="m-tabs">
+          <span class="m-tab on">Hệ sinh thái</span>
+          <span class="m-tab">Ứng dụng</span>
+          <span class="m-tab">Hướng dẫn</span>
+          <span class="m-tab">Tham chiếu</span>
+        </nav>
+
+        <div class="m-shell">
+          <aside class="m-side">
+            <div class="m-side-group">
+              <p class="m-side-h">Bắt đầu</p>
+              <a href="#" class="on">Tổng quan</a>
+              <a href="#">Kiến trúc</a>
+              <a href="#">Thuật ngữ</a>
+            </div>
+            <div class="m-side-group">
+              <p class="m-side-h">Trạng thái</p>
+              <a href="#">Bản đồ tích hợp</a>
+              <a href="#">Nhật ký thay đổi</a>
+            </div>
+          </aside>
+
+          <main class="m-main">
+            <p class="m-eyebrow">Hệ sinh thái · 5 ứng dụng · 1 máy chủ định danh</p>
+            <h1 class="m-h1">Một tài khoản, mọi ứng dụng.</h1>
+            <p class="m-tag">IDMS cấp danh tính cho toàn bộ hệ sinh thái. Trang này ghi lại từng ứng dụng làm gì, chạy thế nào, và nối vào IDMS ra sao.</p>
+
+            <div class="m-wire">
+              <div class="m-spine"><span class="m-core">IDMS</span></div>
+              <ul class="m-rows">
+                <li class="m-row"><i class="m-lead"></i><div><span class="m-wname">Web Store Apps</span><span class="m-wdesc">Đăng nhập, đồng ý quyền, bảng khởi chạy</span></div><span class="m-badge b-core">Lõi</span></li>
+                <li class="m-row"><i class="m-lead planned"></i><div><span class="m-wname">Match CV</span><span class="m-wdesc">So khớp CV với tin tuyển dụng</span></div><span class="m-badge b-planned">Dự kiến nối</span></li>
+                <li class="m-row"><i class="m-lead planned"></i><div><span class="m-wname">Manage Gym</span><span class="m-wdesc">Quản lý phòng tập</span></div><span class="m-badge b-planned">Dự kiến nối</span></li>
+                <li class="m-row"><i class="m-lead private"></i><div><span class="m-wname">Shorten Link</span><span class="m-wdesc">Rút gọn liên kết</span></div><span class="m-badge b-private">Repo riêng tư</span></li>
+                <li class="m-row"><i class="m-lead none"></i><div><span class="m-wname">Calculate Badminton</span><span class="m-wdesc">Chia tiền sân cầu lông, lưu trên máy</span></div><span class="m-badge b-standalone">Độc lập</span></li>
+              </ul>
+            </div>
+            <div class="m-legend">
+              <div><i></i>Đã nối OAuth</div>
+              <div><i class="planned"></i>Dự kiến nối</div>
+              <div><i class="none"></i>Chạy độc lập</div>
+            </div>
+
+            <h2 class="m-h2">Bắt đầu từ đâu</h2>
+            <div class="m-cards">
+              <div class="m-card">
+                <div class="m-card-top"><span class="m-card-name">Web Store Apps</span><span class="m-badge b-core">Lõi</span></div>
+                <p class="m-slug">LeVanAnhDuc/web-store-apps</p>
+                <p>Trang đăng nhập, màn hình đồng ý quyền và bảng khởi chạy.</p>
+                <div class="m-chips2"><span class="m-chip">Next.js 15</span><span class="m-chip">shadcn/ui</span></div>
+              </div>
+              <div class="m-card">
+                <div class="m-card-top"><span class="m-card-name">Match CV</span><span class="m-badge b-planned">Dự kiến</span></div>
+                <p class="m-slug">LeVanAnhDuc/client-web-app-match-cv</p>
+                <p>Chấm độ khớp CV với mô tả công việc bằng nhúng vector.</p>
+                <div class="m-chips2"><span class="m-chip">NestJS 11</span><span class="m-chip">pgvector</span></div>
+              </div>
+              <div class="m-card">
+                <div class="m-card-top"><span class="m-card-name">Manage Gym</span><span class="m-badge b-planned">Dự kiến</span></div>
+                <p class="m-slug">LeVanAnhDuc/app-manage-gym</p>
+                <p>Nhật ký tập luyện cho một người dùng.</p>
+                <div class="m-chips2"><span class="m-chip">Next.js 16</span><span class="m-chip">Prisma 7</span></div>
+              </div>
+            </div>
+          </main>
+
+          <nav class="m-toc">
+            <p class="m-toc-h">☰ Trong trang</p>
+            <a href="#" class="on">Bản đồ tích hợp</a>
+            <a href="#">Bắt đầu từ đâu</a>
+          </nav>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 04 · QUẢN TRỊ ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">04</span><h2 class="g-sec-t">Trang soạn nội dung</h2></div>
+    <p class="g-note">Quản trị dùng chung masthead nhưng <strong>không có dải tab</strong> — nó không phải một mục của tài liệu. Sidebar giữ nguyên kiểu viên nền. Bốn khối và cách chuyển ngôn ngữ không đổi so với bản đã duyệt.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">atlas.levananhduc.dev/vi/admin/apps/web-store-apps</div><div class="g-vp">1440</div></div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-mast" style="border-bottom:1px solid var(--line)">
+          <div class="m-brand"><b>Atlas</b><i>·</i><i style="font-size:15px">Quản trị</i></div>
+          <div class="m-mast-right">
+            <div class="m-langsw"><span class="on">VI</span><span>EN</span></div>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--st-standalone)">EN thiếu 3/8 mục</span>
+            <span class="m-btn">Xem thử</span>
+            <span class="m-btn pri">Lưu</span>
+          </div>
+        </div>
+
+        <div class="m-adm">
+          <aside class="m-adm-side">
+            <a href="#">Tổng quan</a>
+            <a href="#" class="on">Ứng dụng <span class="n">6</span></a>
+            <a href="#">Trang hướng dẫn <span class="n">4</span></a>
+            <a href="#">Ảnh <span class="n">0</span></a>
+            <a href="#">Ngôn ngữ <span class="n">2</span></a>
+          </aside>
+
+          <div class="m-adm-main">
+            <div class="m-adm-bar">
+              <span class="m-adm-t">Web Store Apps</span>
+              <span class="m-slug">web-store-apps</span>
+              <span class="m-badge b-connected">Công khai</span>
+            </div>
+            <div class="m-adm-body">
+              <div class="m-block">
+                <div class="m-block-h"><b>Thông tin chung</b><span class="m-scope">Chung cho mọi ngôn ngữ</span></div>
+                <div class="m-block-b">
+                  <div class="m-fields">
+                    <div class="m-field"><label>Slug</label><div class="m-input mono">web-store-apps</div></div>
+                    <div class="m-field"><label>Phân loại</label><div class="m-input">Lõi</div></div>
+                    <div class="m-field"><label>Trạng thái</label><div class="m-input">Công khai</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="m-block">
+                <div class="m-block-h"><b>Nội dung</b><span class="m-scope">Đang sửa bản VI</span></div>
+                <div class="m-block-b">
+                  <div class="m-fields" style="grid-template-columns:1fr 1fr">
+                    <div class="m-field"><label>Tên hiển thị</label><div class="m-input">Web Store Apps</div></div>
+                    <div class="m-field"><label>Mô tả một dòng</label><div class="m-input">Cổng đăng nhập và bảng khởi chạy ứng dụng</div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="m-block">
+                <div class="m-block-h"><b>Tính năng</b><span class="m-scope">6 mục · kéo để sắp xếp</span></div>
+                <div class="m-block-b">
+                  <div class="m-list">
+                    <div class="m-item"><span class="m-grip">⠿</span><b>Đăng nhập bằng email và mã OTP</b><span class="r">Sửa · Xoá</span></div>
+                    <div class="m-item"><span class="m-grip">⠿</span><b>Liên kết đăng nhập một chạm</b><span class="r">Sửa · Xoá</span></div>
+                    <div class="m-item"><span class="m-grip">⠿</span><b>Màn hình đồng ý quyền</b><span class="r">Sửa · Xoá</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 05 · MOBILE ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">05</span><h2 class="g-sec-t">Trên điện thoại</h2></div>
+    <p class="g-note">Dải tab cuộn ngang được — đúng cách trang tham chiếu làm. Sidebar trái gập thành một nút mở ngăn kéo, đặt ngay đầu bài chứ không đẩy xuống cuối trang như bản đang chạy.</p>
+    <div class="g-phones">
+      <div class="g-phone">
+        <div class="g-phone-bar"></div>
+        <div class="m">
+          <div class="mb-mast"><b style="font-family:var(--serif);font-weight:400;font-size:18px">Atlas</b><span style="margin-left:auto;font-size:12.5px;color:var(--muted)">⌕ &nbsp; VI ▾</span></div>
+          <nav class="mb-tabs"><span class="m-tab">Hệ sinh thái</span><span class="m-tab on">Ứng dụng</span><span class="m-tab">Hướng dẫn</span><span class="m-tab">Tham chiếu</span></nav>
+          <div class="mb-main">
+            <p class="m-eyebrow">Ứng dụng · Lõi</p>
+            <h1 class="m-h1">Web Store Apps</h1>
+            <p class="m-tag" style="font-size:13.5px">Cổng đăng nhập và bảng khởi chạy ứng dụng.</p>
+            <div class="mb-drawer">☰ &nbsp;Ứng dụng · 7 mục &nbsp;▾</div>
+            <h2 class="m-h2" style="font-size:20px;margin-top:8px">Tính năng</h2>
+            <div class="m-feats">
+              <div class="m-feat"><h4>Đăng nhập bằng email và mã OTP</h4><p>Mã dùng một lần gửi qua email.</p></div>
+              <div class="m-feat"><h4>Liên kết đăng nhập một chạm</h4><p>Bấm liên kết trong email là vào được.</p></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="g-phone">
+        <div class="g-phone-bar"></div>
+        <div class="m">
+          <div class="mb-mast"><b style="font-family:var(--serif);font-weight:400;font-size:18px">Atlas</b><span style="margin-left:auto;font-size:12.5px;color:var(--muted)">⌕ &nbsp; VI ▾</span></div>
+          <nav class="mb-tabs"><span class="m-tab on">Hệ sinh thái</span><span class="m-tab">Ứng dụng</span><span class="m-tab">Hướng dẫn</span></nav>
+          <div class="mb-main">
+            <p class="m-eyebrow">Hệ sinh thái · 5 ứng dụng</p>
+            <h1 class="m-h1">Một tài khoản, mọi ứng dụng.</h1>
+            <div class="m-wire" style="grid-template-columns:52px 1fr;margin-top:20px">
+              <div class="m-spine"><span class="m-core" style="font-size:9px;padding:3px 6px">IDMS</span></div>
+              <ul class="m-rows">
+                <li class="m-row" style="grid-template-columns:32px 1fr;gap:10px;padding:7px 0"><i class="m-lead"></i><div><span class="m-wname" style="font-size:12px">Web Store Apps</span></div></li>
+                <li class="m-row" style="grid-template-columns:32px 1fr;gap:10px;padding:7px 0"><i class="m-lead planned"></i><div><span class="m-wname" style="font-size:12px">Match CV</span></div></li>
+                <li class="m-row" style="grid-template-columns:32px 1fr;gap:10px;padding:7px 0"><i class="m-lead planned"></i><div><span class="m-wname" style="font-size:12px">Manage Gym</span></div></li>
+                <li class="m-row" style="grid-template-columns:32px 1fr;gap:10px;padding:7px 0"><i class="m-lead none"></i><div><span class="m-wname" style="font-size:12px">Calculate Badminton</span></div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════ 06 · CẦN QUYẾT ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">06</span><h2 class="g-sec-t">Ba chỗ cần bạn quyết</h2></div>
+    <div class="g-scroll">
+      <table class="g-tbl">
+        <thead><tr><th style="width:150px">Chỗ</th><th style="width:40%">Mình chọn</th><th>Cách khác</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Dải tab lấy từ đâu</td>
+            <td><strong>Chrome cố định</strong>, dịch qua next-intl: Hệ sinh thái · Ứng dụng · Hướng dẫn · Tham chiếu. Sidebar vẫn lấy từ DB.</td>
+            <td>Lấy từ <code style="font-family:var(--mono)">DocPage.group</code> — CMS thêm tab được, nhưng phải giải bài toán dịch <code style="font-family:var(--mono)">group</code> (đang là quyết định treo trong status.md).</td>
+          </tr>
+          <tr>
+            <td>Tab “Tham chiếu”</td>
+            <td>Có sẵn chỗ, <strong>chưa dựng nội dung</strong> — sẽ hiện dạng chữ mờ không bấm được.</td>
+            <td>Bỏ hẳn tới khi có nội dung. Ba tab trông hơi thưa nhưng không hứa thứ chưa có.</td>
+          </tr>
+          <tr>
+            <td>Bản sáng không màu</td>
+            <td><strong>Trung thành với trang tham chiếu</strong>: sáng phi màu, tối mới có cam đất.</td>
+            <td>Cho cam đất chạy ở cả hai bản. Nhất quán hơn, nhưng mất đúng cái làm nên tính cách của trang tham chiếu.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
