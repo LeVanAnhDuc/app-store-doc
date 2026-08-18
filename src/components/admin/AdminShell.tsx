@@ -8,6 +8,8 @@ import styles from "./AdminShell.module.css";
 
 /** Số đếm cạnh từng mục điều hướng. Đếm mọi trạng thái, kể cả bản nháp. */
 export type AdminCounts = {
+  /** Số nút trong cây điều hướng, kể cả nút nháp. */
+  nav: number;
   apps: number;
   docs: number;
   media: number;
@@ -66,6 +68,13 @@ export function AdminShell({
   const root = `/${locale}/admin`;
   const items: NavItem[] = [
     { key: "overview", label: t("admin.nav.overview"), href: root, ready: true },
+    {
+      key: "navigation",
+      label: t("admin.nav.navigation"),
+      href: `${root}/navigation`,
+      count: counts.nav,
+      ready: true,
+    },
     {
       key: "apps",
       label: t("admin.nav.apps"),

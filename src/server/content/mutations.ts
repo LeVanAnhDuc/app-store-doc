@@ -844,6 +844,52 @@ function navNodeNotFound(id: string): Error {
   return new Error(`Không tìm thấy nút điều hướng "${id}". Có thể nó vừa bị xoá.`);
 }
 
+/**
+ * Đổi slug thành id cho hai cột trỏ của nút lá.
+ *
+ * Trình soạn ở trình duyệt chỉ biết slug: id là khoá nội bộ của DB, và đưa nó ra
+ * tận HTML rồi nhận lại qua mạng là thêm một thứ phải kiểm mà không đổi lấy gì.
+ * Tra ở đây vì tầng nội dung là nơi duy nhất chạm Prisma.
+ *
+ * Không tìm thấy thì ném lỗi chứ không lặng lẽ tạo một nút không gắn gì —
+ * `navTargetFor` sẽ chặn nút đó, nhưng thông điệp lúc ấy nói về `kind`, không nói
+ * về cái slug mà người dùng vừa chọn.
+ */
+export async function navTargetIds(input: {
+  appSlug?: string;
+  docSlug?: string;
+}): Promise<{ appId?: string; docPageId?: string }> {
+  if (input.appSlug !== undefined) {
+    const app = await prisma.app.findUnique({
+      where: { slug: input.appSlug },
+      select: { id: true },
+    });
+    if (!app) {
+      throw new Error(
+        `Không tìm thấy ứng dụng có slug "${input.appSlug}". ` +
+          "Có thể nó vừa bị xoá hoặc vừa đổi slug — hãy tải lại trang rồi chọn lại.",
+      );
+    }
+    return { appId: app.id };
+  }
+
+  if (input.docSlug !== undefined) {
+    const doc = await prisma.docPage.findUnique({
+      where: { slug: input.docSlug },
+      select: { id: true },
+    });
+    if (!doc) {
+      throw new Error(
+        `Không tìm thấy trang tài liệu có slug "${input.docSlug}". ` +
+          "Có thể nó vừa bị xoá hoặc vừa đổi slug — hãy tải lại trang rồi chọn lại.",
+      );
+    }
+    return { docPageId: doc.id };
+  }
+
+  return {};
+}
+
 /** Thêm một nút vào cây. Vắng `index` thì nút mới nằm cuối danh sách anh em. */
 export async function createNavNode(input: CreateNavNodeInput): Promise<SavedNavNode> {
   const target = navTargetFor(input.kind, input.appId ?? null, input.docPageId ?? null);

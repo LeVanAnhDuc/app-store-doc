@@ -12,6 +12,7 @@ import {
 } from "@/lib/schemas";
 import { renderMarkdown } from "@/lib/markdown";
 import { requireAdmin, signOut } from "@/server/auth";
+import { navKindValues } from "@/server/content/nav";
 import * as content from "@/server/content/mutations";
 import { MAX_IMAGE_BYTES, deleteImage, listImages, uploadImage } from "@/server/media";
 
@@ -185,6 +186,90 @@ export async function setDefaultLocale(raw: unknown): Promise<void> {
   await requireAdmin(); // luôn là dòng đầu tiên
   const input = z.object({ code: localeCodeSchema }).parse(raw);
   await content.setDefaultLocale(input.code);
+}
+
+// ---------------------------------------------------------------------------
+// Cây điều hướng
+// ---------------------------------------------------------------------------
+
+/**
+ * Năm cửa ghi của cây, mỗi cửa mở đầu bằng `requireAdmin()` như mọi action khác.
+ *
+ * Sáu bất biến của cây (spec §4) **không** kiểm ở đây: chúng được kiểm trong
+ * transaction của `writeNavTree`, trên trạng thái sẽ được cam kết. Kiểm ở tầng
+ * này chỉ là kiểm hình dạng dữ liệu đến từ mạng.
+ *
+ * Nút lá đi qua **slug**, không qua id: xem `content.navTargetIds`.
+ */
+const navKindSchema = z.enum(navKindValues);
+
+const navLabelsSchema = z.array(
+  z.object({ locale: localeCodeSchema, label: z.string() }),
+);
+
+const createNavNodeSchema = z.object({
+  parentId: z.string().min(1).nullable(),
+  kind: navKindSchema,
+  labels: navLabelsSchema.optional(),
+  appSlug: z.string().min(1).optional(),
+  docSlug: z.string().min(1).optional(),
+});
+
+export async function createNavNode(raw: unknown): Promise<{ id: string }> {
+  await requireAdmin(); // luôn là dòng đầu tiên
+  const input = createNavNodeSchema.parse(raw);
+  const target = await content.navTargetIds(input);
+
+  const node = await content.createNavNode({
+    parentId: input.parentId,
+    kind: input.kind,
+    ...(input.labels ? { labels: input.labels } : {}),
+    ...target,
+  });
+
+  return { id: node.id };
+}
+
+const updateNavNodeSchema = z.object({
+  id: z.string().min(1),
+  status: statusSchema,
+  labels: navLabelsSchema.optional(),
+});
+
+export async function updateNavNode(raw: unknown): Promise<{ id: string }> {
+  await requireAdmin(); // luôn là dòng đầu tiên
+  const input = updateNavNodeSchema.parse(raw);
+  const node = await content.updateNavNode(input);
+  return { id: node.id };
+}
+
+export async function deleteNavNode(raw: unknown): Promise<void> {
+  await requireAdmin(); // luôn là dòng đầu tiên
+  const input = z.object({ id: z.string().min(1) }).parse(raw);
+  await content.deleteNavNode(input.id);
+}
+
+const moveNavNodeSchema = z.object({
+  id: z.string().min(1),
+  parentId: z.string().min(1).nullable(),
+  index: z.number().int().min(0),
+});
+
+export async function moveNavNode(raw: unknown): Promise<void> {
+  await requireAdmin(); // luôn là dòng đầu tiên
+  const input = moveNavNodeSchema.parse(raw);
+  await content.moveNavNode(input);
+}
+
+const reorderNavSiblingsSchema = z.object({
+  parentId: z.string().min(1).nullable(),
+  ids: z.array(z.string().min(1)).min(1),
+});
+
+export async function reorderNavSiblings(raw: unknown): Promise<void> {
+  await requireAdmin(); // luôn là dòng đầu tiên
+  const input = reorderNavSiblingsSchema.parse(raw);
+  await content.reorderSiblings(input);
 }
 
 // ---------------------------------------------------------------------------

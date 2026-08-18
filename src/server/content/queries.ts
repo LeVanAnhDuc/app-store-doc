@@ -30,7 +30,7 @@ import { tags } from "./tags";
  * Slug dành riêng cho nội dung trang chủ.
  *
  * `/[locale]/docs/home` **không** tồn tại: `docs/[slug]/page.tsx` gọi `notFound()`
- * cho slug này, và `listNav`/`getStaticSlugs` loại nó khỏi sidebar. Trang chủ
+ * cho slug này, và `getNavTree`/`getStaticSlugs` loại nó khỏi sidebar. Trang chủ
  * `/[locale]` hiện dựng từ chuỗi giao diện cộng danh sách ứng dụng (mockup màn 01),
  * nên bản ghi `DocPage(slug="home")` là chỗ chờ sẵn cho nội dung trang chủ chứ
  * chưa được trang nào kết xuất — vì vậy seed để nó ở `DRAFT`: publish nó sẽ đưa
@@ -129,20 +129,6 @@ export type DocPageDetail = {
 
   sections: ResolvedSection[];
   toc: TocItem[];
-};
-
-export type NavItem = {
-  slug: string;
-  title: string;
-  /** Đã có tiền tố locale, dùng thẳng cho `<Link href>`. */
-  href: string;
-  isFallback: boolean;
-};
-
-/** Một nhóm trong sidebar. `group === null` là nhóm không tên. */
-export type NavGroup = {
-  group: string | null;
-  items: NavItem[];
 };
 
 export type ReadOptions = {
@@ -721,6 +707,7 @@ export function hasContentDatabase(): boolean {
 
 /** Số đếm cho cột điều hướng bên trái của CMS. */
 export type AdminCounts = {
+  nav: number;
   apps: number;
   docs: number;
   media: number;
@@ -737,16 +724,17 @@ export type AdminCounts = {
  * bằng số dòng người dùng thấy khi bấm vào mục đó.
  */
 export async function getAdminCounts(): Promise<AdminCounts> {
-  if (!hasDatabase()) return { apps: 0, docs: 0, media: 0, locales: 0 };
+  if (!hasDatabase()) return { nav: 0, apps: 0, docs: 0, media: 0, locales: 0 };
 
-  const [apps, docs, media, localeCount] = await Promise.all([
+  const [nav, apps, docs, media, localeCount] = await Promise.all([
+    prisma.navNode.count(),
     prisma.app.count(),
     prisma.docPage.count(),
     prisma.media.count(),
     prisma.locale.count(),
   ]);
 
-  return { apps, docs, media, locales: localeCount };
+  return { nav, apps, docs, media, locales: localeCount };
 }
 
 // ---------------------------------------------------------------------------
@@ -871,51 +859,6 @@ export function getDocPage(
 
   return unstable_cache(() => loadDocPage(slug, locale, false), ["doc", slug, locale], {
     tags: [tags.doc(slug)],
-  })();
-}
-
-// ---------------------------------------------------------------------------
-// Điều hướng sidebar
-// ---------------------------------------------------------------------------
-
-async function loadNav(locale: string): Promise<NavGroup[]> {
-  const fallback = await loadDefaultLocale();
-
-  const pages = await prisma.docPage.findMany({
-    where: { status: PUBLISHED, slug: { not: LANDING_DOC_SLUG } },
-    orderBy: [{ order: "asc" }, { slug: "asc" }],
-    select: {
-      slug: true,
-      translations: { select: { locale: true, title: true } },
-    },
-  });
-
-  // `DocPage.group` đã bị xoá (spec §3.3) nên tạm thời mọi trang nằm trong đúng
-  // một nhóm không tên, giữ thứ tự theo `order`. Nhóm thật sẽ do `NavNode` kiểu
-  // `CONTAINER` sinh ra ở Task 5 — lúc đó `listNav` bị thay hẳn bằng `getNavTree`.
-  const items: NavItem[] = [];
-
-  for (const page of pages) {
-    const translated = resolveTranslation(page.translations, locale, fallback);
-    if (!translated) continue;
-
-    items.push({
-      slug: page.slug,
-      title: translated.value.title,
-      href: `/${locale}/docs/${page.slug}`,
-      isFallback: translated.isFallback,
-    });
-  }
-
-  return items.length === 0 ? [] : [{ group: null, items }];
-}
-
-/** Cây điều hướng sidebar: một nhóm không tên, sắp theo `DocPage.order`. */
-export function listNav(locale: string): Promise<NavGroup[]> {
-  if (!hasDatabase()) return Promise.resolve([]);
-
-  return unstable_cache(() => loadNav(locale), ["nav", locale], {
-    tags: [tags.nav()],
   })();
 }
 
