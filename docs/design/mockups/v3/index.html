@@ -17,7 +17,9 @@
   /* Georgia bị loại cố ý: thiếu glyph tiếng Việt dựng sẵn, "ế" ra dấu rời. */
   --serif:Constantia,"New York","Iowan Old Style",Cambria,"Sitka Text",Charter,Palatino,"Palatino Linotype","Times New Roman",serif;
   --mono:"Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
-  --t-xs:11.5px; --t-sm:13px; --t-md:15px; --t-lg:17px; --t-xl:21px; --t-3xl:36px;
+  --t-2xs:12px; --t-xs:13px; --t-sm:14px; --t-md:16px; --t-lg:18px; --t-xl:22px; --t-2xl:26px; --t-3xl:36px; --t-4xl:44px;
+  /* Ngưỡng bấm nhỏ nhất — WCAG 2.2 SC 2.5.8 đòi 24x24 CSS px. */
+  --tap:28px;
   --lh-body:1.75; --lh-head:1.25;
 }
 @media (prefers-color-scheme: dark) {
@@ -68,25 +70,25 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 .g-vp { font-family:var(--mono); font-size:var(--t-xs); color:var(--muted); }
 .g-body { overflow-x:auto; } .g-canvas { min-width:1080px; }
 .g-scroll { overflow-x:auto; }
-.g-tbl { width:100%; border-collapse:collapse; font-size:13.5px; }
-.g-tbl th { text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--line); }
+.g-tbl { width:100%; border-collapse:collapse; font-size:15px; }
+.g-tbl th { text-align:left; font-family:var(--mono); font-size:12px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--line); }
 .g-tbl td { padding:10px; border-bottom:1px solid var(--line-soft); vertical-align:top; }
 
 /* ============================================================
    M — sản phẩm
    ============================================================ */
-.m { font-size:14px; background:var(--bg); }
-.m-mast { display:flex; align-items:center; gap:16px; padding:0 22px; height:54px; }
-.m-brand b { font-family:var(--serif); font-weight:400; font-size:20px; }
-.m-brand i { font-style:normal; font-family:var(--serif); font-size:15px; color:var(--muted); margin-left:8px; }
+.m { font-size:16px; background:var(--bg); }
+.m-mast { display:flex; align-items:center; gap:16px; padding:0 22px; height:62px; }
+.m-brand b { font-family:var(--serif); font-weight:400; font-size:23px; }
+.m-brand i { font-style:normal; font-family:var(--serif); font-size:17px; color:var(--muted); margin-left:8px; }
 .m-mast-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
-.m-search { display:flex; align-items:center; gap:42px; border:1px solid var(--line); border-radius:6px; padding:6px 10px; font-size:12.5px; color:var(--muted); background:var(--surface); }
-.m-kbd { font-family:var(--mono); font-size:10.5px; border:1px solid var(--line); border-radius:3px; padding:1px 5px; }
-.m-lang { font-size:12.5px; color:var(--muted); }
-.m-cta { background:var(--ink); color:var(--bg); font-size:12.5px; font-weight:560; padding:7px 13px; border-radius:6px; }
+.m-search { display:flex; align-items:center; gap:42px; border:1px solid var(--line); border-radius:6px; padding:8px 12px; min-height:var(--tap); font-size:14px; color:var(--muted); background:var(--surface); }
+.m-kbd { font-family:var(--mono); font-size:12px; border:1px solid var(--line); border-radius:3px; padding:1px 5px; }
+.m-lang { font-size:14px; color:var(--muted); }
+.m-cta { background:var(--ink); color:var(--bg); font-size:14px; font-weight:560; padding:9px 15px; min-height:var(--tap); border-radius:6px; }
 
 .m-tabs { display:flex; align-items:center; gap:22px; padding:0 22px; border-bottom:1px solid var(--line); }
-.m-tab { padding:10px 0 11px; font-size:13.5px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
+.m-tab { padding:13px 0 14px; font-size:15px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
 .m-tab.on { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
 
 .m-shell { display:grid; grid-template-columns:250px minmax(0,1fr) 200px; min-height:600px; }
@@ -95,34 +97,34 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 /* --- cây điều hướng công khai --- */
 .nav-l { list-style:none; margin:0; padding:0; }
 .nav-l .nav-l { margin-left:12px; padding-left:9px; border-left:1px solid var(--line-soft); }
-.nav-i { display:flex; align-items:center; gap:6px; padding:5px 9px; border-radius:6px; font-size:13.5px; color:var(--ink-2); text-decoration:none; }
+.nav-i { display:flex; align-items:center; gap:7px; padding:7px 10px; min-height:var(--tap); border-radius:6px; font-size:15px; color:var(--ink-2); text-decoration:none; }
 .nav-i.ct { font-weight:640; color:var(--ink); cursor:pointer; }
 .nav-i.on { background:var(--fill); font-weight:560; color:var(--ink); }
 .nav-c { font-family:var(--mono); font-size:11px; color:var(--muted); width:11px; flex:none; text-align:center; }
 
 .m-main { padding:26px 40px 56px; min-width:0; border-left:1px solid var(--line); border-right:1px solid var(--line); }
-.m-eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--eyebrow); margin:0 0 10px; }
-.m-h1 { font-family:var(--serif); font-weight:400; font-size:34px; line-height:1.22; margin:0 0 10px; }
-.m-tag { color:var(--muted); font-size:15px; margin:0 0 18px; max-width:62ch; }
+.m-eyebrow { font-family:var(--mono); font-size:12.5px; letter-spacing:.13em; text-transform:uppercase; color:var(--eyebrow); margin:0 0 10px; }
+.m-h1 { font-family:var(--serif); font-weight:400; font-size:var(--t-3xl); line-height:1.22; margin:0 0 10px; }
+.m-tag { color:var(--muted); font-size:17px; margin:0 0 18px; max-width:62ch; }
 .m-meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-bottom:22px; border-bottom:1px solid var(--line-soft); }
-.m-slug { font-family:var(--mono); font-size:11px; color:var(--muted); }
-.m-link { font-family:var(--mono); font-size:11.5px; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line); }
-.m-h2 { font-family:var(--serif); font-weight:400; font-size:24px; line-height:1.3; margin:32px 0 12px; }
-.m-p { font-size:15px; line-height:var(--lh-body); margin:0 0 14px; max-width:66ch; }
-.m-badge { font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase; padding:3px 7px; border-radius:3px; white-space:nowrap; }
+.m-slug { font-family:var(--mono); font-size:12.5px; color:var(--muted); }
+.m-link { font-family:var(--mono); font-size:13px; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line); }
+.m-h2 { font-family:var(--serif); font-weight:400; font-size:var(--t-2xl); line-height:1.3; margin:32px 0 12px; }
+.m-p { font-size:var(--t-md); line-height:var(--lh-body); margin:0 0 16px; max-width:66ch; }
+.m-badge { font-family:var(--mono); font-size:11px; letter-spacing:.09em; text-transform:uppercase; padding:3px 7px; border-radius:3px; white-space:nowrap; }
 .b-core{background:var(--st-core-bg);color:var(--st-core)}
 .b-connected{background:var(--st-connected-bg);color:var(--st-connected)}
 .b-standalone{background:var(--st-standalone-bg);color:var(--st-standalone)}
 .b-planned{background:var(--st-planned-bg);color:var(--st-planned)}
 .b-private{background:var(--st-private-bg);color:var(--st-private)}
-.m-chip { font-family:var(--mono); font-size:10px; color:var(--muted); border:1px solid var(--line); border-radius:3px; padding:2px 6px; }
+.m-chip { font-family:var(--mono); font-size:12px; color:var(--muted); border:1px solid var(--line); border-radius:3px; padding:2px 6px; }
 .m-feats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:16px 0 8px; }
 .m-feat { border:1px solid var(--line); border-radius:7px; padding:13px 15px; background:var(--surface); }
-.m-feat h4 { margin:0 0 4px; font-size:13.5px; font-weight:620; }
-.m-feat p { margin:0; font-size:12.5px; color:var(--muted); line-height:1.6; }
+.m-feat h4 { margin:0 0 5px; font-size:15px; font-weight:620; }
+.m-feat p { margin:0; font-size:13.5px; color:var(--muted); line-height:1.6; }
 .m-toc { padding:26px 16px; }
-.m-toc-h { font-size:12.5px; color:var(--muted); margin:0 0 12px; }
-.m-toc a { display:block; font-size:12.5px; color:var(--muted); text-decoration:none; padding:5px 0; }
+.m-toc-h { font-size:13px; color:var(--muted); margin:0 0 12px; }
+.m-toc a { display:block; font-size:14px; color:var(--muted); text-decoration:none; padding:5px 0; }
 .m-toc a.on { color:var(--ink); font-weight:600; }
 
 /* ============================================================
@@ -130,21 +132,21 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
    ============================================================ */
 .tr-shell { display:grid; grid-template-columns:250px minmax(0,1fr) 300px; min-height:640px; }
 .tr-adm { padding:20px 12px; }
-.tr-adm a { display:flex; justify-content:space-between; padding:7px 11px; border-radius:6px; font-size:13.5px; color:var(--ink-2); text-decoration:none; }
+.tr-adm a { display:flex; justify-content:space-between; align-items:center; padding:8px 11px; min-height:var(--tap); border-radius:6px; font-size:15px; color:var(--ink-2); text-decoration:none; }
 .tr-adm a.on { background:var(--fill); font-weight:560; color:var(--ink); }
-.tr-adm .n { font-family:var(--mono); font-size:10.5px; color:var(--muted); }
+.tr-adm .n { font-family:var(--mono); font-size:12px; color:var(--muted); }
 
 .tr-mid { border-left:1px solid var(--line); border-right:1px solid var(--line); min-width:0; }
 .tr-bar { display:flex; align-items:center; gap:12px; padding:13px 20px; border-bottom:1px solid var(--line); }
 .tr-bar h3 { font-family:var(--serif); font-weight:400; font-size:20px; margin:0; }
 .tr-bar .r { margin-left:auto; display:flex; gap:8px; }
-.m-btn { font-size:12.5px; padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink); }
+.m-btn { font-size:14px; padding:8px 14px; min-height:var(--tap); border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink); }
 .m-btn.pri { background:var(--ink); border-color:var(--ink); color:var(--bg); font-weight:560; }
-.m-btn.dash { border-style:dashed; color:var(--accent); border-color:var(--accent); font-family:var(--mono); font-size:11px; }
+.m-btn.dash { border-style:dashed; color:var(--accent); border-color:var(--accent); font-family:var(--mono); font-size:13px; }
 
 .tr-body { padding:16px 20px 40px; }
-.tr-lbl { font-family:var(--mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); margin:0 0 9px; }
-.tr-hint { font-size:12px; color:var(--muted); margin:0 0 14px; }
+.tr-lbl { font-family:var(--mono); font-size:12px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); margin:0 0 9px; }
+.tr-hint { font-size:13.5px; color:var(--muted); margin:0 0 14px; }
 
 .tr-l { list-style:none; margin:0; padding:0; }
 .tr-l .tr-l { margin-left:14px; padding-left:12px; border-left:1px solid var(--line); }
@@ -153,38 +155,38 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 .tr-row.root { background:var(--fill-soft); }
 .tr-grip { font-family:var(--mono); color:var(--muted); letter-spacing:-1px; cursor:grab; }
 .tr-tw { font-family:var(--mono); font-size:12px; color:var(--ink-2); width:11px; flex:none; text-align:center; }
-.tr-name { font-size:13.5px; font-weight:560; }
-.tr-kind { font-family:var(--mono); font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; padding:2px 6px; border-radius:3px; }
+.tr-name { font-size:15px; font-weight:560; }
+.tr-kind { font-family:var(--mono); font-size:11px; letter-spacing:.07em; text-transform:uppercase; padding:2px 6px; border-radius:3px; }
 .k-ct { background:var(--fill); color:var(--muted); }
 .k-app { background:var(--st-core-bg); color:var(--st-core); }
 .k-doc { background:var(--st-connected-bg); color:var(--st-connected); }
 .tr-act { margin-left:auto; display:flex; align-items:center; gap:3px; }
-.tr-b { font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 6px; background:var(--bg); min-width:22px; text-align:center; }
+.tr-b { font-family:var(--mono); font-size:13px; color:var(--muted); border:1px solid var(--line); border-radius:5px; background:var(--bg); min-width:var(--tap); min-height:var(--tap); display:inline-flex; align-items:center; justify-content:center; }
 .tr-b.hl { color:var(--accent); border-color:var(--accent); }
-.tr-add { font-family:var(--mono); font-size:11px; color:var(--accent); border:1px dashed var(--accent); border-radius:6px; padding:5px 10px; display:inline-block; margin:2px 0 10px 14px; }
+.tr-add { font-family:var(--mono); font-size:13px; color:var(--accent); border:1px dashed var(--accent); border-radius:6px; padding:5px 10px; display:inline-block; margin:2px 0 10px 14px; }
 
 /* --- bảng thuộc tính --- */
 .tr-pr { padding:18px 16px; }
 .tr-pr h4 { font-family:var(--serif); font-weight:400; font-size:17px; margin:0 0 3px; }
-.tr-pr .sub { font-family:var(--mono); font-size:10.5px; color:var(--muted); margin:0 0 16px; }
+.tr-pr .sub { font-family:var(--mono); font-size:12px; color:var(--muted); margin:0 0 16px; }
 .m-field { margin-bottom:12px; }
-.m-field label { display:block; font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
-.m-input { border:1px solid var(--line); border-radius:6px; padding:7px 10px; font-size:12.5px; background:var(--bg); }
-.m-input.mono { font-family:var(--mono); font-size:11.5px; }
-.m-langsw { display:flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; font-family:var(--mono); font-size:11px; }
-.m-langsw span { padding:5px 9px; color:var(--muted); }
+.m-field label { display:block; font-family:var(--mono); font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+.m-input { border:1px solid var(--line); border-radius:6px; padding:9px 12px; min-height:var(--tap); font-size:14px; background:var(--bg); }
+.m-input.mono { font-family:var(--mono); font-size:13.5px; }
+.m-langsw { display:flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; font-family:var(--mono); font-size:13px; }
+.m-langsw span { padding:7px 11px; min-height:var(--tap); display:inline-flex; align-items:center; color:var(--muted); }
 .m-langsw .on { background:var(--fill); color:var(--ink); }
-.tr-lock { border:1px solid var(--st-standalone); background:var(--st-standalone-bg); border-radius:7px; padding:11px 13px; font-size:12.5px; line-height:1.65; }
-.tr-lock b { display:block; font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--st-standalone); margin-bottom:4px; }
+.tr-lock { border:1px solid var(--st-standalone); background:var(--st-standalone-bg); border-radius:7px; padding:13px 15px; font-size:13.5px; line-height:1.65; }
+.tr-lock b { display:block; font-family:var(--mono); font-size:11.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--st-standalone); margin-bottom:4px; }
 
 /* --- trình soạn nội dung: hàng có nút thứ tự --- */
 .m-block { border:1px solid var(--line); border-radius:8px; background:var(--surface); overflow:hidden; margin-bottom:13px; }
 .m-block-h { display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line-soft); background:var(--fill-soft); }
-.m-block-h b { font-size:13px; font-weight:640; }
-.m-scope { font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.m-block-h b { font-size:15px; font-weight:640; }
+.m-scope { font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
 .m-block-b { padding:14px 16px; }
 .m-item { display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:6px; padding:8px 11px; background:var(--bg); margin-bottom:6px; }
-.m-item b { font-size:13px; font-weight:560; }
+.m-item b { font-size:15px; font-weight:560; }
 
 @media (max-width:720px){ .g{padding:0 16px 64px} .g-title{font-size:27px} }
 </style>
@@ -203,9 +205,53 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
     </div>
   </header>
 
-  <!-- ══════ 00 · MÔ HÌNH ══════ -->
+  <!-- ══════ 00 · CỠ CHỮ ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">00</span><h2 class="g-sec-t">Một cây, ba loại nút</h2></div>
+    <div class="g-sec-h"><span class="g-num">00</span><h2 class="g-sec-t">Cỡ chữ — đo từ năm trang docs lớn</h2></div>
+    <p class="g-note">Bản v2 bị nhỏ một cách hệ thống: thân bài 15px, nền chung 14px, sidebar 13.5px, nhãn mono 10px. Thay vì tự chọn cỡ, mình mở năm trang docs và đọc <code style="font-family:var(--mono)">getComputedStyle</code> của đoạn văn dài nhất trong bài.</p>
+    <div class="g-scroll">
+      <table class="g-tbl">
+        <thead><tr><th>Trang</th><th>Thân bài</th><th>Cao dòng</th><th>Tỉ lệ</th><th>H1</th><th>H2</th><th>Sidebar</th><th>~ký tự/dòng</th></tr></thead>
+        <tbody>
+          <tr><td>Claude Code docs</td><td class="m-slug">16</td><td class="m-slug">26.4</td><td class="m-slug">1.65</td><td class="m-slug">36</td><td class="m-slug">16</td><td class="m-slug">14</td><td class="m-slug">86</td></tr>
+          <tr><td>Stripe docs</td><td class="m-slug">16</td><td class="m-slug">26</td><td class="m-slug">1.63</td><td class="m-slug">32</td><td class="m-slug">24</td><td class="m-slug">—</td><td class="m-slug">62</td></tr>
+          <tr><td>Next.js docs</td><td class="m-slug">16</td><td class="m-slug">27.2</td><td class="m-slug">1.70</td><td class="m-slug">36</td><td class="m-slug">24</td><td class="m-slug">14</td><td class="m-slug">86</td></tr>
+          <tr><td>Tailwind docs</td><td class="m-slug">14</td><td class="m-slug">28</td><td class="m-slug">2.00</td><td class="m-slug">30</td><td class="m-slug">18</td><td class="m-slug">14</td><td class="m-slug">96</td></tr>
+          <tr><td>MDN</td><td class="m-slug">16</td><td class="m-slug">28</td><td class="m-slug">1.75</td><td class="m-slug">40</td><td class="m-slug">24</td><td class="m-slug">16</td><td class="m-slug">96</td></tr>
+          <tr style="background:var(--accent-bg)"><td><strong>Ducker v3</strong></td><td class="m-slug"><strong>16</strong></td><td class="m-slug"><strong>28</strong></td><td class="m-slug"><strong>1.75</strong></td><td class="m-slug"><strong>36</strong></td><td class="m-slug"><strong>26</strong></td><td class="m-slug"><strong>15</strong></td><td class="m-slug"><strong>66</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="g-cols" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px;margin-top:22px">
+      <div style="border:1px solid var(--line);border-radius:8px;padding:16px 18px;background:var(--surface)">
+        <p class="tr-lbl">Bậc cỡ mới</p>
+        <table class="g-tbl" style="font-size:14px">
+          <tbody>
+            <tr><td class="m-slug">--t-2xs</td><td class="m-slug">12</td><td>Nhãn mono, chip</td></tr>
+            <tr><td class="m-slug">--t-xs</td><td class="m-slug">13</td><td>Chú thích</td></tr>
+            <tr><td class="m-slug">--t-sm</td><td class="m-slug">14</td><td>Mục lục, nút, ô nhập</td></tr>
+            <tr><td class="m-slug">--t-md</td><td class="m-slug">16</td><td><strong>Thân bài</strong></td></tr>
+            <tr><td class="m-slug">--t-lg</td><td class="m-slug">18</td><td>Mô tả một dòng</td></tr>
+            <tr><td class="m-slug">--t-2xl</td><td class="m-slug">26</td><td>H2</td></tr>
+            <tr><td class="m-slug">--t-3xl</td><td class="m-slug">36</td><td>H1</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="border:1px solid var(--st-standalone);background:var(--st-standalone-bg);border-radius:8px;padding:16px 18px">
+        <p class="tr-lbl" style="color:var(--st-standalone)">Một lỗi tiếp cận đã tìm ra khi đo</p>
+        <p style="margin:0 0 12px;font-size:14px;line-height:1.7">Bộ nút thứ tự <code style="font-family:var(--mono);font-size:13px">⤒ ↑ ↓ ⤓</code> ở bản v2 chỉ cao khoảng <strong>18px</strong>. <strong>WCAG 2.2 SC 2.5.8 đòi vùng bấm tối thiểu 24×24 CSS px.</strong> Bốn nút nhỏ xíu nằm sát nhau là chỗ dễ bấm nhầm nhất trong cả trang quản trị — mà bấm nhầm ⤓ thay vì ↓ thì mục nhảy thẳng xuống cuối.</p>
+        <p style="margin:0;font-size:14px;line-height:1.7">Đã thêm token <code style="font-family:var(--mono);font-size:13px">--tap: 28px</code> và áp cho mọi thứ bấm được: nút thứ tự, mục sidebar, ô nhập, nút chuyển ngôn ngữ, ô tìm kiếm. 28 chứ không phải 24 để còn chỗ thở.</p>
+      </div>
+    </div>
+
+    <p class="g-note" style="margin-top:18px"><strong>Đo dòng 66 ký tự</strong> — nằm giữa Stripe (62) và nhóm còn lại (86–96). Chọn phía hẹp vì tiếng Việt nhiều dấu, dòng dài mắt dễ lạc khi xuống dòng. <strong>Tỉ lệ dòng 1.75</strong> là cao nhất trong nhóm trừ Tailwind, và đây không phải sở thích: dấu chồng tiếng Việt (ế ữ ộ ằ) chạm chân dòng trên ở tỉ lệ chật.</p>
+  </section>
+
+  <!-- ══════ 01 · MÔ HÌNH ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">01</span><h2 class="g-sec-t">Một cây, ba loại nút</h2></div>
     <p class="g-note">Quy tắc “cha có con thì không có nội dung” buộc phải có loại nút thứ ba. Ứng dụng và trang tài liệu luôn là <strong>lá</strong>; cấu trúc do <strong>nút chứa</strong> tạo ra.</p>
     <div class="g-scroll">
       <table class="g-tbl">
@@ -222,7 +268,7 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 
   <!-- ══════ 01 · SIDEBAR LỒNG ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">01</span><h2 class="g-sec-t">Sidebar lồng nhau</h2></div>
+    <div class="g-sec-h"><span class="g-num">02</span><h2 class="g-sec-t">Sidebar lồng nhau</h2></div>
     <p class="g-note">Ba tầng trong ảnh dưới: <em>Vệ tinh → Công cụ nhỏ → Calculate Badminton</em>. Nút chứa có mũi ▾ / ▸; nút lá không có. Chú ý <strong>không còn mục “API Web Store Apps” riêng</strong> — nó chung một bản ghi với Web Store Apps qua <code style="font-family:var(--mono)">apiRepoUrl</code>.</p>
     <div class="g-frame">
       <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">ducker.levananhduc.dev/vi/apps/web-store-apps</div><div class="g-vp">1440</div></div>
@@ -305,7 +351,7 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 
   <!-- ══════ 02 · TRÌNH SOẠN CÂY ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">02</span><h2 class="g-sec-t">Trình soạn cây điều hướng</h2></div>
+    <div class="g-sec-h"><span class="g-num">03</span><h2 class="g-sec-t">Trình soạn cây điều hướng</h2></div>
     <p class="g-note">Màn quan trọng nhất của bản này. Khối trên là <strong>dải tab</strong>, khối dưới là con cháu — nhưng chúng là một cây liền, kéo một mục từ dưới lên khối trên là nó thành tab. Bảng phải đổi theo nút đang chọn.</p>
     <div class="g-frame">
       <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">ducker.levananhduc.dev/vi/admin/navigation</div><div class="g-vp">1440</div></div>
@@ -427,7 +473,7 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 
   <!-- ══════ 03 · THỨ TỰ NỘI DUNG ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">03</span><h2 class="g-sec-t">Đưa nội dung quan trọng lên đầu</h2></div>
+    <div class="g-sec-h"><span class="g-num">04</span><h2 class="g-sec-t">Đưa nội dung quan trọng lên đầu</h2></div>
     <p class="g-note">Cùng bộ bốn nút <code style="font-family:var(--mono)">⤒ ↑ ↓ ⤓</code> dùng lại cho tính năng và mục nội dung. Bấm ⤒ ở mục “Chạy thử” là nó nhảy lên đầu bài; bấm ⤓ ở mục “b” là nó xuống cuối. Một component duy nhất, dùng ở bốn chỗ: tab, sidebar, tính năng, mục nội dung.</p>
     <div class="g-frame">
       <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">ducker.levananhduc.dev/vi/admin/apps/web-store-apps</div><div class="g-vp">1080</div></div>
@@ -450,7 +496,7 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 
   <!-- ══════ 04 · BẤT BIẾN ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">04</span><h2 class="g-sec-t">Sáu bất biến phải có test canh</h2></div>
+    <div class="g-sec-h"><span class="g-num">05</span><h2 class="g-sec-t">Sáu bất biến phải có test canh</h2></div>
     <p class="g-note">Cây tự tham chiếu là chỗ dễ sinh dữ liệu vô nghĩa nhất. Sáu điều dưới đây không diễn đạt được bằng schema, phải kiểm ở tầng ghi.</p>
     <div class="g-scroll">
       <table class="g-tbl">
@@ -469,7 +515,7 @@ body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans)
 
   <!-- ══════ 05 · CẦN QUYẾT ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">05</span><h2 class="g-sec-t">Hai chỗ cần bạn quyết</h2></div>
+    <div class="g-sec-h"><span class="g-num">06</span><h2 class="g-sec-t">Hai chỗ cần bạn quyết</h2></div>
     <div class="g-scroll">
       <table class="g-tbl">
         <thead><tr><th style="width:170px">Chỗ</th><th style="width:42%">Mình chọn</th><th>Cách khác</th></tr></thead>

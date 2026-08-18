@@ -237,6 +237,43 @@ Ba trạng thái chủ đề (`:root` / `@media` bọc `:root:not([data-theme="l
 - **Nhãn và mã giữ mono**, hoa, `letter-spacing .09em–.15em`.
 - **Vẫn không dùng webfont.** Không `next/font`, không Google Fonts, không `@font-face`.
 
+### 8.2.1 Bậc cỡ — đo từ năm trang docs lớn
+
+Bậc cỡ hiện hành nhỏ hơn chuẩn một cách hệ thống: thân bài 14.5px, nền chung 14px, sidebar 13.5px, nhãn mono 10px. Thay vì tự chọn, đã mở năm trang docs và đọc `getComputedStyle` của đoạn văn dài nhất trong bài:
+
+| Trang | Thân bài | Cao dòng | Tỉ lệ | H1 | H2 | Sidebar | ~ký tự/dòng |
+|---|---|---|---|---|---|---|---|
+| Claude Code docs | 16 | 26.4 | 1.65 | 36 | 16 | 14 | 86 |
+| Stripe docs | 16 | 26 | 1.63 | 32 | 24 | — | 62 |
+| Next.js docs | 16 | 27.2 | 1.70 | 36 | 24 | 14 | 86 |
+| Tailwind docs | 14 | 28 | 2.00 | 30 | 18 | 14 | 96 |
+| MDN | 16 | 28 | 1.75 | 40 | 24 | 16 | 96 |
+| **Ducker v3** | **16** | **28** | **1.75** | **36** | **26** | **15** | **66** |
+
+```css
+--t-2xs: 12px;  /* nhãn mono, chip        */
+--t-xs:  13px;  /* chú thích              */
+--t-sm:  14px;  /* mục lục, nút, ô nhập   */
+--t-md:  16px;  /* THÂN BÀI               */
+--t-lg:  18px;  /* mô tả một dòng         */
+--t-xl:  22px;
+--t-2xl: 26px;  /* H2                     */
+--t-3xl: 36px;  /* H1                     */
+--t-4xl: 44px;
+```
+
+**Đo dòng 66 ký tự** — giữa Stripe (62) và nhóm còn lại (86–96). Chọn phía hẹp vì tiếng Việt nhiều dấu, dòng dài mắt dễ lạc khi xuống dòng.
+
+Ngoại lệ được phép: nhãn **mono viết hoa** ở 11–11.5px. Chữ hoa mono đọc lớn hơn cỡ danh nghĩa, và đây là mức trang tham chiếu cũng dùng cho eyebrow. Không được hạ bất kỳ **văn xuôi** nào xuống dưới 14px.
+
+### 8.2.2 Ngưỡng vùng bấm
+
+**WCAG 2.2 SC 2.5.8 đòi vùng bấm tối thiểu 24×24 CSS px.** Bộ nút thứ tự ở bản hiện hành chỉ cao khoảng 18px — **không đạt**. Bốn nút nhỏ nằm sát nhau là chỗ dễ bấm nhầm nhất trong cả trang quản trị, mà bấm nhầm `⤓` thay vì `↓` thì mục nhảy thẳng xuống cuối.
+
+Thêm token `--tap: 28px` (chọn 28 chứ không phải 24 để còn chỗ thở) và áp `min-height`/`min-width` cho **mọi** phần tử bấm được: nút thứ tự, mục sidebar, ô nhập, nút, nút chuyển ngôn ngữ, ô tìm kiếm.
+
+Có test tự động quét toàn trang và **fail nếu còn phần tử bấm được nào dưới 24×24** — không dựa vào mắt người soát.
+
 ### 8.3 Bố cục
 
 Header hai tầng: **masthead** (thương hiệu, tìm kiếm, ngôn ngữ, CTA) và **dải tab** (nút gốc của cây, gạch chân mục đang mở). Dưới đó ba cột: sidebar trái · nội dung · mục lục phải.
@@ -313,6 +350,8 @@ Thứ tự bắt buộc trong migration:
 - [ ] Dải tab và sidebar trái dựng từ `getNavTree`, không còn chỗ nào viết cứng
 - [ ] `CONTAINER` chuyển hướng tới con đầu tiên đã publish
 - [ ] `design-rules.md` §2 và §3 viết lại; không còn mã màu tím trong mã
+- [ ] Bậc cỡ mới áp đủ: thân bài 16px, sidebar 15px, không văn xuôi nào dưới 14px
+- [ ] Test tự động quét vùng bấm, fail nếu còn phần tử nào dưới 24×24 (WCAG 2.2 SC 2.5.8)
 - [ ] Không webfont; Georgia không xuất hiện trong bất kỳ stack nào
 - [ ] Tên Ducker ở mọi chỗ người dùng nhìn thấy
 - [ ] Trang ứng dụng hiện hai liên kết repo trong một mục
