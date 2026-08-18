@@ -7,7 +7,15 @@
 //
 // Cần `DATABASE_URL_TEST` nên nó **skip** ở máy không có DB. Skip không phải là
 // xanh: coi như chưa chạy.
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+
+// `unstable_cache` và `revalidateTag` đòi store của một lượt render Next, không
+// có trong vitest — thiếu khối này thì mọi test cần DB ở đây đổ với
+// "Invariant: incrementalCache missing" chứ không phải vì mã sai.
+vi.mock("next/cache", () => ({
+  unstable_cache: (fn: unknown) => fn,
+  revalidateTag: () => {},
+}));
 
 const hasDb = Boolean(process.env.DATABASE_URL_TEST);
 

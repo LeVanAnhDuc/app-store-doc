@@ -3,7 +3,9 @@ import { revalidateTag } from "next/cache";
 import { ensureUniqueAnchors } from "@/lib/slug";
 import type { AppInput, DocPageInput, FeatureInput, SectionInput } from "@/lib/schemas";
 import { prisma } from "@/server/db";
-import { assertSingleDefaultLocale, planContentSave } from "./resolve";
+import { assertNavInvariants, wouldCreateCycle, type NavKind, type NavRow } from "./nav";
+import { loadDefaultLocale, readNavRows, type Status } from "./queries";
+import { assertSingleDefaultLocale, planContentSave, resolveTranslation } from "./resolve";
 import { tags } from "./tags";
 
 /**
@@ -589,4 +591,575 @@ export async function setDefaultLocale(code: string): Promise<void> {
   revalidate(tags.nav());
   revalidate(tags.appsList());
   revalidate(tags.searchIndex());
+}
+
+// ---------------------------------------------------------------------------
+// Cây điều hướng
+// ---------------------------------------------------------------------------
+
+/**
+ * Cửa hẹp của một transaction, đủ cho mọi hàm ghi cây. Khai bằng `Pick` chứ không
+ * import kiểu `TransactionClient` của Prisma, cùng lối `resolveSectionOwner`.
+ */
+type NavTxClient = Pick<typeof prisma, "navNode" | "navNodeTranslation" | "locale">;
+
+/** Nhãn của một nút chứa ở một ngôn ngữ. Chuỗi rỗng nghĩa là gỡ nhãn của ngôn ngữ đó. */
+export type NavNodeLabelInput = { locale: string; label: string };
+
+export type CreateNavNodeInput = {
+  parentId?: string | null;
+  kind: NavKind;
+  status?: Status;
+  appId?: string | null;
+  docPageId?: string | null;
+  labels?: NavNodeLabelInput[];
+  /** Vị trí trong danh sách anh em; vắng mặt là thêm vào cuối. */
+  index?: number;
+};
+
+export type UpdateNavNodeInput = {
+  id: string;
+  status?: Status;
+  labels?: NavNodeLabelInput[];
+  /** Đổi ứng dụng nút trỏ tới. `null` biến nút thành nút chứa. */
+  appId?: string | null;
+  /** Đổi trang tài liệu nút trỏ tới. `null` biến nút thành nút chứa. */
+  docPageId?: string | null;
+};
+
+export type MoveNavNodeInput = { id: string; parentId: string | null; index: number };
+
+export type ReorderSiblingsInput = { parentId: string | null; ids: string[] };
+
+/**
+ * Không trả kiểu `NavNode` của Prisma: tầng gọi vào đây (server action, trình
+ * soạn) không được biết tới Prisma, và một kiểu sinh ra sẽ kéo cả `@prisma/client`
+ * lên tới component.
+ */
+export type SavedNavNode = {
+  id: string;
+  parentId: string | null;
+  order: number;
+  kind: NavKind;
+  status: Status;
+};
+
+/** `kind` và cột trỏ phải khớp — cùng ràng buộc mà CHECK `nav_node_kind_matches_target` ép. */
+type NavTarget = { kind: NavKind; appId: string | null; docPageId: string | null };
+
+const BOTH_TARGETS =
+  "Một nút chỉ gắn được một thứ: hoặc một ứng dụng, hoặc một trang tài liệu. " +
+  "Gắn cả hai thì không biết bấm vào nó sẽ mở trang nào.";
+
+/**
+ * Kiểm `kind` khớp cột trỏ **trước** khi ghi, để lỗi là câu tiếng Việt chứ không
+ * phải thông báo vi phạm CHECK constraint của Postgres lọt ra tận giao diện.
+ */
+function navTargetFor(kind: NavKind, appId: string | null, docPageId: string | null): NavTarget {
+  if (kind === "CONTAINER") {
+    if (appId !== null || docPageId !== null) {
+      throw new Error(
+        "Nút chứa không mang nội dung — nó chỉ gom nhánh con và làm nhiệm vụ mở đóng (spec §3.2). " +
+          'Muốn nhánh này có một trang giới thiệu thì thêm một nút DOC tên "Tổng quan" làm con đầu tiên.',
+      );
+    }
+    return { kind, appId: null, docPageId: null };
+  }
+
+  if (kind === "APP") {
+    if (docPageId !== null) throw new Error(BOTH_TARGETS);
+    if (appId === null) {
+      throw new Error(
+        "Nút loại APP phải gắn một ứng dụng. Nút không gắn gì mà vẫn là lá thì hiện ra một " +
+          "mục bấm vào không đi đâu cả — hãy chọn ứng dụng, hoặc đổi nút này thành nút chứa.",
+      );
+    }
+    return { kind, appId, docPageId: null };
+  }
+
+  if (appId !== null) throw new Error(BOTH_TARGETS);
+  if (docPageId === null) {
+    throw new Error(
+      "Nút loại DOC phải gắn một trang tài liệu. Nút không gắn gì mà vẫn là lá thì hiện ra một " +
+        "mục bấm vào không đi đâu cả — hãy chọn trang, hoặc đổi nút này thành nút chứa.",
+    );
+  }
+  return { kind, appId: null, docPageId };
+}
+
+/** Nút đích mới khi người dùng đổi nội dung nút trỏ tới; `null` là không đổi gì. */
+function retargetFor(input: UpdateNavNodeInput): NavTarget | null {
+  if (input.appId === undefined && input.docPageId === undefined) return null;
+
+  const appId = input.appId ?? null;
+  const docPageId = input.docPageId ?? null;
+  const kind: NavKind = appId !== null ? "APP" : docPageId !== null ? "DOC" : "CONTAINER";
+
+  return navTargetFor(kind, appId, docPageId);
+}
+
+/**
+ * Đổi lỗi trùng khoá trên `appId`/`docPageId` thành câu tiếng Việt: bất biến I4.
+ *
+ * `@unique` là thứ *ép* I4, nhưng để `P2002` lọt ra giao diện thì người dùng chỉ
+ * thấy một mã lỗi và không biết mình vừa làm gì sai — trong khi nguyên nhân thì
+ * rất cụ thể: nội dung này đã nằm ở một nút khác.
+ */
+async function withFriendlyNavLinkError<T>(run: () => Promise<T>): Promise<T> {
+  try {
+    return await run();
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error;
+
+    const target = JSON.stringify((error as { meta?: { target?: unknown } }).meta?.target ?? "");
+    const what = target.includes("docPageId") ? "Trang tài liệu" : "Ứng dụng";
+
+    throw new Error(
+      `${what} này đã nằm ở một nút khác trong cây điều hướng. ` +
+        "Mỗi ứng dụng và mỗi trang tài liệu chỉ được gắn vào đúng MỘT nút: gắn hai chỗ thì " +
+        "nó hiện hai lần trong sidebar và chỉ mục tìm kiếm đếm đôi. " +
+        "Hãy chuyển nút đang giữ nó sang chỗ mới thay vì tạo nút thứ hai.",
+    );
+  }
+}
+
+/**
+ * Một nút gốc đã publish, ghép thêm vào danh sách chỉ để I6 không nổ trong lúc
+ * cây còn đang được dựng. Xem `assertNavTreeValid`.
+ */
+const DRAFTING_SENTINEL: NavRow = {
+  id: "__nut-goc-gia-dinh__",
+  parentId: null,
+  order: 0,
+  status: "PUBLISHED",
+  kind: "DOC",
+  labels: [],
+  href: "/",
+};
+
+/**
+ * Kiểm bất biến trên trạng thái **sau** khi ghi, ngay trước lúc transaction cam kết.
+ *
+ * Kiểm sau chứ không kiểm trước: thứ phải hợp lệ là trạng thái sẽ tồn tại, và để
+ * "kiểm trước" thì phải mô phỏng lại phép ghi trên một bản sao trong bộ nhớ — một
+ * bản mô phỏng thứ hai sớm muộn cũng lệch khỏi phép ghi thật. Ném lỗi ở đây là
+ * transaction cuộn lại, đúng lối `setLocaleEnabled` đã dùng cho locale mặc định.
+ *
+ * **I6 có một ngoại lệ, và nó là ngoại lệ bắt buộc.** Với cây chưa có nút gốc nào
+ * publish, I6 khoá cứng cả hai đường: nút chứa rỗng không publish được (I2), mà lá
+ * cũng không publish được khi chưa có nút gốc publish (I6) — không thao tác đơn lẻ
+ * nào mở được cái khoá đó, kể cả thao tác đầu tiên trên một cây rỗng. Nên khi
+ * trước lúc ghi *đã* không có cửa vào, ta ghép một nút gốc giả định vào danh sách
+ * đem đi kiểm: I1, I2, I5 vẫn kiểm đủ, chỉ I6 được miễn. Cây đã có cửa vào thì I6
+ * quay lại đầy đủ — không thao tác nào được phép xoá mất cái cửa cuối cùng.
+ */
+export function assertNavTreeValid(before: NavRow[], after: NavRow[], defaultLocale: string): void {
+  const hasEntrance = before.some((row) => row.status === "PUBLISHED" && row.parentId === null);
+  assertNavInvariants(hasEntrance ? after : [...after, DRAFTING_SENTINEL], defaultLocale);
+}
+
+/**
+ * Khung chung của mọi hàm ghi cây: mở transaction, đọc trạng thái trước, chạy phép
+ * ghi, đọc lại, kiểm bất biến.
+ *
+ * Gom vào một chỗ để "kiểm bất biến trước khi cam kết" là chuyện *cấu trúc* chứ
+ * không phải chuyện từng hàm phải nhớ. Hàm ghi thứ sáu do người khác thêm vào sau
+ * này cũng không có cách nào bỏ sót bước kiểm.
+ */
+async function writeNavTree<T>(
+  write: (tx: NavTxClient, before: NavRow[], defaultLocale: string) => Promise<T>,
+): Promise<T> {
+  return prisma.$transaction(async (tx) => {
+    const defaultLocale = await loadDefaultLocale(tx);
+    const before = await readNavRows(tx, defaultLocale);
+    const result = await write(tx, before, defaultLocale);
+    const after = await readNavRows(tx, defaultLocale);
+    assertNavTreeValid(before, after, defaultLocale);
+    return result;
+  });
+}
+
+/**
+ * Làm mới cache sau khi sửa cây.
+ *
+ * `alsoContent` cho hai tag còn lại: spec §6 đòi thêm `apps-list` và `search-index`
+ * khi đổi trạng thái publish hoặc gắn/gỡ nội dung. Hôm nay hai tag đó chưa phụ
+ * thuộc vào cây, nhưng thiếu một tag là lỗi im lặng không có gì để lần, còn thừa
+ * một tag chỉ tốn một lượt dựng lại.
+ */
+function revalidateNav(options: { alsoContent?: boolean } = {}): void {
+  revalidate(tags.nav());
+  if (options.alsoContent) {
+    revalidate(tags.appsList());
+    revalidate(tags.searchIndex());
+  }
+}
+
+/** Anh em cùng cha, sắp đúng thứ tự hiển thị. `order` trùng thì theo `id` như `buildNavTree`. */
+function orderedSiblings(rows: NavRow[], parentId: string | null): NavRow[] {
+  return rows
+    .filter((row) => row.parentId === parentId)
+    .sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+}
+
+/** Vị trí chèn hợp lệ trong một danh sách `length` phần tử (chèn được cả vào cuối). */
+function clampIndex(index: number, length: number): number {
+  if (!Number.isFinite(index)) return length;
+  return Math.min(Math.max(Math.trunc(index), 0), length);
+}
+
+/**
+ * Ghi lại `order` thành 0..n-1 theo đúng thứ tự `ids`.
+ *
+ * `order` liên tục không phải chuyện thẩm mỹ: bộ nút thứ tự ở trình soạn tính
+ * "lên một bậc" bằng chỉ số, nên một lỗ hổng trong dãy làm nút nhảy hai bậc.
+ */
+async function renumberSiblings(tx: NavTxClient, ids: string[]): Promise<void> {
+  for (const [index, id] of ids.entries()) {
+    await tx.navNode.update({ where: { id }, data: { order: index } });
+  }
+}
+
+/** Ghi nhãn từng ngôn ngữ; nhãn rỗng gỡ đúng bản dịch đó và giữ nguyên các ngôn ngữ khác. */
+async function writeNavLabels(
+  tx: NavTxClient,
+  nodeId: string,
+  labels: NavNodeLabelInput[],
+): Promise<void> {
+  for (const { locale, label } of labels) {
+    const value = label.trim();
+    if (value === "") {
+      await tx.navNodeTranslation.deleteMany({ where: { nodeId, locale } });
+      continue;
+    }
+    await tx.navNodeTranslation.upsert({
+      where: { nodeId_locale: { nodeId, locale } },
+      create: { nodeId, locale, label: value },
+      update: { label: value },
+    });
+  }
+}
+
+function navNodeNotFound(id: string): Error {
+  return new Error(`Không tìm thấy nút điều hướng "${id}". Có thể nó vừa bị xoá.`);
+}
+
+/** Thêm một nút vào cây. Vắng `index` thì nút mới nằm cuối danh sách anh em. */
+export async function createNavNode(input: CreateNavNodeInput): Promise<SavedNavNode> {
+  const target = navTargetFor(input.kind, input.appId ?? null, input.docPageId ?? null);
+  const parentId = input.parentId ?? null;
+  const status: Status = input.status ?? "DRAFT";
+
+  const node = await withFriendlyNavLinkError(() =>
+    writeNavTree(async (tx, before) => {
+      if (parentId !== null && !before.some((row) => row.id === parentId)) {
+        throw navNodeNotFound(parentId);
+      }
+
+      const siblings = orderedSiblings(before, parentId).map((row) => row.id);
+      const position = clampIndex(input.index ?? siblings.length, siblings.length);
+
+      const created = await tx.navNode.create({
+        data: { parentId, status, order: position, ...target },
+        select: { id: true },
+      });
+
+      siblings.splice(position, 0, created.id);
+      await renumberSiblings(tx, siblings);
+
+      if (input.labels?.length) await writeNavLabels(tx, created.id, input.labels);
+
+      return { id: created.id, parentId, order: position, kind: target.kind, status };
+    }),
+  );
+
+  revalidateNav({ alsoContent: true });
+  return node;
+}
+
+/**
+ * Sửa trạng thái, nhãn hoặc nội dung một nút đã có.
+ *
+ * Đổi `appId`/`docPageId` cũng đổi `kind` theo — hai thứ đó phải khớp nhau, và bắt
+ * người dùng gửi lên cả hai chỉ để chúng khớp là mời gọi trạng thái sai.
+ */
+export async function updateNavNode(input: UpdateNavNodeInput): Promise<SavedNavNode> {
+  const target = retargetFor(input);
+
+  const node = await withFriendlyNavLinkError(() =>
+    writeNavTree(async (tx, before) => {
+      if (!before.some((row) => row.id === input.id)) throw navNodeNotFound(input.id);
+
+      const updated = await tx.navNode.update({
+        where: { id: input.id },
+        data: { ...(input.status ? { status: input.status } : {}), ...(target ?? {}) },
+        select: { id: true, parentId: true, order: true, kind: true, status: true },
+      });
+
+      if (input.labels?.length) await writeNavLabels(tx, input.id, input.labels);
+
+      return updated;
+    }),
+  );
+
+  revalidateNav({ alsoContent: Boolean(input.status) || target !== null });
+  return node;
+}
+
+/**
+ * Xoá một nút. Chỉ xoá được nút không còn con.
+ *
+ * `onDelete: Restrict` trên quan hệ tự tham chiếu đã chặn ở tầng DB, nhưng chặn ở
+ * đây trước để người dùng đọc được câu giải thích thay vì một mã lỗi Prisma.
+ */
+export async function deleteNavNode(id: string): Promise<void> {
+  const removed = await writeNavTree(async (tx, before) => {
+    const node = before.find((row) => row.id === id);
+    if (!node) throw navNodeNotFound(id);
+
+    const children = before.filter((row) => row.parentId === id);
+    if (children.length > 0) {
+      throw new Error(
+        `Nút này còn ${children.length} nút con nên chưa xoá được. ` +
+          "Xoá cha trước sẽ làm cả nhánh con mất đường vào trong khi nội dung vẫn nằm nguyên " +
+          "trong cơ sở dữ liệu — không ai kịp nhận ra. Hãy chuyển hoặc xoá từng nút con trước.",
+      );
+    }
+
+    await tx.navNode.delete({ where: { id } });
+
+    const siblings = orderedSiblings(before, node.parentId)
+      .filter((row) => row.id !== id)
+      .map((row) => row.id);
+    await renumberSiblings(tx, siblings);
+
+    return node;
+  });
+
+  revalidateNav({ alsoContent: removed.kind !== "CONTAINER" });
+}
+
+/**
+ * Đổi cha và vị trí của một nút trong đúng một thao tác.
+ *
+ * `index` là vị trí **sau khi** nút đã rời chỗ cũ, nên kéo một nút xuống trong
+ * cùng một nhóm anh em không bị lệch một bậc. Sau khi chèn, cả danh sách anh em ở
+ * chỗ mới **và** chỗ cũ đều được đánh số lại 0..n-1.
+ */
+export async function moveNavNode(input: MoveNavNodeInput): Promise<void> {
+  await writeNavTree(async (tx, before) => {
+    const node = before.find((row) => row.id === input.id);
+    if (!node) throw navNodeNotFound(input.id);
+
+    if (input.parentId !== null && !before.some((row) => row.id === input.parentId)) {
+      throw navNodeNotFound(input.parentId);
+    }
+
+    if (wouldCreateCycle(before, input.id, input.parentId)) {
+      throw new Error(
+        "Không đưa một nút vào bên trong chính hậu duệ của nó được — cây sẽ có chu trình, " +
+          "và cả nhánh đó biến mất khỏi điều hướng dù dữ liệu vẫn còn. " +
+          "Hãy chuyển nhánh con ra ngoài trước, rồi mới chuyển nút này.",
+      );
+    }
+
+    const siblings = orderedSiblings(before, input.parentId)
+      .filter((row) => row.id !== input.id)
+      .map((row) => row.id);
+    const position = clampIndex(input.index, siblings.length);
+    siblings.splice(position, 0, input.id);
+
+    await tx.navNode.update({
+      where: { id: input.id },
+      data: { parentId: input.parentId, order: position },
+    });
+    await renumberSiblings(tx, siblings);
+
+    // Chỗ cũ giờ hụt một nút: vá lại dãy để "lên một bậc" ở đó vẫn đúng một bậc.
+    if (node.parentId !== input.parentId) {
+      await renumberSiblings(
+        tx,
+        orderedSiblings(before, node.parentId)
+          .filter((row) => row.id !== input.id)
+          .map((row) => row.id),
+      );
+    }
+  });
+
+  revalidateNav();
+}
+
+/**
+ * Sắp lại thứ tự anh em cùng cha. `ids` là danh sách **đầy đủ** theo thứ tự mới.
+ *
+ * Kiểm đủ số lượng trước khi ghi, cùng lý do `reorderApps`: gửi lên thiếu một id
+ * nghĩa là cây phía trình duyệt đã cũ, và ghi tiếp sẽ để lại hai nút cùng `order`.
+ */
+export async function reorderSiblings(input: ReorderSiblingsInput): Promise<void> {
+  const unique = new Set(input.ids);
+  if (unique.size !== input.ids.length) {
+    throw new Error("Danh sách thứ tự có nút bị lặp. Hãy tải lại trang rồi thử lại.");
+  }
+
+  await writeNavTree(async (tx, before) => {
+    const current = orderedSiblings(before, input.parentId).map((row) => row.id);
+    if (current.length !== input.ids.length || current.some((id) => !unique.has(id))) {
+      throw new Error(
+        `Danh sách thứ tự có ${input.ids.length} nút nhưng nút cha đang có ${current.length}. ` +
+          "Có người vừa thêm hoặc xoá nút — hãy tải lại trang rồi sắp lại.",
+      );
+    }
+
+    await renumberSiblings(tx, input.ids);
+  });
+
+  revalidateNav();
+}
+
+// ---------------------------------------------------------------------------
+// Xoá nội dung: chốt lỗ hổng I2 của cascade
+// ---------------------------------------------------------------------------
+
+/** Một nút chứa vừa bị hạ xuống nháp. `label` là nhãn ở locale mặc định, `null` nếu chưa có. */
+export type DemotedContainer = { id: string; label: string | null };
+
+export type DeletedContent = {
+  slug: string;
+  /**
+   * Nút chứa vừa bị hạ xuống nháp vì cascade lấy mất con publish cuối cùng của nó.
+   * Rỗng là chuyện thường; không rỗng thì giao diện **phải** nói ra.
+   */
+  demotedContainers: DemotedContainer[];
+};
+
+/**
+ * Đi **lên** theo chuỗi cha, hạ mọi nút chứa vừa thành rỗng xuống nháp.
+ *
+ * Đi lên chứ không chỉ xét đúng một cha: hạ một nút chứa xuống nháp có thể làm
+ * chính cha nó không còn con publish nào, nên dừng ở tầng đầu tiên là để lại đúng
+ * cái container rỗng đã publish mà I2 cấm — chỉ lùi lên một bậc. Vòng lặp dừng
+ * ngay khi gặp một nút vẫn còn con publish, nên nó không đi xa hơn mức cần.
+ */
+async function demoteEmptyContainers(
+  tx: NavTxClient,
+  startId: string | null,
+  defaultLocale: string,
+): Promise<DemotedContainer[]> {
+  const demoted: DemotedContainer[] = [];
+  let currentId = startId;
+
+  while (currentId !== null) {
+    const node = await tx.navNode.findUnique({
+      where: { id: currentId },
+      select: {
+        id: true,
+        parentId: true,
+        kind: true,
+        status: true,
+        translations: { select: { locale: true, label: true } },
+      },
+    });
+    if (!node || node.kind !== "CONTAINER" || node.status !== "PUBLISHED") break;
+
+    const publishedChildren = await tx.navNode.count({
+      where: { parentId: node.id, status: "PUBLISHED" },
+    });
+    if (publishedChildren > 0) break;
+
+    await tx.navNode.update({ where: { id: node.id }, data: { status: "DRAFT" } });
+
+    const label = resolveTranslation(node.translations, defaultLocale, defaultLocale);
+    demoted.push({ id: node.id, label: label?.value.label ?? null });
+
+    currentId = node.parentId;
+  }
+
+  return demoted;
+}
+
+/**
+ * Xoá một App hoặc một DocPage, rồi vá lại cây.
+ *
+ * **Đây là lỗ hổng của I2 mà spec §4 đòi bịt riêng.** `NavNode.app` và
+ * `NavNode.docPage` dùng `onDelete: Cascade`, nên xoá nội dung sẽ xoá nút lá của
+ * nó ở tầng DB — không đi qua `writeNavTree`, không qua `assertNavInvariants`,
+ * không qua bất cứ dòng TypeScript nào. Nếu đó là con publish cuối cùng của một
+ * nút chứa đang publish thì ta còn lại đúng thứ I2 cấm: một nút chứa rỗng đã
+ * publish, bấm vào chẳng xổ ra gì.
+ *
+ * Nên ở đây ta **sửa** thay vì **chặn**: hạ nút chứa xuống nháp và trả danh sách
+ * đã hạ để giao diện nói ra. Chặn là sai — người dùng yêu cầu xoá một ứng dụng, và
+ * từ chối vì hình dạng cây sẽ buộc họ đi tháo cây trước, trong khi việc tháo cây là
+ * thứ ta vừa làm hộ được. Cũng vì vậy hàm này **không** gọi `assertNavTreeValid`:
+ * xoá nội dung có thể làm mất nút gốc publish cuối cùng (I6), mà chặn thì lại rơi
+ * đúng vào cái bẫy vừa nói.
+ */
+async function deleteContentAndRepairTree(
+  what: "app" | "docPage",
+  id: string,
+): Promise<DeletedContent> {
+  return prisma.$transaction(async (tx) => {
+    const defaultLocale = await loadDefaultLocale(tx);
+
+    const node = await tx.navNode.findUnique({
+      where: what === "app" ? { appId: id } : { docPageId: id },
+      select: { id: true, parentId: true, _count: { select: { children: true } } },
+    });
+
+    // I1 cấm nút lá có con, nhưng nếu dữ liệu đã sai thì cascade sẽ đụng
+    // `onDelete: Restrict` của quan hệ tự tham chiếu và ném ra một lỗi Prisma thô.
+    if (node && node._count.children > 0) {
+      throw new Error(
+        "Nút điều hướng của nội dung này đang có nút con, nên xoá nội dung sẽ làm cả nhánh con " +
+          "mất cha. Ứng dụng và trang tài liệu lẽ ra luôn là lá — hãy chuyển các nút con sang một " +
+          "nút chứa trước, rồi xoá lại.",
+      );
+    }
+
+    const found =
+      what === "app"
+        ? await tx.app.findUnique({ where: { id }, select: { slug: true } })
+        : await tx.docPage.findUnique({ where: { id }, select: { slug: true } });
+
+    if (!found) {
+      throw new Error(
+        what === "app"
+          ? "Không tìm thấy ứng dụng cần xoá. Có thể nó vừa bị xoá."
+          : "Không tìm thấy trang tài liệu cần xoá. Có thể nó vừa bị xoá.",
+      );
+    }
+
+    if (what === "app") await tx.app.delete({ where: { id } });
+    else await tx.docPage.delete({ where: { id } });
+
+    // Nút lá vừa bị cascade lấy đi; giờ mới đọc lại cha của nó.
+    const demotedContainers = await demoteEmptyContainers(
+      tx,
+      node?.parentId ?? null,
+      defaultLocale,
+    );
+
+    return { slug: found.slug, demotedContainers };
+  });
+}
+
+/** Xoá một ứng dụng cùng toàn bộ nội dung của nó, rồi vá cây theo I2. */
+export async function deleteApp(id: string): Promise<DeletedContent> {
+  const result = await deleteContentAndRepairTree("app", id);
+
+  revalidateApp(result.slug);
+  revalidate(tags.appsList());
+  revalidate(tags.nav());
+
+  return result;
+}
+
+/** Xoá một trang tài liệu cùng toàn bộ nội dung của nó, rồi vá cây theo I2. */
+export async function deleteDocPage(id: string): Promise<DeletedContent> {
+  const result = await deleteContentAndRepairTree("docPage", id);
+
+  revalidateDoc(result.slug);
+  revalidate(tags.nav());
+
+  return result;
 }

@@ -4,6 +4,7 @@ import { defaultLocale as fallbackLocaleOfLastResort, locales } from "@/i18n/loc
 import { appKindValues, sectionBodySchema, statusValues, type SectionBody } from "@/lib/schemas";
 import { buildSearchIndex, type SearchDoc, type SearchIndexInput } from "@/lib/search-index";
 import { hasDatabase, prisma } from "@/server/db";
+import { buildNavTree, type NavKind, type NavRow, type NavTreeNode } from "./nav";
 import { assertSingleDefaultLocale, buildToc, resolveTranslation } from "./resolve";
 import { tags } from "./tags";
 
@@ -197,9 +198,15 @@ function readSectionBody(value: unknown): SectionBody | null {
  *
  * DB chưa seed thì lùi về `locales.generated.ts` thay vì ném lỗi: lúc đó chưa có
  * nội dung nào để dịch nên bất biến "đúng một mặc định" chưa có gì để bảo vệ.
+ *
+ * Nhận `client` để `mutations.ts` gọi được **bên trong** transaction của nó:
+ * bất biến I5 cần biết locale mặc định, và đọc nó ngoài transaction thì có thể
+ * thấy một giá trị khác giá trị sắp được cam kết.
  */
-async function loadDefaultLocale(): Promise<string> {
-  const rows = await prisma.locale.findMany({
+export async function loadDefaultLocale(
+  client: Pick<typeof prisma, "locale"> = prisma,
+): Promise<string> {
+  const rows = await client.locale.findMany({
     select: { code: true, isDefault: true, enabled: true },
   });
   if (rows.length === 0) return fallbackLocaleOfLastResort;
@@ -281,39 +288,60 @@ function resolveSections(
 // Danh sách ứng dụng
 // ---------------------------------------------------------------------------
 
+/** Select đủ để dựng một `AppCard`; dùng chung với `getUnlinkedContent`. */
+const appCardSelect = {
+  slug: true,
+  kind: true,
+  status: true,
+  isRepoPrivate: true,
+  isStandalone: true,
+  techStack: true,
+  translations: { select: { locale: true, name: true, tagline: true } },
+} as const;
+
+/** Một dòng `App` thô, đúng hình dạng `appCardSelect` trả về. */
+type AppCardRecord = {
+  slug: string;
+  kind: AppKind;
+  status: Status;
+  isRepoPrivate: boolean;
+  isStandalone: boolean;
+  techStack: string[];
+  translations: { locale: string; name: string; tagline: string | null }[];
+};
+
+/**
+ * `null` khi thiếu cả bản dịch mặc định — nơi gọi bỏ qua bản ghi thay vì bịa nhãn
+ * từ slug (quy ước 3 ở đầu file).
+ */
+function toAppCard(app: AppCardRecord, locale: string, fallback: string): AppCard | null {
+  const translated = resolveTranslation(app.translations, locale, fallback);
+  if (!translated) return null;
+
+  return {
+    slug: app.slug,
+    name: translated.value.name,
+    tagline: translated.value.tagline,
+    kind: app.kind,
+    status: app.status,
+    isRepoPrivate: app.isRepoPrivate,
+    techStack: app.techStack,
+    integration: deriveIntegration(app),
+  };
+}
+
 async function loadApps(locale: string): Promise<AppCard[]> {
   const fallback = await loadDefaultLocale();
 
   const rows = await prisma.app.findMany({
     where: { status: PUBLISHED },
     orderBy: [{ order: "asc" }, { slug: "asc" }],
-    select: {
-      slug: true,
-      kind: true,
-      status: true,
-      isRepoPrivate: true,
-      isStandalone: true,
-      techStack: true,
-      translations: { select: { locale: true, name: true, tagline: true } },
-    },
+    select: appCardSelect,
   });
 
   return rows.flatMap((app) => {
-    const translated = resolveTranslation(app.translations, locale, fallback);
-    if (!translated) return [];
-
-    return [
-      {
-        slug: app.slug,
-        name: translated.value.name,
-        tagline: translated.value.tagline,
-        kind: app.kind,
-        status: app.status,
-        isRepoPrivate: app.isRepoPrivate,
-        techStack: app.techStack,
-        integration: deriveIntegration(app),
-      },
-    ];
+    const card = toAppCard(app, locale, fallback);
+    return card ? [card] : [];
   });
 }
 
@@ -889,6 +917,194 @@ export function listNav(locale: string): Promise<NavGroup[]> {
   return unstable_cache(() => loadNav(locale), ["nav", locale], {
     tags: [tags.nav()],
   })();
+}
+
+// ---------------------------------------------------------------------------
+// Cây điều hướng
+// ---------------------------------------------------------------------------
+
+/**
+ * Select đủ để dựng một `NavRow`.
+ *
+ * Nhãn của ba loại nút nằm ở ba bảng khác nhau (spec §3.1): `CONTAINER` lấy từ
+ * `NavNodeTranslation`, `APP` từ `AppTranslation.name`, `DOC` từ
+ * `DocPageTranslation.title`. Đọc cả ba trong một lượt để `buildNavTree` chọn
+ * ngôn ngữ bằng đúng một cơ chế (`resolveTranslation`) thay vì mỗi loại nút một
+ * lối riêng.
+ */
+const navNodeSelect = {
+  id: true,
+  parentId: true,
+  order: true,
+  status: true,
+  kind: true,
+  translations: { select: { locale: true, label: true } },
+  app: { select: { slug: true, translations: { select: { locale: true, name: true } } } },
+  docPage: { select: { slug: true, translations: { select: { locale: true, title: true } } } },
+} as const;
+
+/** Một dòng `NavNode` thô, đúng hình dạng `navNodeSelect` trả về. */
+type NavNodeRecord = {
+  id: string;
+  parentId: string | null;
+  order: number;
+  status: Status;
+  kind: NavKind;
+  translations: { locale: string; label: string }[];
+  app: { slug: string; translations: { locale: string; name: string }[] } | null;
+  docPage: { slug: string; translations: { locale: string; title: string }[] } | null;
+};
+
+/**
+ * Đổi một dòng thô thành `NavRow`: chọn nguồn nhãn theo loại nút, ghép href.
+ *
+ * `href` mang sẵn tiền tố locale để `<Link>` dùng thẳng. URL giữ **phẳng**, không
+ * lồng theo cây (spec §5) — cây chỉ điều khiển cách hiển thị điều hướng.
+ *
+ * Nút khai `kind = APP` mà `appId` rỗng là dữ liệu CHECK constraint
+ * `nav_node_kind_matches_target` đã cấm; nếu vẫn gặp thì trả nút **không nhãn**
+ * để `buildNavTree` bỏ nó đi. Một mục vắng mặt thì thấy ngay, còn một liên kết
+ * dẫn tới 404 thì trông như dữ liệu thật.
+ */
+function toNavRow(node: NavNodeRecord, locale: string): NavRow {
+  const shared = {
+    id: node.id,
+    parentId: node.parentId,
+    order: node.order,
+    status: node.status,
+    kind: node.kind,
+  };
+
+  if (node.kind === "APP") {
+    return {
+      ...shared,
+      labels: (node.app?.translations ?? []).map((row) => ({
+        locale: row.locale,
+        value: row.name,
+      })),
+      href: node.app ? `/${locale}/apps/${node.app.slug}` : null,
+    };
+  }
+
+  if (node.kind === "DOC") {
+    return {
+      ...shared,
+      labels: (node.docPage?.translations ?? []).map((row) => ({
+        locale: row.locale,
+        value: row.title,
+      })),
+      href: node.docPage ? `/${locale}/docs/${node.docPage.slug}` : null,
+    };
+  }
+
+  return {
+    ...shared,
+    labels: node.translations.map((row) => ({ locale: row.locale, value: row.label })),
+    href: null,
+  };
+}
+
+/**
+ * Đọc **toàn bộ** cây ra danh sách phẳng, kể cả nút nháp.
+ *
+ * Nhận `client` thay vì dùng `prisma` trực tiếp để `mutations.ts` gọi được bằng
+ * đúng transaction của nó: mọi hàm ghi phải kiểm bất biến trên trạng thái *sẽ*
+ * được cam kết, mà đọc ngoài transaction thì chỉ thấy trạng thái cũ.
+ */
+export async function readNavRows(
+  client: Pick<typeof prisma, "navNode">,
+  locale: string,
+): Promise<NavRow[]> {
+  const nodes = await client.navNode.findMany({
+    orderBy: [{ order: "asc" }, { id: "asc" }],
+    select: navNodeSelect,
+  });
+
+  return nodes.map((node) => toNavRow(node, locale));
+}
+
+async function loadNavTree(locale: string): Promise<NavTreeNode[]> {
+  const fallback = await loadDefaultLocale();
+  return buildNavTree(await readNavRows(prisma, locale), locale, fallback);
+}
+
+/**
+ * Cây điều hướng công khai: nút gốc là dải tab trên cùng, con cháu của tab đang
+ * mở là sidebar trái.
+ *
+ * Chỉ gồm nút đã publish — `buildNavTree` lo phần đó, cùng với việc bỏ nút mồ côi
+ * và ném lỗi khi dữ liệu có chu trình.
+ */
+export function getNavTree(locale: string): Promise<NavTreeNode[]> {
+  if (!hasDatabase()) return Promise.resolve([]);
+
+  return unstable_cache(() => loadNavTree(locale), ["nav-tree", locale], {
+    tags: [tags.nav()],
+  })();
+}
+
+/**
+ * Danh sách phẳng **không cache** cho trình soạn cây, gồm cả nút nháp.
+ *
+ * Trình soạn phải thấy đúng thứ nó vừa ghi. Bọc cache ở đây thì người dùng bấm
+ * "Thêm nút", thấy cây cũ, kết luận là hỏng, bấm lần nữa — và lần này hỏng thật
+ * vì đã có hai nút. Cùng lý do `listAppsForAdmin` không cache.
+ *
+ * `href` dựng theo locale **mặc định**: trong trình soạn nó chỉ là đường xem thử,
+ * còn thứ quyết định cấu trúc là `parentId`, `order` và `kind`.
+ */
+export async function getNavRows(): Promise<NavRow[]> {
+  if (!hasDatabase()) return [];
+
+  return readNavRows(prisma, await loadDefaultLocale());
+}
+
+/** Một trang tài liệu chưa gắn vào cây. */
+export type UnlinkedDoc = { slug: string; title: string };
+
+export type UnlinkedContent = { apps: AppCard[]; docs: UnlinkedDoc[] };
+
+/**
+ * Nội dung chưa gắn vào cây — nguồn của cảnh báo "chưa có trong điều hướng" ở
+ * trang quản trị (spec §5 và rủi ro R3).
+ *
+ * Không cache: đây là dữ liệu quản trị và nó đổi ngay mỗi lần ai đó gắn một nút.
+ *
+ * Gồm cả bản nháp, vì `AppCard.status` đã nói rõ trạng thái và người viết cần
+ * thấy cả bài chưa publish của mình. `home` bị loại: route `/…/docs/home` cố tình
+ * 404 (xem `LANDING_DOC_SLUG`) nên nhắc gắn nó vào cây là nhắc làm một việc sai.
+ *
+ * Tên hiển thị dựng theo locale **mặc định** — cảnh báo này nói về cấu trúc, và
+ * một bài chỉ có bản dịch mặc định vẫn phải xuất hiện trong danh sách.
+ */
+export async function getUnlinkedContent(): Promise<UnlinkedContent> {
+  if (!hasDatabase()) return { apps: [], docs: [] };
+
+  const fallback = await loadDefaultLocale();
+
+  const [apps, docs] = await Promise.all([
+    prisma.app.findMany({
+      where: { navNode: null },
+      orderBy: [{ order: "asc" }, { slug: "asc" }],
+      select: appCardSelect,
+    }),
+    prisma.docPage.findMany({
+      where: { navNode: null, slug: { not: LANDING_DOC_SLUG } },
+      orderBy: [{ order: "asc" }, { slug: "asc" }],
+      select: { slug: true, translations: { select: { locale: true, title: true } } },
+    }),
+  ]);
+
+  return {
+    apps: apps.flatMap((app) => {
+      const card = toAppCard(app, fallback, fallback);
+      return card ? [card] : [];
+    }),
+    docs: docs.flatMap((doc) => {
+      const translated = resolveTranslation(doc.translations, fallback, fallback);
+      return translated ? [{ slug: doc.slug, title: translated.value.title }] : [];
+    }),
+  };
 }
 
 // ---------------------------------------------------------------------------

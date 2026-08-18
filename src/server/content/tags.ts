@@ -11,7 +11,7 @@ export const tags = {
   app: (slug: string): string => `app:${slug}`,
   /** Nội dung của một trang tài liệu cụ thể. */
   doc: (slug: string): string => `doc:${slug}`,
-  /** Cây điều hướng sidebar (nhóm theo `DocPage.group` + `order`). */
+  /** Cây điều hướng: dải tab trên cùng và sidebar, dựng từ `NavNode` (spec §3.1). */
   nav: (): string => "nav",
   /** Danh sách app ở `/[locale]/apps` và grid ngoài trang chủ. */
   appsList: (): string => "apps-list",
