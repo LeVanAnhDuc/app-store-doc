@@ -56,7 +56,6 @@ export type DocPageEditorProps = {
 /** Khối không theo ngôn ngữ. Số giữ dạng chuỗi vì ô nhập là chuỗi. */
 type GeneralDraft = {
   slug: string;
-  group: string;
   order: string;
   status: Status;
 };
@@ -80,7 +79,6 @@ const STATUS_LABEL_KEY: Record<Status, string> = {
 function generalFrom(page: EditorDocPage): GeneralDraft {
   return {
     slug: page.slug,
-    group: page.group ?? "",
     order: String(page.order),
     status: page.status,
   };
@@ -194,7 +192,6 @@ export function DocPageEditor({
         const saved = await saveDocPage({
           id: page.id,
           slug: general.slug.trim(),
-          group: optional(general.group),
           order: Number(general.order.trim()),
           status: general.status,
           locale: editLocale,
@@ -324,24 +321,6 @@ export function DocPageEditor({
               />
               <p className={styles.hint} id="doc-slug-hint">
                 {t("admin.editor.fieldSlugHint")}
-              </p>
-            </div>
-
-            <div className={styles.field}>
-              <label className={styles.label} htmlFor="doc-group">
-                {t("admin.docs.fieldGroup")}
-              </label>
-              <input
-                className={styles.input}
-                id="doc-group"
-                name="group"
-                type="text"
-                value={general.group}
-                onChange={(event) => patchGeneral({ group: event.target.value })}
-                aria-describedby="doc-group-hint"
-              />
-              <p className={styles.hint} id="doc-group-hint">
-                {t("admin.docs.fieldGroupHint")}
               </p>
             </div>
 

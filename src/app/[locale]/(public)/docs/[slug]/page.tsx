@@ -98,7 +98,7 @@ export default async function DocPage({ params }: PageParams) {
       main={
         <article className={styles.main}>
           <header className={styles.head}>
-            <p className={styles.crumb}>{page.group ?? t("doc.guides")}</p>
+            <p className={styles.crumb}>{t("doc.guides")}</p>
             <h1 className={styles.title}>{page.title}</h1>
             <FallbackNotice
               shownLocale={page.locale}

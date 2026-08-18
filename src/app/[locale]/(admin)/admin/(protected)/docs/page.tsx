@@ -78,7 +78,6 @@ export default async function AdminDocsPage({ params }: PageParams) {
               <thead>
                 <tr>
                   <th scope="col">{t("admin.docs.colTitle")}</th>
-                  <th scope="col">{t("admin.docs.colGroup")}</th>
                   <th scope="col">{t("admin.docs.colOrder")}</th>
                   <th scope="col">{t("admin.docs.colStatus")}</th>
                   <th scope="col">{t("admin.apps.colTranslations")}</th>
@@ -97,10 +96,6 @@ export default async function AdminDocsPage({ params }: PageParams) {
                       <span className={styles.slug}>
                         {page.isLanding ? page.slug : `/${locale}/docs/${page.slug}`}
                       </span>
-                    </td>
-
-                    <td>
-                      {page.group ?? <span className={styles.noName}>{t("admin.docs.noGroup")}</span>}
                     </td>
 
                     <td className={styles.number}>{page.order}</td>

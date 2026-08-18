@@ -27,6 +27,14 @@ enum AppKind {
   SATELLITE
 }
 
+// Ba loại nút của cây điều hướng. CONTAINER chỉ gom và toggle;
+// APP/DOC luôn là lá và mang nội dung (spec §3.1).
+enum NavKind {
+  CONTAINER
+  APP
+  DOC
+}
+
 model Locale {
   code      String  @id // "vi" | "en" | "ja" ...
   label     String // "Tiếng Việt"
@@ -54,6 +62,7 @@ model App {
   translations  AppTranslation[]
   features      Feature[]
   sections      Section[]
+  navNode       NavNode?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 }
@@ -93,11 +102,11 @@ model FeatureTranslation {
 model DocPage {
   id           String               @id @default(cuid())
   slug         String               @unique // "home", "oauth-integration-guide"
-  group        String? // nhóm trong sidebar
   order        Int                  @default(0)
   status       Status               @default(DRAFT)
   translations DocPageTranslation[]
   sections     Section[]
+  navNode      NavNode?
 }
 
 model DocPageTranslation {
@@ -137,6 +146,39 @@ model SectionTranslation {
   section   Section @relation(fields: [sectionId], references: [id], onDelete: Cascade)
 
   @@unique([sectionId, locale])
+}
+
+// Cây điều hướng. Nút gốc (parentId = null) chính là dải tab trên cùng;
+// con cháu của tab đang mở tạo thành sidebar trái (spec §3.1).
+// `@unique` trên appId/docPageId ép bất biến I4: một App/DocPage chỉ nằm ở đúng một nút.
+// CHECK constraint `nav_node_kind_matches_target` (viết tay trong migration 0002)
+// ép kind khớp với cột trỏ — Prisma không diễn đạt được ràng buộc này.
+model NavNode {
+  id        String  @id @default(cuid())
+  parentId  String? // null = nút gốc = một mục trên dải tab
+  order     Int     @default(0)
+  status    Status  @default(DRAFT)
+  kind      NavKind
+  appId     String? @unique // chỉ khi kind = APP
+  docPageId String? @unique // chỉ khi kind = DOC
+
+  parent       NavNode?             @relation("NavTree", fields: [parentId], references: [id], onDelete: Restrict)
+  children     NavNode[]            @relation("NavTree")
+  app          App?                 @relation(fields: [appId], references: [id], onDelete: Cascade)
+  docPage      DocPage?             @relation(fields: [docPageId], references: [id], onDelete: Cascade)
+  translations NavNodeTranslation[]
+
+  @@index([parentId, order])
+}
+
+model NavNodeTranslation {
+  id     String  @id @default(cuid())
+  nodeId String
+  locale String
+  label  String // chỉ dùng khi kind = CONTAINER
+  node   NavNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+
+  @@unique([nodeId, locale])
 }
 
 model Media {

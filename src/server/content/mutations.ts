@@ -464,7 +464,6 @@ export async function saveDocPage(input: SaveDocPageInput): Promise<SavedDocPage
 
   const data = {
     slug: general.slug,
-    group: general.group ?? null,
     order: general.order,
     status: general.status,
   };

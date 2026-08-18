@@ -118,7 +118,6 @@ export type AppDetail = {
 export type DocPageDetail = {
   id: string;
   slug: string;
-  group: string | null;
   order: number;
   status: Status;
 
@@ -532,7 +531,6 @@ export async function getAppForEditor(idOrSlug: string): Promise<EditorApp | nul
 export type AdminDocRow = {
   id: string;
   slug: string;
-  group: string | null;
   order: number;
   status: Status;
   /** Tiêu đề theo `locale` đang xem; `null` khi ngôn ngữ đó chưa có bản dịch. */
@@ -559,7 +557,6 @@ export async function listDocPagesForAdmin(locale: string): Promise<AdminDocRow[
     select: {
       id: true,
       slug: true,
-      group: true,
       order: true,
       status: true,
       translations: { select: { locale: true, title: true } },
@@ -572,7 +569,6 @@ export async function listDocPagesForAdmin(locale: string): Promise<AdminDocRow[
     return {
       id: page.id,
       slug: page.slug,
-      group: page.group,
       order: page.order,
       status: page.status,
       // Không bịa nhãn từ slug, kể cả trong CMS: thiếu bản dịch là thông tin cần thấy.
@@ -592,7 +588,6 @@ export type EditorDocPageTranslation = {
 export type EditorDocPage = {
   id: string;
   slug: string;
-  group: string | null;
   order: number;
   status: Status;
   isLanding: boolean;
@@ -630,7 +625,6 @@ export async function getDocPageForEditor(idOrSlug: string): Promise<EditorDocPa
   return {
     id: page.id,
     slug: page.slug,
-    group: page.group,
     order: page.order,
     status: page.status,
     isLanding: page.slug === LANDING_DOC_SLUG,
@@ -825,7 +819,6 @@ async function loadDocPage(
   return {
     id: page.id,
     slug: page.slug,
-    group: page.group,
     order: page.order,
     status: page.status,
 
@@ -865,35 +858,31 @@ async function loadNav(locale: string): Promise<NavGroup[]> {
     orderBy: [{ order: "asc" }, { slug: "asc" }],
     select: {
       slug: true,
-      group: true,
       translations: { select: { locale: true, title: true } },
     },
   });
 
-  // Nhóm giữ đúng thứ tự xuất hiện đầu tiên, tức là theo `order` của trang nhỏ
-  // nhất trong nhóm. Sắp lại theo tên nhóm sẽ khiến CMS kéo thả xong mà sidebar
-  // không đổi thứ tự — người dùng không hiểu vì sao.
-  const groups = new Map<string | null, NavItem[]>();
+  // `DocPage.group` đã bị xoá (spec §3.3) nên tạm thời mọi trang nằm trong đúng
+  // một nhóm không tên, giữ thứ tự theo `order`. Nhóm thật sẽ do `NavNode` kiểu
+  // `CONTAINER` sinh ra ở Task 5 — lúc đó `listNav` bị thay hẳn bằng `getNavTree`.
+  const items: NavItem[] = [];
 
   for (const page of pages) {
     const translated = resolveTranslation(page.translations, locale, fallback);
     if (!translated) continue;
 
-    const key = page.group ?? null;
-    const items = groups.get(key) ?? [];
     items.push({
       slug: page.slug,
       title: translated.value.title,
       href: `/${locale}/docs/${page.slug}`,
       isFallback: translated.isFallback,
     });
-    groups.set(key, items);
   }
 
-  return [...groups].map(([group, items]) => ({ group, items }));
+  return items.length === 0 ? [] : [{ group: null, items }];
 }
 
-/** Cây điều hướng sidebar, nhóm theo `DocPage.group` và sắp theo `DocPage.order`. */
+/** Cây điều hướng sidebar: một nhóm không tên, sắp theo `DocPage.order`. */
 export function listNav(locale: string): Promise<NavGroup[]> {
   if (!hasDatabase()) return Promise.resolve([]);
 

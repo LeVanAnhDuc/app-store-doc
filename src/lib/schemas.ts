@@ -72,7 +72,6 @@ export const sectionInputSchema = z.object({
 
 export const docPageInputSchema = z.object({
   slug: slugSchema,
-  group: z.string().optional(), // nhóm hiển thị trong sidebar
   order: z.number().int().default(0),
   status: statusSchema,
   title: z.string().min(1),
