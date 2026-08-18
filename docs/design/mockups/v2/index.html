@@ -553,9 +553,177 @@ npm run dev   <span class="c-com"># → http://localhost:3000</span></code></div
     </div>
   </section>
 
-  <!-- ══════ 04 · QUẢN TRỊ ══════ -->
+  <!-- ══════ 04 · HƯỚNG DẪN ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">04</span><h2 class="g-sec-t">Trang soạn nội dung</h2></div>
+    <div class="g-sec-h"><span class="g-num">04</span><h2 class="g-sec-t">Tab Hướng dẫn</h2></div>
+    <p class="g-note">Nội dung theo việc: bạn đang <em>làm</em> một thứ và cần từng bước. Đo dòng hẹp, nhiều khối mã, các bước đánh số vì thứ tự mang thông tin thật — bước 5 không chạy được nếu chưa xong bước 2.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">atlas.levananhduc.dev/vi/docs/tich-hop-oauth</div><div class="g-vp">1440</div></div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-mast">
+          <div class="m-brand"><b>Atlas</b><i>·</i><i style="font-size:15px">Tài liệu hệ sinh thái</i></div>
+          <div class="m-mast-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang">Tiếng Việt ▾</div>
+            <span class="m-cta">Mở IDMS ↗</span>
+          </div>
+        </div>
+
+        <nav class="m-tabs">
+          <span class="m-tab">Hệ sinh thái</span>
+          <span class="m-tab">Ứng dụng</span>
+          <span class="m-tab on">Hướng dẫn</span>
+          <span class="m-tab">Tham chiếu</span>
+        </nav>
+
+        <div class="m-shell">
+          <aside class="m-side">
+            <div class="m-side-group">
+              <p class="m-side-h">Nối một ứng dụng</p>
+              <a href="#" class="on">Tích hợp OAuth</a>
+              <a href="#">Đăng ký ứng dụng</a>
+              <a href="#">Đồng bộ ngôn ngữ</a>
+            </div>
+            <div class="m-side-group">
+              <p class="m-side-h">Vận hành trang này</p>
+              <a href="#">Thêm một ứng dụng</a>
+              <a href="#">Soạn nội dung song ngữ</a>
+              <a href="#">Dựng hạ tầng và deploy</a>
+            </div>
+          </aside>
+
+          <main class="m-main">
+            <p class="m-eyebrow">Hướng dẫn · Nối một ứng dụng</p>
+            <h1 class="m-h1">Tích hợp OAuth</h1>
+            <p class="m-tag">Năm bước nối một ứng dụng vào IDMS bằng Authorization Code kèm PKCE.</p>
+            <div class="m-meta">
+              <span class="m-badge b-planned">Chưa ứng dụng nào dùng</span>
+              <span class="m-chip">OAuth 2.0</span>
+              <span class="m-chip">OIDC</span>
+              <span class="m-chip">PKCE</span>
+            </div>
+
+            <div style="margin-top:22px;border:1px solid var(--st-standalone);background:var(--st-standalone-bg);border-radius:8px;padding:13px 16px">
+              <p style="margin:0 0 5px;font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--st-standalone)">Trạng thái</p>
+              <p style="margin:0;font-size:13.5px;line-height:1.65">Tính tới 18.08.2026 chưa ứng dụng vệ tinh nào thực sự nối vào IDMS. Trang này mô tả cách hệ thống <em>được thiết kế để</em> hoạt động — kiểm chứng lại khi nối ứng dụng đầu tiên.</p>
+            </div>
+
+            <h2 class="m-h2">Luồng năm bước</h2>
+            <ol style="padding-left:22px;max-width:64ch;margin:0 0 18px">
+              <li style="margin-bottom:8px">Đăng ký ứng dụng để lấy <code style="font-family:var(--mono);font-size:12.5px">client_id</code> và khai <code style="font-family:var(--mono);font-size:12.5px">redirect_uri</code>.</li>
+              <li style="margin-bottom:8px">Sinh <code style="font-family:var(--mono);font-size:12.5px">code_verifier</code> ngẫu nhiên, băm SHA-256 thành <code style="font-family:var(--mono);font-size:12.5px">code_challenge</code>.</li>
+              <li style="margin-bottom:8px">Chuyển người dùng sang IDMS; họ đăng nhập và bấm đồng ý quyền.</li>
+              <li style="margin-bottom:8px">IDMS chuyển ngược về <code style="font-family:var(--mono);font-size:12.5px">redirect_uri</code> kèm <code style="font-family:var(--mono);font-size:12.5px">code</code>, sống 60 giây.</li>
+              <li>Đổi <code style="font-family:var(--mono);font-size:12.5px">code</code> kèm <code style="font-family:var(--mono);font-size:12.5px">code_verifier</code> lấy access token và ID token.</li>
+            </ol>
+
+            <h2 class="m-h2">Bước 3 — chuyển người dùng</h2>
+            <div class="m-pre"><code>GET https://idms.levananhduc.dev/oauth/authorize
+  ?<span class="c-key">response_type</span>=<span class="c-str">code</span>
+  &amp;<span class="c-key">client_id</span>=<span class="c-str">app_match_cv</span>
+  &amp;<span class="c-key">redirect_uri</span>=<span class="c-str">https://match-cv.dev/callback</span>
+  &amp;<span class="c-key">code_challenge_method</span>=<span class="c-str">S256</span>
+  &amp;<span class="c-key">state</span>=<span class="c-str">xyzABC123</span></code></div>
+            <p class="m-p mut">Luôn kiểm <code style="font-family:var(--mono);font-size:13px">state</code> khi nhận lại. Bỏ qua bước này là mở cửa cho tấn công giả mạo yêu cầu.</p>
+          </main>
+
+          <nav class="m-toc">
+            <p class="m-toc-h">☰ Trong trang</p>
+            <a href="#" class="on">Luồng năm bước</a>
+            <a href="#">Bước 3 — chuyển người dùng</a>
+            <a href="#">Bước 5 — đổi mã lấy token</a>
+            <a href="#">Ba lỗi hay gặp</a>
+          </nav>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 05 · THAM CHIẾU ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">05</span><h2 class="g-sec-t">Tab Tham chiếu</h2></div>
+    <p class="g-note">Không ai đọc trang tham chiếu — người ta <em>tra</em> nó. Nên nó là bảng dày, quét bằng mắt, và <strong>cần hết chiều ngang</strong>: ở đây mục lục bên phải biến mất để bảng có chỗ thở. Đây là lý do kỹ thuật khiến nó không dùng chung bố cục với tab Hướng dẫn.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">atlas.levananhduc.dev/vi/reference/endpoints</div><div class="g-vp">1440</div></div>
+      <div class="g-body"><div class="g-canvas m">
+
+        <div class="m-mast">
+          <div class="m-brand"><b>Atlas</b><i>·</i><i style="font-size:15px">Tài liệu hệ sinh thái</i></div>
+          <div class="m-mast-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang">Tiếng Việt ▾</div>
+            <span class="m-cta">Mở IDMS ↗</span>
+          </div>
+        </div>
+
+        <nav class="m-tabs">
+          <span class="m-tab">Hệ sinh thái</span>
+          <span class="m-tab">Ứng dụng</span>
+          <span class="m-tab">Hướng dẫn</span>
+          <span class="m-tab on">Tham chiếu</span>
+        </nav>
+
+        <div class="m-shell" style="grid-template-columns:236px minmax(0,1fr)">
+          <aside class="m-side">
+            <div class="m-side-group">
+              <p class="m-side-h">API của IDMS</p>
+              <a href="#" class="on">Các endpoint</a>
+              <a href="#">Nội dung token</a>
+              <a href="#">Mã lỗi</a>
+              <a href="#">Phạm vi quyền</a>
+            </div>
+            <div class="m-side-group">
+              <p class="m-side-h">Bảng tra</p>
+              <a href="#">Trạng thái tích hợp</a>
+              <a href="#">Biến môi trường</a>
+              <a href="#">Ngôn ngữ được hỗ trợ</a>
+            </div>
+          </aside>
+
+          <main class="m-main" style="border-right:0">
+            <p class="m-eyebrow">Tham chiếu · API của IDMS</p>
+            <h1 class="m-h1">Các endpoint</h1>
+            <p class="m-tag">Mọi endpoint công khai của <code style="font-family:var(--mono);font-size:14px">api-web-store-apps</code>. Tiền tố <code style="font-family:var(--mono);font-size:14px">/api/v1</code>.</p>
+
+            <h2 class="m-h2">Xác thực</h2>
+            <div class="g-scroll">
+              <table class="g-tbl" style="font-size:13px">
+                <thead><tr><th style="width:74px">Method</th><th style="width:210px">Đường dẫn</th><th style="width:96px">Cần token</th><th style="width:150px">Giới hạn</th><th>Việc</th></tr></thead>
+                <tbody>
+                  <tr><td><span class="m-badge b-connected">POST</span></td><td class="m-slug">/auth/signup</td><td class="m-slug">không</td><td class="m-slug">5 / 15 phút</td><td>Tạo tài khoản, gửi email xác nhận</td></tr>
+                  <tr><td><span class="m-badge b-connected">POST</span></td><td class="m-slug">/auth/login</td><td class="m-slug">không</td><td class="m-slug">5 / 15 phút</td><td>Đăng nhập email và mật khẩu</td></tr>
+                  <tr><td><span class="m-badge b-connected">POST</span></td><td class="m-slug">/auth/otp/verify</td><td class="m-slug">không</td><td class="m-slug">10 / 15 phút</td><td>Đối chiếu mã sáu chữ số</td></tr>
+                  <tr><td><span class="m-badge b-connected">POST</span></td><td class="m-slug">/oauth/token</td><td class="m-slug">không</td><td class="m-slug">60 / phút</td><td>Đổi mã uỷ quyền lấy token</td></tr>
+                  <tr><td><span class="m-badge b-core">GET</span></td><td class="m-slug">/users/me</td><td class="m-slug">có</td><td class="m-slug">120 / phút</td><td>Hồ sơ người dùng đang đăng nhập</td></tr>
+                  <tr><td><span class="m-badge b-core">GET</span></td><td class="m-slug">/login-history</td><td class="m-slug">có</td><td class="m-slug">60 / phút</td><td>Thiết bị và thời điểm từng lần đăng nhập</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h2 class="m-h2">Claim trong ID token</h2>
+            <div class="g-scroll">
+              <table class="g-tbl" style="font-size:13px">
+                <thead><tr><th style="width:140px">Claim</th><th style="width:110px">Kiểu</th><th style="width:230px">Ví dụ</th><th>Nghĩa</th></tr></thead>
+                <tbody>
+                  <tr><td class="m-slug">sub</td><td class="m-slug">string</td><td class="m-slug">usr_01HX…</td><td>Định danh người dùng, không đổi trọn đời</td></tr>
+                  <tr><td class="m-slug">email</td><td class="m-slug">string</td><td class="m-slug">a@citynow.vn</td><td>Chỉ có khi xin phạm vi <code style="font-family:var(--mono);font-size:12px">email</code></td></tr>
+                  <tr><td class="m-slug">locale</td><td class="m-slug">string</td><td class="m-slug">vi</td><td>Ngôn ngữ đã chọn ở IDMS — ứng dụng vệ tinh dùng để mở đúng ngôn ngữ</td></tr>
+                  <tr><td class="m-slug">exp</td><td class="m-slug">number</td><td class="m-slug">1755500000</td><td>Hết hạn, giây Unix</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </main>
+        </div>
+
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 06 · QUẢN TRỊ ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">06</span><h2 class="g-sec-t">Trang soạn nội dung</h2></div>
     <p class="g-note">Quản trị dùng chung masthead nhưng <strong>không có dải tab</strong> — nó không phải một mục của tài liệu. Sidebar giữ nguyên kiểu viên nền. Bốn khối và cách chuyển ngôn ngữ không đổi so với bản đã duyệt.</p>
     <div class="g-frame">
       <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">atlas.levananhduc.dev/vi/admin/apps/web-store-apps</div><div class="g-vp">1440</div></div>
@@ -624,9 +792,9 @@ npm run dev   <span class="c-com"># → http://localhost:3000</span></code></div
     </div>
   </section>
 
-  <!-- ══════ 05 · MOBILE ══════ -->
+  <!-- ══════ 07 · MOBILE ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">05</span><h2 class="g-sec-t">Trên điện thoại</h2></div>
+    <div class="g-sec-h"><span class="g-num">07</span><h2 class="g-sec-t">Trên điện thoại</h2></div>
     <p class="g-note">Dải tab cuộn ngang được — đúng cách trang tham chiếu làm. Sidebar trái gập thành một nút mở ngăn kéo, đặt ngay đầu bài chứ không đẩy xuống cuối trang như bản đang chạy.</p>
     <div class="g-phones">
       <div class="g-phone">
@@ -671,9 +839,37 @@ npm run dev   <span class="c-com"># → http://localhost:3000</span></code></div
     </div>
   </section>
 
-  <!-- ══════ 06 · CẦN QUYẾT ══════ -->
+  <!-- ══════ 08 · VÌ SAO KHÔNG GỘP ══════ -->
   <section class="g-sec">
-    <div class="g-sec-h"><span class="g-num">06</span><h2 class="g-sec-t">Ba chỗ cần bạn quyết</h2></div>
+    <div class="g-sec-h"><span class="g-num">08</span><h2 class="g-sec-t">Vì sao không gộp Hướng dẫn và Tham chiếu vào mục đầu</h2></div>
+    <p class="g-note">Câu trả lời thật: <strong>hôm nay thì gộp được.</strong> Lý do tách là dự phòng cho ngày mai. Dưới đây là cả hai chiều để bạn tự cân.</p>
+
+    <div class="g-cols" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:22px">
+      <div style="border:1px solid var(--line);border-radius:8px;padding:16px 18px;background:var(--surface)">
+        <p class="g-ch" style="color:var(--st-connected)">Ba lý do tách</p>
+        <p style="margin:0 0 12px;font-size:13.5px;line-height:1.7"><strong>1. Ba cách đọc khác nhau.</strong> Mục đầu đọc <em>một lần, từ đầu tới cuối</em> để hiểu hình dạng hệ thống. Hướng dẫn đọc <em>trong lúc đang làm</em>, từng bước một. Tham chiếu thì <em>không ai đọc</em> — người ta tra. Gộp lại nghĩa là bắt ba kiểu người dùng đi chung một danh sách.</p>
+        <p style="margin:0 0 12px;font-size:13.5px;line-height:1.7"><strong>2. Bố cục vật lý khác nhau.</strong> Xem mục 05: trang tham chiếu <strong>bỏ hẳn mục lục bên phải</strong> để bảng có đủ chiều ngang. Trang hướng dẫn thì ngược lại, cần đo dòng hẹp cho dễ đọc văn xuôi. Hai thứ đó không dùng chung một khung được.</p>
+        <p style="margin:0;font-size:13.5px;line-height:1.7"><strong>3. Tốc độ phình khác nhau.</strong> Mục đầu mãi mãi khoảng 3 trang. Tham chiếu phình theo <em>từng endpoint</em> thêm vào. Gộp lại thì nội dung ổn định bị nội dung hay đổi đẩy tụt xuống dưới — và cái sidebar ngắn gọn mà bạn yêu cầu sẽ dài ra thành một cuộn dài.</p>
+      </div>
+
+      <div style="border:1px solid var(--st-standalone);background:var(--st-standalone-bg);border-radius:8px;padding:16px 18px">
+        <p class="g-ch" style="color:var(--st-standalone)">Chiều ngược lại — cũng thật</p>
+        <p style="margin:0 0 12px;font-size:13.5px;line-height:1.7">Cả trang hiện <strong>chỉ có 4 trang tài liệu</strong> trong DB, và tab Tham chiếu có <strong>đúng 0 trang</strong>. Mọi bảng ở mục 05 là nội dung mình bịa ra để bạn thấy hình dạng, chưa tồn tại thật.</p>
+        <p style="margin:0 0 12px;font-size:13.5px;line-height:1.7">Dựng bốn tab cho bốn trang là <strong>cấu trúc thừa</strong>. Tệ hơn, một tab rỗng là hứa thứ chưa có — đúng thứ mà quy tắc §7 của chính dự án này cấm.</p>
+        <p style="margin:0;font-size:13.5px;line-height:1.7">Ba lý do bên trái đều là lý do <em>sẽ đúng</em>, không phải <em>đang đúng</em>. Chỉ lý do số 2 là đúng ngay hôm nay, vì nó là ràng buộc bố cục chứ không phải ràng buộc khối lượng.</p>
+      </div>
+    </div>
+
+    <div style="margin-top:22px;border:1px solid var(--line);border-radius:8px;padding:16px 18px">
+      <p class="g-ch">Mình đề xuất</p>
+      <p style="margin:0 0 10px;font-size:14px;line-height:1.7"><strong>Giữ ba tab, bỏ tab Tham chiếu tới khi có nội dung thật.</strong></p>
+      <p style="margin:0;font-size:13.5px;line-height:1.7;color:var(--muted)">Hệ sinh thái và Hướng dẫn tách nhau là xứng đáng ngay hôm nay — chúng khác nhau về <em>cách đọc</em>, và mỗi bên đã có 3 trang nên sidebar vẫn ngắn. Còn Tham chiếu thì chưa có gì để tách; khi nào bảng endpoint thật xuất hiện, thêm tab mất đúng một dòng trong file chuỗi giao diện. Ba tab cho 6 trang là vừa; bốn tab mà một tab rỗng là nói dối.</p>
+    </div>
+  </section>
+
+  <!-- ══════ 09 · CẦN QUYẾT ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">09</span><h2 class="g-sec-t">Ba chỗ cần bạn quyết</h2></div>
     <div class="g-scroll">
       <table class="g-tbl">
         <thead><tr><th style="width:150px">Chỗ</th><th style="width:40%">Mình chọn</th><th>Cách khác</th></tr></thead>
