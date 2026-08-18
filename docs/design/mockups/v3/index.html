@@ -1,0 +1,492 @@
+<title>Ducker v3</title>
+
+<style>
+/* ============================================================
+   TOKENS — kế thừa v2, không đổi. Sáng gần như phi màu, tối ấm lên.
+   ============================================================ */
+:root {
+  --bg:#FDFDF7; --surface:#FFFFFF; --fill:#E4E4DE; --fill-soft:#F1F1EA;
+  --line:#E2E2DA; --line-soft:#EDEDE5; --ink:#171717; --ink-2:#3E3E3E; --muted:#6B6B63;
+  --accent:#8A4B24; --eyebrow:#171717; --accent-bg:#F2E9E1;
+  --st-core:#6B3F8C;      --st-core-bg:#EFE8F4;
+  --st-connected:#2F6B4F; --st-connected-bg:#E4EFE8;
+  --st-standalone:#8A6A24;--st-standalone-bg:#F4EEDD;
+  --st-planned:#6B6B63;   --st-planned-bg:#ECECE4;
+  --st-private:#9A3B3B;   --st-private-bg:#F5E5E3;
+  --sans:"Segoe UI Variable Text","Segoe UI",-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  /* Georgia bị loại cố ý: thiếu glyph tiếng Việt dựng sẵn, "ế" ra dấu rời. */
+  --serif:Constantia,"New York","Iowan Old Style",Cambria,"Sitka Text",Charter,Palatino,"Palatino Linotype","Times New Roman",serif;
+  --mono:"Cascadia Mono","Cascadia Code",ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --t-xs:11.5px; --t-sm:13px; --t-md:15px; --t-lg:17px; --t-xl:21px; --t-3xl:36px;
+  --lh-body:1.75; --lh-head:1.25;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg:#09090B; --surface:#131316; --fill:#1E1916; --fill-soft:#17171A;
+    --line:#26262A; --line-soft:#1C1C20; --ink:#EDEDE9; --ink-2:#DEDEDE; --muted:#94948B;
+    --accent:#D4A27F; --eyebrow:#D4A27F; --accent-bg:#241C16;
+    --st-core:#C0A2DC;      --st-core-bg:#211A2A;
+    --st-connected:#79C6A0; --st-connected-bg:#14261D;
+    --st-standalone:#D9B267;--st-standalone-bg:#2A2314;
+    --st-planned:#94948B;   --st-planned-bg:#1F1F22;
+    --st-private:#E08B87;   --st-private-bg:#2C1918;
+  }
+}
+:root[data-theme="dark"] {
+  --bg:#09090B; --surface:#131316; --fill:#1E1916; --fill-soft:#17171A;
+  --line:#26262A; --line-soft:#1C1C20; --ink:#EDEDE9; --ink-2:#DEDEDE; --muted:#94948B;
+  --accent:#D4A27F; --eyebrow:#D4A27F; --accent-bg:#241C16;
+  --st-core:#C0A2DC;      --st-core-bg:#211A2A;
+  --st-connected:#79C6A0; --st-connected-bg:#14261D;
+  --st-standalone:#D9B267;--st-standalone-bg:#2A2314;
+  --st-planned:#94948B;   --st-planned-bg:#1F1F22;
+  --st-private:#E08B87;   --st-private-bg:#2C1918;
+}
+
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:var(--t-md); line-height:var(--lh-body); -webkit-font-smoothing:antialiased; }
+:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:3px; }
+@media (prefers-reduced-motion: reduce) { * { animation:none !important; transition:none !important; } }
+
+/* ---------- gallery ---------- */
+.g { max-width:1240px; margin:0 auto; padding:0 24px 96px; }
+.g-head { padding:56px 0 36px; border-bottom:1px solid var(--line); }
+.g-eyebrow { font-family:var(--mono); font-size:var(--t-xs); letter-spacing:.14em; text-transform:uppercase; color:var(--muted); margin:0 0 18px; }
+.g-title { font-family:var(--serif); font-weight:400; font-size:var(--t-3xl); line-height:var(--lh-head); margin:0 0 14px; text-wrap:balance; }
+.g-lede { font-size:var(--t-lg); color:var(--muted); max-width:62ch; margin:0; }
+.g-chips { display:flex; flex-wrap:wrap; gap:8px; margin-top:24px; }
+.g-chips span { font-family:var(--mono); font-size:var(--t-xs); letter-spacing:.05em; padding:5px 9px; border:1px solid var(--line); border-radius:3px; color:var(--muted); }
+.g-sec { padding-top:52px; }
+.g-sec-h { display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin-bottom:4px; }
+.g-num { font-family:var(--mono); font-size:var(--t-xs); color:var(--accent); letter-spacing:.12em; }
+.g-sec-t { font-family:var(--serif); font-weight:400; font-size:var(--t-xl); margin:0; line-height:1.35; }
+.g-note { color:var(--muted); font-size:var(--t-sm); max-width:76ch; margin:6px 0 20px; }
+.g-frame { border:1px solid var(--line); border-radius:8px; overflow:hidden; background:var(--surface); }
+.g-bar { display:flex; align-items:center; gap:10px; padding:9px 12px; background:var(--fill-soft); border-bottom:1px solid var(--line); }
+.g-dots { display:flex; gap:5px; } .g-dots i { width:9px; height:9px; border-radius:50%; background:var(--line); display:block; }
+.g-url { font-family:var(--mono); font-size:var(--t-xs); color:var(--muted); background:var(--bg); border:1px solid var(--line); border-radius:4px; padding:3px 10px; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.g-vp { font-family:var(--mono); font-size:var(--t-xs); color:var(--muted); }
+.g-body { overflow-x:auto; } .g-canvas { min-width:1080px; }
+.g-scroll { overflow-x:auto; }
+.g-tbl { width:100%; border-collapse:collapse; font-size:13.5px; }
+.g-tbl th { text-align:left; font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); font-weight:500; padding:8px 10px; border-bottom:1px solid var(--line); }
+.g-tbl td { padding:10px; border-bottom:1px solid var(--line-soft); vertical-align:top; }
+
+/* ============================================================
+   M — sản phẩm
+   ============================================================ */
+.m { font-size:14px; background:var(--bg); }
+.m-mast { display:flex; align-items:center; gap:16px; padding:0 22px; height:54px; }
+.m-brand b { font-family:var(--serif); font-weight:400; font-size:20px; }
+.m-brand i { font-style:normal; font-family:var(--serif); font-size:15px; color:var(--muted); margin-left:8px; }
+.m-mast-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.m-search { display:flex; align-items:center; gap:42px; border:1px solid var(--line); border-radius:6px; padding:6px 10px; font-size:12.5px; color:var(--muted); background:var(--surface); }
+.m-kbd { font-family:var(--mono); font-size:10.5px; border:1px solid var(--line); border-radius:3px; padding:1px 5px; }
+.m-lang { font-size:12.5px; color:var(--muted); }
+.m-cta { background:var(--ink); color:var(--bg); font-size:12.5px; font-weight:560; padding:7px 13px; border-radius:6px; }
+
+.m-tabs { display:flex; align-items:center; gap:22px; padding:0 22px; border-bottom:1px solid var(--line); }
+.m-tab { padding:10px 0 11px; font-size:13.5px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
+.m-tab.on { color:var(--ink); font-weight:600; border-bottom-color:var(--ink); }
+
+.m-shell { display:grid; grid-template-columns:250px minmax(0,1fr) 200px; min-height:600px; }
+.m-side { padding:20px 12px 40px; }
+
+/* --- cây điều hướng công khai --- */
+.nav-l { list-style:none; margin:0; padding:0; }
+.nav-l .nav-l { margin-left:12px; padding-left:9px; border-left:1px solid var(--line-soft); }
+.nav-i { display:flex; align-items:center; gap:6px; padding:5px 9px; border-radius:6px; font-size:13.5px; color:var(--ink-2); text-decoration:none; }
+.nav-i.ct { font-weight:640; color:var(--ink); cursor:pointer; }
+.nav-i.on { background:var(--fill); font-weight:560; color:var(--ink); }
+.nav-c { font-family:var(--mono); font-size:11px; color:var(--muted); width:11px; flex:none; text-align:center; }
+
+.m-main { padding:26px 40px 56px; min-width:0; border-left:1px solid var(--line); border-right:1px solid var(--line); }
+.m-eyebrow { font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase; color:var(--eyebrow); margin:0 0 10px; }
+.m-h1 { font-family:var(--serif); font-weight:400; font-size:34px; line-height:1.22; margin:0 0 10px; }
+.m-tag { color:var(--muted); font-size:15px; margin:0 0 18px; max-width:62ch; }
+.m-meta { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding-bottom:22px; border-bottom:1px solid var(--line-soft); }
+.m-slug { font-family:var(--mono); font-size:11px; color:var(--muted); }
+.m-link { font-family:var(--mono); font-size:11.5px; color:var(--ink); text-decoration:none; border-bottom:1px solid var(--line); }
+.m-h2 { font-family:var(--serif); font-weight:400; font-size:24px; line-height:1.3; margin:32px 0 12px; }
+.m-p { font-size:15px; line-height:var(--lh-body); margin:0 0 14px; max-width:66ch; }
+.m-badge { font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase; padding:3px 7px; border-radius:3px; white-space:nowrap; }
+.b-core{background:var(--st-core-bg);color:var(--st-core)}
+.b-connected{background:var(--st-connected-bg);color:var(--st-connected)}
+.b-standalone{background:var(--st-standalone-bg);color:var(--st-standalone)}
+.b-planned{background:var(--st-planned-bg);color:var(--st-planned)}
+.b-private{background:var(--st-private-bg);color:var(--st-private)}
+.m-chip { font-family:var(--mono); font-size:10px; color:var(--muted); border:1px solid var(--line); border-radius:3px; padding:2px 6px; }
+.m-feats { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:16px 0 8px; }
+.m-feat { border:1px solid var(--line); border-radius:7px; padding:13px 15px; background:var(--surface); }
+.m-feat h4 { margin:0 0 4px; font-size:13.5px; font-weight:620; }
+.m-feat p { margin:0; font-size:12.5px; color:var(--muted); line-height:1.6; }
+.m-toc { padding:26px 16px; }
+.m-toc-h { font-size:12.5px; color:var(--muted); margin:0 0 12px; }
+.m-toc a { display:block; font-size:12.5px; color:var(--muted); text-decoration:none; padding:5px 0; }
+.m-toc a.on { color:var(--ink); font-weight:600; }
+
+/* ============================================================
+   TR — trình soạn cây điều hướng
+   ============================================================ */
+.tr-shell { display:grid; grid-template-columns:250px minmax(0,1fr) 300px; min-height:640px; }
+.tr-adm { padding:20px 12px; }
+.tr-adm a { display:flex; justify-content:space-between; padding:7px 11px; border-radius:6px; font-size:13.5px; color:var(--ink-2); text-decoration:none; }
+.tr-adm a.on { background:var(--fill); font-weight:560; color:var(--ink); }
+.tr-adm .n { font-family:var(--mono); font-size:10.5px; color:var(--muted); }
+
+.tr-mid { border-left:1px solid var(--line); border-right:1px solid var(--line); min-width:0; }
+.tr-bar { display:flex; align-items:center; gap:12px; padding:13px 20px; border-bottom:1px solid var(--line); }
+.tr-bar h3 { font-family:var(--serif); font-weight:400; font-size:20px; margin:0; }
+.tr-bar .r { margin-left:auto; display:flex; gap:8px; }
+.m-btn { font-size:12.5px; padding:6px 12px; border-radius:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink); }
+.m-btn.pri { background:var(--ink); border-color:var(--ink); color:var(--bg); font-weight:560; }
+.m-btn.dash { border-style:dashed; color:var(--accent); border-color:var(--accent); font-family:var(--mono); font-size:11px; }
+
+.tr-body { padding:16px 20px 40px; }
+.tr-lbl { font-family:var(--mono); font-size:10px; letter-spacing:.11em; text-transform:uppercase; color:var(--muted); margin:0 0 9px; }
+.tr-hint { font-size:12px; color:var(--muted); margin:0 0 14px; }
+
+.tr-l { list-style:none; margin:0; padding:0; }
+.tr-l .tr-l { margin-left:14px; padding-left:12px; border-left:1px solid var(--line); }
+.tr-row { display:flex; align-items:center; gap:9px; padding:7px 10px; border:1px solid var(--line); border-radius:7px; background:var(--surface); margin-bottom:6px; }
+.tr-row.sel { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-bg); }
+.tr-row.root { background:var(--fill-soft); }
+.tr-grip { font-family:var(--mono); color:var(--muted); letter-spacing:-1px; cursor:grab; }
+.tr-tw { font-family:var(--mono); font-size:12px; color:var(--ink-2); width:11px; flex:none; text-align:center; }
+.tr-name { font-size:13.5px; font-weight:560; }
+.tr-kind { font-family:var(--mono); font-size:9.5px; letter-spacing:.07em; text-transform:uppercase; padding:2px 6px; border-radius:3px; }
+.k-ct { background:var(--fill); color:var(--muted); }
+.k-app { background:var(--st-core-bg); color:var(--st-core); }
+.k-doc { background:var(--st-connected-bg); color:var(--st-connected); }
+.tr-act { margin-left:auto; display:flex; align-items:center; gap:3px; }
+.tr-b { font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--line); border-radius:4px; padding:1px 6px; background:var(--bg); min-width:22px; text-align:center; }
+.tr-b.hl { color:var(--accent); border-color:var(--accent); }
+.tr-add { font-family:var(--mono); font-size:11px; color:var(--accent); border:1px dashed var(--accent); border-radius:6px; padding:5px 10px; display:inline-block; margin:2px 0 10px 14px; }
+
+/* --- bảng thuộc tính --- */
+.tr-pr { padding:18px 16px; }
+.tr-pr h4 { font-family:var(--serif); font-weight:400; font-size:17px; margin:0 0 3px; }
+.tr-pr .sub { font-family:var(--mono); font-size:10.5px; color:var(--muted); margin:0 0 16px; }
+.m-field { margin-bottom:12px; }
+.m-field label { display:block; font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+.m-input { border:1px solid var(--line); border-radius:6px; padding:7px 10px; font-size:12.5px; background:var(--bg); }
+.m-input.mono { font-family:var(--mono); font-size:11.5px; }
+.m-langsw { display:flex; border:1px solid var(--line); border-radius:6px; overflow:hidden; font-family:var(--mono); font-size:11px; }
+.m-langsw span { padding:5px 9px; color:var(--muted); }
+.m-langsw .on { background:var(--fill); color:var(--ink); }
+.tr-lock { border:1px solid var(--st-standalone); background:var(--st-standalone-bg); border-radius:7px; padding:11px 13px; font-size:12.5px; line-height:1.65; }
+.tr-lock b { display:block; font-family:var(--mono); font-size:10px; letter-spacing:.09em; text-transform:uppercase; color:var(--st-standalone); margin-bottom:4px; }
+
+/* --- trình soạn nội dung: hàng có nút thứ tự --- */
+.m-block { border:1px solid var(--line); border-radius:8px; background:var(--surface); overflow:hidden; margin-bottom:13px; }
+.m-block-h { display:flex; align-items:center; gap:10px; padding:11px 16px; border-bottom:1px solid var(--line-soft); background:var(--fill-soft); }
+.m-block-h b { font-size:13px; font-weight:640; }
+.m-scope { font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted); }
+.m-block-b { padding:14px 16px; }
+.m-item { display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:6px; padding:8px 11px; background:var(--bg); margin-bottom:6px; }
+.m-item b { font-size:13px; font-weight:560; }
+
+@media (max-width:720px){ .g{padding:0 16px 64px} .g-title{font-size:27px} }
+</style>
+
+<div class="g">
+
+  <header class="g-head">
+    <p class="g-eyebrow">app-store-doc · đề xuất giao diện v3 · 18.08.2026</p>
+    <h1 class="g-title">Ducker</h1>
+    <p class="g-lede">Đổi tên từ Atlas. Thêm cây điều hướng do CMS quản: dải tab trên và sidebar trái là <strong>cùng một cây</strong>, lồng sâu tuỳ ý, trộn được ứng dụng với trang tài liệu.</p>
+    <div class="g-chips">
+      <span>TÊN MỚI · DUCKER</span>
+      <span>CÂY ĐIỀU HƯỚNG TRONG CMS</span>
+      <span>LỒNG SÂU TUỲ Ý</span>
+      <span>MỘT REPO = MỘT DỰ ÁN</span>
+    </div>
+  </header>
+
+  <!-- ══════ 00 · MÔ HÌNH ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">00</span><h2 class="g-sec-t">Một cây, ba loại nút</h2></div>
+    <p class="g-note">Quy tắc “cha có con thì không có nội dung” buộc phải có loại nút thứ ba. Ứng dụng và trang tài liệu luôn là <strong>lá</strong>; cấu trúc do <strong>nút chứa</strong> tạo ra.</p>
+    <div class="g-scroll">
+      <table class="g-tbl">
+        <thead><tr><th style="width:130px">Loại nút</th><th style="width:110px">Có con?</th><th style="width:120px">Có nội dung?</th><th style="width:140px">Bấm vào thì</th><th>Dùng làm gì</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tr-kind k-ct">Chứa</span></td><td>Có — sâu tuỳ ý</td><td>Không, chỉ có tên</td><td>Mở / đóng</td><td>Gom nhóm. Là thứ duy nhất tạo ra cấu trúc cây.</td></tr>
+          <tr><td><span class="tr-kind k-app">Ứng dụng</span></td><td>Không, luôn là lá</td><td>Có — repo, tech stack, tính năng, mục</td><td>Mở <code style="font-family:var(--mono)">/apps/&lt;slug&gt;</code></td><td>Trỏ vào một bản ghi App.</td></tr>
+          <tr><td><span class="tr-kind k-doc">Tài liệu</span></td><td>Không, luôn là lá</td><td>Có — các mục nội dung</td><td>Mở <code style="font-family:var(--mono)">/docs/&lt;slug&gt;</code></td><td>Trỏ vào một bản ghi DocPage.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="g-note" style="margin-top:16px"><strong>Nút gốc (<code style="font-family:var(--mono)">parentId = null</code>) chính là dải tab trên cùng.</strong> Con cháu của nút gốc đang mở là sidebar trái. Một cây, một trình soạn, một bộ quy tắc thứ tự.</p>
+  </section>
+
+  <!-- ══════ 01 · SIDEBAR LỒNG ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">01</span><h2 class="g-sec-t">Sidebar lồng nhau</h2></div>
+    <p class="g-note">Ba tầng trong ảnh dưới: <em>Vệ tinh → Công cụ nhỏ → Calculate Badminton</em>. Nút chứa có mũi ▾ / ▸; nút lá không có. Chú ý <strong>không còn mục “API Web Store Apps” riêng</strong> — nó chung một bản ghi với Web Store Apps qua <code style="font-family:var(--mono)">apiRepoUrl</code>.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">ducker.levananhduc.dev/vi/apps/web-store-apps</div><div class="g-vp">1440</div></div>
+      <div class="g-body"><div class="g-canvas m">
+        <div class="m-mast">
+          <div class="m-brand"><b>Ducker</b><i>Tài liệu hệ sinh thái</i></div>
+          <div class="m-mast-right">
+            <div class="m-search">Tìm kiếm<span class="m-kbd">⌘K</span></div>
+            <div class="m-lang">Tiếng Việt ▾</div>
+            <span class="m-cta">Mở IDMS ↗</span>
+          </div>
+        </div>
+        <nav class="m-tabs">
+          <span class="m-tab">Hệ sinh thái</span>
+          <span class="m-tab on">Ứng dụng</span>
+          <span class="m-tab">Hướng dẫn</span>
+        </nav>
+
+        <div class="m-shell">
+          <aside class="m-side">
+            <ul class="nav-l">
+              <li>
+                <span class="nav-i ct"><span class="nav-c">▾</span>Lõi</span>
+                <ul class="nav-l">
+                  <li><a href="#" class="nav-i on"><span class="nav-c"></span>Web Store Apps</a></li>
+                </ul>
+              </li>
+              <li>
+                <span class="nav-i ct"><span class="nav-c">▾</span>Vệ tinh</span>
+                <ul class="nav-l">
+                  <li><a href="#" class="nav-i"><span class="nav-c"></span>Match CV</a></li>
+                  <li><a href="#" class="nav-i"><span class="nav-c"></span>Manage Gym</a></li>
+                  <li><a href="#" class="nav-i"><span class="nav-c"></span>AI Study Coach</a></li>
+                  <li>
+                    <span class="nav-i ct"><span class="nav-c">▾</span>Công cụ nhỏ</span>
+                    <ul class="nav-l">
+                      <li><a href="#" class="nav-i"><span class="nav-c"></span>Calculate Badminton</a></li>
+                      <li><a href="#" class="nav-i"><span class="nav-c"></span>Shorten Link</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+              <li><span class="nav-i ct"><span class="nav-c">▸</span>Đã ngừng</span></li>
+            </ul>
+          </aside>
+
+          <main class="m-main">
+            <p class="m-eyebrow">Ứng dụng · Lõi</p>
+            <h1 class="m-h1">Web Store Apps</h1>
+            <p class="m-tag">Cổng đăng nhập và bảng khởi chạy ứng dụng cho toàn hệ sinh thái.</p>
+            <div class="m-meta">
+              <span class="m-slug">LeVanAnhDuc/web-store-apps</span>
+              <span class="m-badge b-core">Lõi</span>
+              <span class="m-chip">Next.js 15</span>
+              <span class="m-chip">Express</span>
+              <span class="m-chip">MongoDB</span>
+              <span style="flex:1"></span>
+              <a href="#" class="m-link">Repo giao diện ↗</a>
+              <a href="#" class="m-link">Repo máy chủ ↗</a>
+            </div>
+            <h2 class="m-h2">Là gì</h2>
+            <p class="m-p">Một dự án gồm hai kho mã: <code style="font-family:var(--mono);font-size:13px">web-store-apps</code> là giao diện, <code style="font-family:var(--mono);font-size:13px">api-web-store-apps</code> là máy chủ định danh. Chúng chung vòng đời nên trang này ghi chung một mục, hiện hai liên kết repo.</p>
+            <h2 class="m-h2">Tính năng</h2>
+            <div class="m-feats">
+              <div class="m-feat"><h4>Đăng nhập bằng email và mã OTP</h4><p>Mã dùng một lần gửi qua email.</p></div>
+              <div class="m-feat"><h4>Màn hình đồng ý quyền</h4><p>Hiện đúng danh sách quyền ứng dụng xin.</p></div>
+            </div>
+          </main>
+
+          <nav class="m-toc">
+            <p class="m-toc-h">☰ Trong trang</p>
+            <a href="#" class="on">Là gì</a>
+            <a href="#">Tính năng</a>
+            <a href="#">Chạy thử trong 5 phút</a>
+          </nav>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 02 · TRÌNH SOẠN CÂY ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">02</span><h2 class="g-sec-t">Trình soạn cây điều hướng</h2></div>
+    <p class="g-note">Màn quan trọng nhất của bản này. Khối trên là <strong>dải tab</strong>, khối dưới là con cháu — nhưng chúng là một cây liền, kéo một mục từ dưới lên khối trên là nó thành tab. Bảng phải đổi theo nút đang chọn.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">ducker.levananhduc.dev/vi/admin/navigation</div><div class="g-vp">1440</div></div>
+      <div class="g-body"><div class="g-canvas m">
+        <div class="m-mast" style="border-bottom:1px solid var(--line)">
+          <div class="m-brand"><b>Ducker</b><i>Quản trị</i></div>
+          <div class="m-mast-right">
+            <div class="m-langsw"><span class="on">VI</span><span>EN</span></div>
+            <span class="m-btn">Xem thử</span>
+            <span class="m-btn pri">Lưu</span>
+          </div>
+        </div>
+
+        <div class="tr-shell">
+          <aside class="tr-adm">
+            <a href="#">Tổng quan</a>
+            <a href="#" class="on">Điều hướng <span class="n">14</span></a>
+            <a href="#">Ứng dụng <span class="n">6</span></a>
+            <a href="#">Trang hướng dẫn <span class="n">4</span></a>
+            <a href="#">Ảnh <span class="n">0</span></a>
+            <a href="#">Ngôn ngữ <span class="n">2</span></a>
+          </aside>
+
+          <div class="tr-mid">
+            <div class="tr-bar">
+              <h3>Điều hướng</h3>
+              <span class="m-scope">14 mục · 3 tầng</span>
+              <div class="r"><span class="m-btn dash">＋ Thêm mục gốc</span></div>
+            </div>
+
+            <div class="tr-body">
+              <p class="tr-lbl">Dải tab trên cùng · nút gốc</p>
+              <p class="tr-hint">Thứ tự ở đây là thứ tự tab trái sang phải. Nút ⤒ đưa lên đầu, ⤓ đưa xuống cuối.</p>
+
+              <ul class="tr-l">
+                <li>
+                  <div class="tr-row root">
+                    <span class="tr-grip">⠿</span><span class="tr-tw">▾</span>
+                    <span class="tr-name">Hệ sinh thái</span>
+                    <span class="tr-kind k-ct">Chứa</span>
+                    <span class="m-scope">3 con</span>
+                    <span class="tr-act">
+                      <span class="tr-b" title="Đưa lên đầu">⤒</span><span class="tr-b">↑</span>
+                      <span class="tr-b">↓</span><span class="tr-b" title="Đưa xuống cuối">⤓</span>
+                      <span class="tr-b">✎</span><span class="tr-b">🗑</span>
+                    </span>
+                  </div>
+                  <ul class="tr-l">
+                    <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Tổng quan</span><span class="tr-kind k-doc">Tài liệu</span><span class="tr-act"><span class="tr-b hl">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                    <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Kiến trúc</span><span class="tr-kind k-doc">Tài liệu</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                    <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Thuật ngữ</span><span class="tr-kind k-doc">Tài liệu</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                  </ul>
+                  <span class="tr-add">＋ Thêm con vào “Hệ sinh thái”</span>
+                </li>
+
+                <li>
+                  <div class="tr-row root sel">
+                    <span class="tr-grip">⠿</span><span class="tr-tw">▾</span>
+                    <span class="tr-name">Ứng dụng</span>
+                    <span class="tr-kind k-ct">Chứa</span>
+                    <span class="m-scope">3 con</span>
+                    <span class="tr-act">
+                      <span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span>
+                      <span class="tr-b">✎</span><span class="tr-b">🗑</span>
+                    </span>
+                  </div>
+                  <ul class="tr-l">
+                    <li>
+                      <div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw">▾</span><span class="tr-name">Lõi</span><span class="tr-kind k-ct">Chứa</span><span class="m-scope">1 con</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+                      <ul class="tr-l">
+                        <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Web Store Apps</span><span class="tr-kind k-app">Ứng dụng</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                      </ul>
+                    </li>
+                    <li>
+                      <div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw">▾</span><span class="tr-name">Vệ tinh</span><span class="tr-kind k-ct">Chứa</span><span class="m-scope">4 con</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+                      <ul class="tr-l">
+                        <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Match CV</span><span class="tr-kind k-app">Ứng dụng</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                        <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Manage Gym</span><span class="tr-kind k-app">Ứng dụng</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                        <li>
+                          <div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw">▾</span><span class="tr-name">Công cụ nhỏ</span><span class="tr-kind k-ct">Chứa</span><span class="m-scope">2 con</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+                          <ul class="tr-l">
+                            <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Calculate Badminton</span><span class="tr-kind k-app">Ứng dụng</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b hl">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                            <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw"></span><span class="tr-name">Shorten Link</span><span class="tr-kind k-app">Ứng dụng</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                          </ul>
+                        </li>
+                      </ul>
+                    </li>
+                    <li><div class="tr-row"><span class="tr-grip">⠿</span><span class="tr-tw">▸</span><span class="tr-name">Đã ngừng</span><span class="tr-kind k-ct">Chứa</span><span class="m-scope" style="color:var(--st-standalone)">0 con · chưa publish được</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div></li>
+                  </ul>
+                  <span class="tr-add">＋ Thêm con vào “Ứng dụng”</span>
+                </li>
+
+                <li>
+                  <div class="tr-row root"><span class="tr-grip">⠿</span><span class="tr-tw">▸</span><span class="tr-name">Hướng dẫn</span><span class="tr-kind k-ct">Chứa</span><span class="m-scope">6 con</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <aside class="tr-pr">
+            <h4>Ứng dụng</h4>
+            <p class="sub">Nút chứa · nút gốc · tab thứ 2</p>
+
+            <div class="m-field"><label>Loại nút</label><div class="m-input">Chứa — chỉ gom, không có nội dung</div></div>
+            <div class="m-field"><label>Tên hiển thị · VI</label><div class="m-input">Ứng dụng</div></div>
+            <div class="m-field"><label>Tên hiển thị · EN</label><div class="m-input" style="color:var(--muted)">Apps</div></div>
+            <div class="m-field"><label>Trạng thái</label><div class="m-input">Công khai</div></div>
+            <div class="m-field"><label>Thứ tự trong cùng cấp</label><div class="m-input mono">2 / 3</div></div>
+
+            <div class="tr-lock">
+              <b>Vì sao không có ô nội dung</b>
+              Nút này có 3 con nên nó chỉ làm nhiệm vụ mở đóng. Muốn nó có nội dung riêng thì phải chuyển hết con sang chỗ khác trước — hoặc thêm một nút <em>Tài liệu</em> tên “Tổng quan” làm con đầu tiên, đó là cách thường dùng.
+            </div>
+          </aside>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 03 · THỨ TỰ NỘI DUNG ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">03</span><h2 class="g-sec-t">Đưa nội dung quan trọng lên đầu</h2></div>
+    <p class="g-note">Cùng bộ bốn nút <code style="font-family:var(--mono)">⤒ ↑ ↓ ⤓</code> dùng lại cho tính năng và mục nội dung. Bấm ⤒ ở mục “Chạy thử” là nó nhảy lên đầu bài; bấm ⤓ ở mục “b” là nó xuống cuối. Một component duy nhất, dùng ở bốn chỗ: tab, sidebar, tính năng, mục nội dung.</p>
+    <div class="g-frame">
+      <div class="g-bar"><div class="g-dots"><i></i><i></i><i></i></div><div class="g-url">ducker.levananhduc.dev/vi/admin/apps/web-store-apps</div><div class="g-vp">1080</div></div>
+      <div class="g-body"><div class="g-canvas m" style="min-width:900px">
+        <div style="padding:18px 22px 30px">
+          <div class="m-block">
+            <div class="m-block-h"><b>Mục nội dung</b><span class="m-scope">4 mục · kéo hoặc dùng nút để sắp xếp</span><span style="margin-left:auto"><span class="m-btn dash">＋ Thêm mục</span></span></div>
+            <div class="m-block-b">
+              <div class="m-item"><span class="tr-grip">⠿</span><b>Là gì</b><span class="m-slug">#la-gi</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+              <div class="m-item" style="border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-bg)"><span class="tr-grip">⠿</span><b>Chạy thử trong 5 phút</b><span class="m-slug">#quick-start</span><span class="tr-act"><span class="tr-b hl">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+              <div class="m-item"><span class="tr-grip">⠿</span><b>Cách hoạt động</b><span class="m-slug">#kien-truc</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+              <div class="m-item"><span class="tr-grip">⠿</span><b>Câu hỏi thường gặp</b><span class="m-slug">#faq</span><span class="tr-act"><span class="tr-b">⤒</span><span class="tr-b">↑</span><span class="tr-b">↓</span><span class="tr-b hl">⤓</span><span class="tr-b">✎</span><span class="tr-b">🗑</span></span></div>
+            </div>
+          </div>
+          <p class="g-note" style="margin:0">Bốn nút luôn hiện, nhưng ⤒ và ↑ mờ đi ở mục đầu tiên, ⤓ và ↓ mờ đi ở mục cuối — không có nút nào bấm vào mà không xảy ra gì.</p>
+        </div>
+      </div></div>
+    </div>
+  </section>
+
+  <!-- ══════ 04 · BẤT BIẾN ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">04</span><h2 class="g-sec-t">Sáu bất biến phải có test canh</h2></div>
+    <p class="g-note">Cây tự tham chiếu là chỗ dễ sinh dữ liệu vô nghĩa nhất. Sáu điều dưới đây không diễn đạt được bằng schema, phải kiểm ở tầng ghi.</p>
+    <div class="g-scroll">
+      <table class="g-tbl">
+        <thead><tr><th style="width:230px">Bất biến</th><th>Vi phạm thì hỏng chuyện gì</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Nút có con phải là nút chứa</strong></td><td>Một ứng dụng có con sẽ mất repo, tech stack, tính năng — dữ liệu vẫn còn trong DB nhưng không đường nào tới được.</td></tr>
+          <tr><td><strong>Nút chứa rỗng không publish được</strong></td><td>Tab mở ra chẳng có gì, hoặc mục bấm vào không xổ ra gì. Hứa thứ không có, trái §7.</td></tr>
+          <tr><td><strong>Không có chu trình</strong></td><td>Kéo một nút vào chính hậu duệ của nó ⇒ vòng lặp vô hạn khi dựng cây, treo trang.</td></tr>
+          <tr><td><strong>Một App/DocPage chỉ nằm ở một nút</strong></td><td>Trùng chỗ thì cùng một trang hiện hai lần trong sidebar và mục lục tìm kiếm đếm đôi.</td></tr>
+          <tr><td><strong>Nút chứa phải có tên ở locale mặc định</strong></td><td>Sidebar hiện một dòng trống bấm được — không ai đoán được nó là gì.</td></tr>
+          <tr><td><strong>Nút gốc phải có ít nhất một</strong></td><td>Không có tab nào thì không có đường vào bất cứ đâu.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════ 05 · CẦN QUYẾT ══════ -->
+  <section class="g-sec">
+    <div class="g-sec-h"><span class="g-num">05</span><h2 class="g-sec-t">Hai chỗ cần bạn quyết</h2></div>
+    <div class="g-scroll">
+      <table class="g-tbl">
+        <thead><tr><th style="width:170px">Chỗ</th><th style="width:42%">Mình chọn</th><th>Cách khác</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>Ứng dụng chưa gắn vào cây</td>
+            <td><strong>Hiện ở trang Ứng dụng kèm cảnh báo “chưa có trong điều hướng”</strong>, và trang công khai của nó vẫn mở được bằng URL.</td>
+            <td>Ẩn hẳn khỏi trang công khai tới khi được gắn. An toàn hơn nhưng dễ làm người viết tưởng mình mất bài.</td>
+          </tr>
+          <tr>
+            <td>Nhóm Lõi / Vệ tinh</td>
+            <td><strong>Thành nút chứa bình thường</strong> do bạn tự đặt tên và xoá được. Trường <code style="font-family:var(--mono)">App.kind</code> vẫn còn nhưng chỉ dùng cho huy hiệu, không còn quyết định vị trí trong sidebar.</td>
+            <td>Giữ nhóm cố định theo <code style="font-family:var(--mono)">kind</code>. Ít tự do hơn, nhưng không bao giờ có ứng dụng bị bỏ quên ngoài cây.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
