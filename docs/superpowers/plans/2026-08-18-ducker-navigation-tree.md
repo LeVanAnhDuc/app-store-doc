@@ -453,7 +453,11 @@ Run: `npx vitest run src/server/content/nav.test.ts --maxWorkers=1` → FAIL, kh
 
 - [ ] **Step 3: Cài đặt `nav.ts`**
 
-`buildNavTree` phải chịu được dữ liệu xấu: nút mồ côi bị bỏ, và **phải phát hiện chu trình rồi ném lỗi** thay vì lặp vô hạn. Dùng tập `visited` khi đi xuống.
+`buildNavTree` phải chịu được dữ liệu xấu: nút mồ côi bị bỏ, và **phải phát hiện chu trình rồi ném lỗi** thay vì lặp vô hạn.
+
+⚠️ **Sửa so với bản đầu của kế hoạch này:** tập `visited` khi đi **xuống** từ nút gốc *không bao giờ* bắt được chu trình. Mỗi nút chỉ có một cha, nên nút nằm trong vòng không có tổ tiên nào là nút gốc — cả vòng đơn giản là **không tới được**, cây vẫn dựng xong và dữ liệu lặng lẽ mất tích. Phải đi **lên** theo chuỗi cha của từng dòng (có memo để giữ O(n)). Tập `visited` khi đi xuống vẫn nên giữ làm chốt cuối, kèm chú thích nói rõ nó không bao giờ chặn thật.
+
+Phân biệt cố ý hai loại dữ liệu xấu: **mồ côi bị bỏ im lặng** (phần điều hướng còn lại vẫn hiện được), **chu trình thì ném lỗi** (nó là dấu hiệu dữ liệu đã hỏng, không phải một nhánh thiếu).
 
 - [ ] **Step 4: Chạy test, xác nhận pass**
 

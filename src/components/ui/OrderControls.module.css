@@ -1,0 +1,52 @@
+/* Bộ nút thứ tự — hình khối chép từ `.tr-act` và `.tr-b` của mockup v3 mục 03.
+   Mọi màu qua biến CSS, không mã màu trực tiếp (design-rules §2). */
+
+/* `.tr-act`: bốn nút dính nhau ở cuối hàng. Mockup đặt `margin-left:auto`,
+   nhưng đó là việc của hàng chứa nó, không phải của bộ nút — để đây thì
+   component không dùng lại được ở chỗ khác. */
+.group {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* `.tr-b`. min-width VÀ min-height đều ≥ --tap (28px): WCAG 2.2 SC 2.5.8 đòi
+   24×24, và bốn nút nhỏ sát nhau là chỗ dễ bấm nhầm nhất trong trang quản trị
+   — nhầm ⤓ với ↓ thì mục nhảy thẳng xuống cuối. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
+  font-family: var(--mono);
+  font-size: var(--t-xs);
+  line-height: 1;
+  color: var(--muted);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* `.tr-b.hl`: nút đang dùng được nổi lên khi trỏ tới. */
+.button:hover:not(:disabled) {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* Tiêu điểm bàn phím phải thấy được — đây là đường duy nhất của người không
+   dùng chuột, nên không được để viền tiêu điểm bị nút bên cạnh che. */
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Vô hiệu: `disabled` thật đã chặn click, opacity chỉ để nói cho mắt biết. */
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

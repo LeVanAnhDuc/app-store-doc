@@ -4,3 +4,4 @@ export { Callout, type CalloutProps, type CalloutTone } from "./Callout";
 export { CodeBlock, type CodeBlockProps } from "./CodeBlock";
 export { DataTable, type DataTableProps } from "./DataTable";
 export { WireDiagram, type WireDiagramProps, type WireItem } from "./WireDiagram";
+export { OrderControls, type OrderControlsProps, type OrderControlsLabels, type OrderMove } from "./OrderControls";
