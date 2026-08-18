@@ -1,4 +1,6 @@
-# app-store-doc
+# Ducker
+
+> Tên hiển thị của dự án là **Ducker**. Kho mã trên GitHub vẫn giữ slug `app-store-doc` — slug chỉ xuất hiện ở vai phụ.
 
 Trang tài liệu cho hệ sinh thái ứng dụng của [@LeVanAnhDuc](https://github.com/LeVanAnhDuc), kèm trang quản trị nội dung.
 

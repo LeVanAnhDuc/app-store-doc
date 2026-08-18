@@ -199,7 +199,14 @@ Slug repo và tên package **không đổi** — `app-store-doc` vẫn là tên 
 
 ```bash
 npx vitest run src/i18n --maxWorkers=1
-grep -rn "Atlas" src/ docs/ README.md CLAUDE.md | grep -v mockups   # phải rỗng
+
+# Loại ba nhóm tự tham chiếu, nếu không lệnh này không bao giờ rỗng được:
+#  - mockups/ là ảnh chụp lịch sử của quyết định cũ, giữ nguyên để đối chiếu
+#  - spec và plan ghi lại chính quyết định "đổi từ Atlas sang Ducker"
+#  - messages.test.ts bắt buộc chứa regex /\bAtlas\b/ vì đó là thứ nó kiểm
+grep -rn "Atlas" src/ docs/ README.md CLAUDE.md prisma/ \
+  | grep -v mockups | grep -v "docs/superpowers/" | grep -v "messages.test.ts"   # phải rỗng
+
 git add -A && git commit -m "feat: đổi tên hiển thị dự án thành Ducker"
 ```
 

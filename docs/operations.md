@@ -1,4 +1,4 @@
-# Vận hành và thiết lập môi trường
+# Ducker — vận hành và thiết lập môi trường
 
 Tài liệu này ghi lại **những bước chỉ người có thông tin đăng nhập mới làm được**. Mã ứng dụng đã hoàn thành: 108 test xanh, 6 test skip vì thiếu `DATABASE_URL_TEST`, `npx tsc --noEmit` sạch, `npm run build` chạy được ở chế độ không có DB. Nhưng **chưa có lần nào chạy migration thật, seed thật hay deploy thật**, vì quá trình xây dựng không có tài khoản Neon, Cloudflare R2 hay Vercel.
 

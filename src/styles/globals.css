@@ -24,17 +24,25 @@ body {
   overflow-x: hidden;
 }
 
+/*
+ * Tiêu đề là serif weight 400 — thứ tạo cảm giác "tài liệu" thay vì "bảng
+ * điều khiển". Trang tham chiếu đặt H1 ở 36px/400/normal.
+ * Tracking âm cũ (−0.022em) bị bỏ hẳn: nó ép dấu tiếng Việt vào nhau.
+ */
 h1,
 h2,
-h3,
-h4 {
+h3 {
+  font-family: var(--serif);
+  font-weight: 400;
+  letter-spacing: 0;
   line-height: var(--lh-head);
   text-wrap: balance;
 }
 
-/* Tracking âm chỉ áp cho cỡ từ 24px trở lên; cỡ nhỏ hơn sẽ ép dấu tiếng Việt. */
-h1 {
-  letter-spacing: -0.022em;
+/* h4 ở lại sans — nó đóng vai nhãn của thẻ, không phải tiêu đề bài. */
+h4 {
+  line-height: var(--lh-head);
+  text-wrap: balance;
 }
 
 code,

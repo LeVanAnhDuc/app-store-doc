@@ -1,4 +1,4 @@
-# Đang làm tới đâu
+# Ducker — đang làm tới đâu
 
 **Cập nhật:** 17.08.2026 · commit `ea922d9`
 

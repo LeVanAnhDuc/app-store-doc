@@ -37,3 +37,31 @@ describe("design token", () => {
     expect(lh).toBeGreaterThanOrEqual(1.7);
   });
 });
+
+describe("bậc cỡ và vùng bấm v3", () => {
+  it("thân bài 16px — chuẩn của 4/5 trang docs lớn đã đo", () => {
+    expect(/--t-md:\s*16px/.test(css)).toBe(true);
+  });
+
+  it("có token --tap cho ngưỡng bấm WCAG 2.2 SC 2.5.8", () => {
+    const tap = Number(/--tap:\s*(\d+)px/.exec(css)![1]);
+    expect(tap).toBeGreaterThanOrEqual(24);
+  });
+
+  it("có phông serif cho tiêu đề", () => {
+    expect(css).toMatch(/--serif:/);
+  });
+
+  it("Georgia KHÔNG có trong stack serif — thiếu glyph tiếng Việt dựng sẵn", () => {
+    const serif = /--serif:([^;]+);/.exec(css)![1];
+    expect(serif).not.toMatch(/Georgia/i);
+  });
+
+  it("token đổi vai theo chủ đề: --eyebrow có ở cả ba khối", () => {
+    expect(css.match(/--eyebrow:/g)!.length).toBe(3);
+  });
+
+  it("không còn màu tím của bản cũ", () => {
+    expect(css).not.toMatch(/#4B2ED4|#9B7CFF/i);
+  });
+});

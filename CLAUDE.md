@@ -1,6 +1,7 @@
-# app-store-doc
+# Ducker
 
 Trang tài liệu hệ sinh thái ứng dụng + CMS quản trị nội dung.
+Tên hiển thị: **Ducker**. Slug kho mã: `app-store-doc` — không đổi.
 Next.js 16 · Prisma 7 · PostgreSQL (Neon) · Auth.js · next-intl · Cloudflare R2 · Vercel
 
 ## Đọc trước khi làm

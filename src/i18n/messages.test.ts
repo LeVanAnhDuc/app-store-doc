@@ -40,3 +40,18 @@ describe("chuỗi giao diện", () => {
     expect(locales).toContain(defaultLocale);
   });
 });
+
+describe("tên dự án", () => {
+  it("thương hiệu là Ducker ở mọi ngôn ngữ", () => {
+    for (const msgs of [viTree, enTree]) {
+      expect(lookup(msgs, "brand.name")).toBe("Ducker");
+    }
+  });
+  it("không còn chữ Atlas trong chuỗi giao diện", () => {
+    for (const msgs of [viTree, enTree]) {
+      for (const key of flatten(msgs)) {
+        expect(String(lookup(msgs, key)), key).not.toMatch(/\bAtlas\b/);
+      }
+    }
+  });
+});
