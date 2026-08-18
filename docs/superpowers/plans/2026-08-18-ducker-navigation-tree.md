@@ -1,6 +1,6 @@
 # Ducker — cây điều hướng và giao diện v3 · Kế hoạch triển khai
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Chuyển điều hướng từ chrome viết cứng sang một cây do CMS quản, đổi ngôn ngữ thị giác sang hướng tài liệu Claude Code với bậc cỡ đo được, và đổi tên dự án thành Ducker.
 
@@ -11,6 +11,12 @@
 **Spec:** [`../specs/2026-08-18-ducker-navigation-tree-design.md`](../specs/2026-08-18-ducker-navigation-tree-design.md)
 
 **Mockup đã duyệt:** [`../../design/mockups/v3/index.html`](../../design/mockups/v3/index.html) — khi tài liệu và mockup mâu thuẫn, **mockup thắng**.
+
+**Trạng thái:** hoàn thành 18.08.2026. Ba chỗ làm khác kế hoạch, cả ba đều vì kế hoạch sai:
+
+- Task 9 Step 1 viết `/vi/docs/tich-hop-oauth`; slug thật là `oauth-integration-guide`. Slug sai không làm test đỏ — trang 404 đạt mọi assertion về vùng bấm — nên bài quét sẽ báo xanh mà không kiểm gì. Đã đổi slug và thêm một assertion `status() === 200`.
+- Task 9 Step 3 dùng `prisma migrate reset --force`; Prisma 7 chặn lệnh này khi phát hiện tác nhân AI và đòi câu đồng ý nguyên văn của người dùng. Đã kiểm seed trên một database rỗng khác trong cùng container rồi `DROP DATABASE`, cho cùng bằng chứng mà không xoá gì.
+- Task 9 Step 4 nói dùng `npm run dev`; đã dùng `npm run start` trên bản build sạch, vì `next dev` ghi lại `.next` mà e2e ngay sau đó cần bản build.
 
 ---
 
@@ -85,7 +91,7 @@
 
 **Nguồn giá trị:** chép **nguyên văn** khối `:root`, `@media` và `:root[data-theme="dark"]` từ `docs/design/mockups/v3/index.html`. Mockup là bản đã duyệt.
 
-- [ ] **Step 1: Viết test mới, thêm vào cuối `src/styles/tokens.test.ts`**
+- [x] **Step 1: Viết test mới, thêm vào cuối `src/styles/tokens.test.ts`**
 
 ```ts
 describe("bậc cỡ và vùng bấm v3", () => {
@@ -117,16 +123,16 @@ describe("bậc cỡ và vùng bấm v3", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận fail**
+- [x] **Step 2: Chạy test, xác nhận fail**
 
 Run: `npx vitest run src/styles/tokens.test.ts --maxWorkers=1`
 Expected: FAIL — `--t-md: 16px` chưa có, `--tap` chưa có, `--serif` chưa có.
 
-- [ ] **Step 3: Viết lại `tokens.css`**
+- [x] **Step 3: Viết lại `tokens.css`**
 
 Chép nguyên văn từ mockup v3. Giữ nguyên cấu trúc ba khối chủ đề hiện có. Xoá mọi token tím cũ.
 
-- [ ] **Step 4: Sửa `globals.css`**
+- [x] **Step 4: Sửa `globals.css`**
 
 ```css
 h1, h2, h3 {
@@ -141,16 +147,16 @@ body { font-size: var(--t-md); line-height: var(--lh-body); }
 
 Giữ nguyên khối `.shiki` / `code[data-theme]` đã có — **đừng đụng vào**, nó vừa được sửa và có test canh.
 
-- [ ] **Step 5: Chạy test, xác nhận pass**
+- [x] **Step 5: Chạy test, xác nhận pass**
 
 Run: `npx vitest run src/styles --maxWorkers=1` → PASS
 Run: `npx tsc --noEmit` → sạch
 
-- [ ] **Step 6: Viết lại `design-rules.md` §2 và §3**
+- [x] **Step 6: Viết lại `design-rules.md` §2 và §3**
 
 Chép bảng màu và bậc cỡ từ spec §8.1, §8.2, §8.2.1, §8.2.2. Thêm mục cấm Georgia kèm lý do. Thêm mục `--tap`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add -A && git commit -m "feat: bảng màu v3, tiêu đề serif và bậc cỡ đo từ năm trang docs"
@@ -168,7 +174,7 @@ git add -A && git commit -m "feat: bảng màu v3, tiêu đề serif và bậc c
 - Consumes: không
 - Produces: `brand.name = "Ducker"` ở cả hai locale.
 
-- [ ] **Step 1: Viết test**
+- [x] **Step 1: Viết test**
 
 ```ts
 describe("tên dự án", () => {
@@ -187,15 +193,15 @@ describe("tên dự án", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận fail**
+- [x] **Step 2: Chạy test, xác nhận fail**
 
 Run: `npx vitest run src/i18n --maxWorkers=1` → FAIL, giá trị hiện là "Atlas".
 
-- [ ] **Step 3: Đổi trong hai file messages, rồi trong tài liệu và seed**
+- [x] **Step 3: Đổi trong hai file messages, rồi trong tài liệu và seed**
 
 Slug repo và tên package **không đổi** — `app-store-doc` vẫn là tên kho mã. Chỉ đổi tên hiển thị.
 
-- [ ] **Step 4: Kiểm tra và commit**
+- [x] **Step 4: Kiểm tra và commit**
 
 ```bash
 npx vitest run src/i18n --maxWorkers=1
@@ -225,7 +231,7 @@ git add -A && git commit -m "feat: đổi tên hiển thị dự án thành Duck
 
 Schema chép **nguyên văn** từ spec §3.1.
 
-- [ ] **Step 1: Viết test**
+- [x] **Step 1: Viết test**
 
 ```ts
 describe("cây điều hướng", () => {
@@ -268,11 +274,11 @@ describe("cây điều hướng", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận fail**
+- [x] **Step 2: Chạy test, xác nhận fail**
 
 Run: `npx vitest run prisma/schema.test.ts --maxWorkers=1` → FAIL.
 
-- [ ] **Step 3: Sửa schema, sinh migration offline**
+- [x] **Step 3: Sửa schema, sinh migration offline**
 
 ```bash
 mkdir -p prisma/migrations/0002_nav_tree
@@ -284,7 +290,7 @@ npx prisma migrate diff --from-migrations prisma/migrations \
 Nếu cờ trên không chạy trên Prisma 7.9, dùng lối đã dùng cho `0001_init`:
 `npx prisma migrate diff --from-empty --to-schema ./prisma/schema.prisma --script` rồi cắt lấy phần chênh lệch. **Kiểm file sinh ra không rỗng** — `migrate diff` thất bại âm thầm, in chuỗi rỗng và vẫn thoát mã 0.
 
-- [ ] **Step 4: Nối tay CHECK constraint và bước chuyển dữ liệu**
+- [x] **Step 4: Nối tay CHECK constraint và bước chuyển dữ liệu**
 
 Chèn **trước** lệnh `DROP COLUMN "group"`:
 
@@ -306,7 +312,7 @@ ALTER TABLE "NavNode" ADD CONSTRAINT nav_node_kind_matches_target CHECK (
 );
 ```
 
-- [ ] **Step 5: Chạy migration lên DB dev và kiểm tra**
+- [x] **Step 5: Chạy migration lên DB dev và kiểm tra**
 
 ```bash
 DATABASE_URL="postgresql://postgres:devpass@localhost:15433/app_store_doc" npx prisma migrate deploy
@@ -317,7 +323,7 @@ npx tsc --noEmit
 
 `tsc` sẽ báo lỗi ở mọi chỗ còn đọc `DocPage.group` — đó là ý đồ, sửa hết.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add -A && git commit -m "feat: model cây điều hướng NavNode, xoá DocPage.group"
@@ -342,7 +348,7 @@ git add -A && git commit -m "feat: model cây điều hướng NavNode, xoá Doc
   - `assertNavInvariants(rows: NavRow[], defaultLocale: string): void`
   - `wouldCreateCycle(rows: NavRow[], nodeId: string, newParentId: string | null): boolean`
 
-- [ ] **Step 1: Viết test**
+- [x] **Step 1: Viết test**
 
 ```ts
 import { describe, it, expect } from "vitest";
@@ -447,11 +453,11 @@ describe("findTrail", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận fail**
+- [x] **Step 2: Chạy test, xác nhận fail**
 
 Run: `npx vitest run src/server/content/nav.test.ts --maxWorkers=1` → FAIL, không import được `./nav`.
 
-- [ ] **Step 3: Cài đặt `nav.ts`**
+- [x] **Step 3: Cài đặt `nav.ts`**
 
 `buildNavTree` phải chịu được dữ liệu xấu: nút mồ côi bị bỏ, và **phải phát hiện chu trình rồi ném lỗi** thay vì lặp vô hạn.
 
@@ -459,12 +465,12 @@ Run: `npx vitest run src/server/content/nav.test.ts --maxWorkers=1` → FAIL, kh
 
 Phân biệt cố ý hai loại dữ liệu xấu: **mồ côi bị bỏ im lặng** (phần điều hướng còn lại vẫn hiện được), **chu trình thì ném lỗi** (nó là dấu hiệu dữ liệu đã hỏng, không phải một nhánh thiếu).
 
-- [ ] **Step 4: Chạy test, xác nhận pass**
+- [x] **Step 4: Chạy test, xác nhận pass**
 
 Run: `npx vitest run src/server/content/nav.test.ts --maxWorkers=1` → PASS toàn bộ
 Run: `npx tsc --noEmit` → sạch
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add -A && git commit -m "feat: dựng cây điều hướng và sáu bất biến, thuần không chạm DB"
@@ -486,7 +492,7 @@ git add -A && git commit -m "feat: dựng cây điều hướng và sáu bất b
   - `getUnlinkedContent(): Promise<{ apps: AppCard[]; docs: { slug: string; title: string }[] }>` — không cache
   - `createNavNode`, `updateNavNode`, `deleteNavNode`, `moveNavNode`, `reorderSiblings` trong `mutations.ts`
 
-- [ ] **Step 1: Viết test có cổng DB**
+- [x] **Step 1: Viết test có cổng DB**
 
 ```ts
 const hasDb = Boolean(process.env.DATABASE_URL_TEST);
@@ -513,15 +519,15 @@ describe("getNavTree khi không có DB", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận nhóm cần DB skip và nhóm còn lại fail**
+- [x] **Step 2: Chạy test, xác nhận nhóm cần DB skip và nhóm còn lại fail**
 
-- [ ] **Step 3: Cài đặt truy vấn và ghi**
+- [x] **Step 3: Cài đặt truy vấn và ghi**
 
 Mọi hàm ghi: `assertNavInvariants` trước khi ghi, `wouldCreateCycle` trước khi đổi cha, rồi `revalidateTag(tags.nav())`. Đổi `status` hoặc gắn/gỡ nội dung thì thêm `tags.appsList()` và `tags.searchIndex()`.
 
 **Chốt lỗ hổng I2:** sửa `deleteApp` và `deleteDocPage` — sau khi xoá, đọc lại cha của nút vừa bị cascade; nếu cha là `CONTAINER` đang `PUBLISHED` mà không còn con publish nào, tự hạ xuống `DRAFT` và trả về cờ để giao diện báo cho người dùng biết.
 
-- [ ] **Step 4: Kiểm tra và commit**
+- [x] **Step 4: Kiểm tra và commit**
 
 ```bash
 npx vitest run src/server/content --maxWorkers=1
@@ -541,7 +547,7 @@ git add -A && git commit -m "feat: truy vấn và ghi cây điều hướng, ch�
 - Consumes: Task 1 (`--tap`)
 - Produces: `<OrderControls index={number} total={number} onMove={(to: "top"|"up"|"down"|"bottom") => void} labels={{top,up,down,bottom}} />`
 
-- [ ] **Step 1: Viết test — dùng `fireEvent`, KHÔNG dùng `userEvent`**
+- [x] **Step 1: Viết test — dùng `fireEvent`, KHÔNG dùng `userEvent`**
 
 ```tsx
 import { render, screen, fireEvent } from "@testing-library/react";
@@ -595,11 +601,11 @@ describe("OrderControls", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận fail, rồi cài đặt**
+- [x] **Step 2: Chạy test, xác nhận fail, rồi cài đặt**
 
 CSS: mỗi nút `min-width: var(--tap); min-height: var(--tap);`. Nút vô hiệu giảm `opacity` và đặt `disabled`, **không** chỉ đổi màu.
 
-- [ ] **Step 3: Kiểm tra và commit**
+- [x] **Step 3: Kiểm tra và commit**
 
 ```bash
 npx vitest run src/components/ui --maxWorkers=1
@@ -622,7 +628,7 @@ git add -A && git commit -m "feat: bộ bốn nút thứ tự, dùng được b�
 
 **Bắt buộc đọc `docs/design/mockups/v3/index.html` mục 02 trước khi viết.**
 
-- [ ] **Step 1: Viết test**
+- [x] **Step 1: Viết test**
 
 ```tsx
 const tree = [{
@@ -666,13 +672,13 @@ describe("NavTree", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận fail, rồi cài đặt**
+- [x] **Step 2: Chạy test, xác nhận fail, rồi cài đặt**
 
 `TopBar` dựng dải tab từ **nút gốc** của `getNavTree`; tab đang mở xác định bằng `findTrail`. `Sidebar` dựng từ con cháu của tab đang mở.
 
 Route `/n/[id]` chuyển hướng nút chứa tới `firstLeafHref`; không có lá nào publish thì `notFound()`.
 
-- [ ] **Step 3: Kiểm tra và commit**
+- [x] **Step 3: Kiểm tra và commit**
 
 ```bash
 npx vitest run src/components --maxWorkers=1
@@ -693,7 +699,7 @@ git add -A && git commit -m "feat: dải tab và sidebar dựng từ cây, khôn
 - Consumes: Task 5 (mutations), Task 6 (`OrderControls`)
 - Produces: trang `/admin/navigation` theo mockup mục 03.
 
-- [ ] **Step 1: Viết test**
+- [x] **Step 1: Viết test**
 
 ```tsx
 describe("NavEditor", () => {
@@ -704,13 +710,13 @@ describe("NavEditor", () => {
 });
 ```
 
-- [ ] **Step 2: Chạy test, xác nhận fail, rồi cài đặt**
+- [x] **Step 2: Chạy test, xác nhận fail, rồi cài đặt**
 
 Thêm wrapper action cho `createNavNode`/`updateNavNode`/`deleteNavNode`/`moveNavNode`/`reorderSiblings` — **`await requireAdmin()` ở dòng đầu tiên**, không ngoại lệ.
 
 Bật `ready: true` cho mục `navigation` trong `AdminShell`.
 
-- [ ] **Step 3: Kiểm tra và commit**
+- [x] **Step 3: Kiểm tra và commit**
 
 ```bash
 npx vitest run src/components/admin --maxWorkers=1
@@ -731,7 +737,7 @@ git add -A && git commit -m "feat: trình soạn cây điều hướng trong CMS
 **Interfaces:**
 - Consumes: mọi task trước
 
-- [ ] **Step 1: Viết e2e quét vùng bấm**
+- [x] **Step 1: Viết e2e quét vùng bấm**
 
 ```ts
 import { test, expect } from "@playwright/test";
@@ -762,11 +768,11 @@ for (const path of PAGES) {
 }
 ```
 
-- [ ] **Step 2: Sửa `seed.ts` dựng cây**
+- [x] **Step 2: Sửa `seed.ts` dựng cây**
 
 Ba nút gốc: **Hệ sinh thái · Ứng dụng · Hướng dẫn**, mỗi nút có nhãn `vi` và `en`. Dưới *Ứng dụng* là hai nút chứa *Lõi* và *Vệ tinh*, gắn 6 app vào đúng chỗ. **Không seed tab "Tham chiếu"** — chưa có nội dung, mà I2 cấm publish nút chứa rỗng.
 
-- [ ] **Step 3: Chạy seed lên DB dev và kiểm toàn bộ**
+- [x] **Step 3: Chạy seed lên DB dev và kiểm toàn bộ**
 
 ```bash
 DATABASE_URL="postgresql://postgres:devpass@localhost:15433/app_store_doc" npx prisma migrate reset --force
@@ -776,7 +782,7 @@ npx eslint .
 npm run build
 ```
 
-- [ ] **Step 4: XEM TẬN MẮT — bắt buộc, không bỏ qua**
+- [x] **Step 4: XEM TẬN MẮT — bắt buộc, không bỏ qua**
 
 Bộ test xanh **không** bắt được lỗi CSS. Khởi động lại dev server (đổi token thì hot reload không đủ), rồi chụp ảnh và **nhìn** từng màn ở **cả ba trạng thái chủ đề**:
 
@@ -789,13 +795,13 @@ Kiểm bằng mắt: sáng · tối · theo hệ thống, ở 1440px và 375px, 
 
 Danh sách phải xác nhận: tiêu đề là **serif weight 400**; thân bài **16px**; sidebar lồng đúng tầng và mũi xổ thấy được; dấu tiếng Việt (ế ữ ộ ằ) **không vỡ** trong tiêu đề; khối mã có màu; không màn nào cuộn ngang.
 
-- [ ] **Step 5: Chạy e2e**
+- [x] **Step 5: Chạy e2e**
 
 ```bash
 npx playwright test
 ```
 
-- [ ] **Step 6: Cập nhật `docs/status.md` và commit**
+- [x] **Step 6: Cập nhật `docs/status.md` và commit**
 
 ```bash
 git add -A && git commit -m "feat: seed cây điều hướng, test vùng bấm và kiểm giao diện tận mắt"

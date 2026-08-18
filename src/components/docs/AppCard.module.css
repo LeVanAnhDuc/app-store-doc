@@ -28,7 +28,13 @@
   letter-spacing: -0.012em;
 }
 
+/* `inline-flex` + `min-height` chỉ để đạt ngưỡng bấm: chữ 14.5px cho hộp cao 18px,
+   dưới 24px mà WCAG 2.2 SC 2.5.8 đòi. Lỗi này sống qua toàn bộ bộ test cho tới khi
+   `e2e/a11y-tap-target.spec.ts` quét ra. */
 .nameLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
   color: var(--ink);
   text-decoration: none;
 }

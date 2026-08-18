@@ -16,13 +16,15 @@
   color: var(--muted);
 }
 
+/* Đậm và tracking âm để `globals.css` quyết — quy tắc `h1,h2,h3` ở đó đặt serif
+   weight 400 và `letter-spacing: 0` (mockup `.m-h1`). Khai lại ở đây thì thắng vì
+   selector class mạnh hơn selector thẻ, nên `700` và `-0.025em` cũ đã âm thầm vô
+   hiệu hoá cả hai — đúng kiểu lỗi CSS không test nào bắt được. */
 .title {
   margin: 0 0 14px;
   max-width: 20ch;
   font-size: var(--t-3xl);
-  font-weight: 700;
   line-height: var(--lh-head);
-  letter-spacing: -0.025em;
   text-wrap: balance;
 }
 

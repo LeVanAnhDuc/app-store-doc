@@ -23,14 +23,16 @@
  * nguồn sự thật là cơ sở dữ liệu, và seed chạy lại sẽ ghi đè bản đã sửa.
  * ─────────────────────────────────────────────────────────────────────────────
  *
- * Hai quyết định về hình dạng dữ liệu, cả hai đều theo spec §15:
+ * Ba quyết định về hình dạng dữ liệu (spec §11, §15):
  *
  * 1. **Một cặp client/api là MỘT bản ghi `App`** (`repoUrl` + `apiRepoUrl`), không
  *    phải hai — với người đọc tài liệu thì đó là một sản phẩm.
- * 2. **`DocPage.group` để `null` hết.** `group` không theo ngôn ngữ, nên đặt một
- *    tên nhóm tiếng Việt sẽ khiến sidebar bản tiếng Anh hiện chữ Việt. Nhóm rỗng
- *    thì `listNav` dùng nhãn đã dịch (`doc.guides`), và giao diện giữ được đúng
- *    một ngôn ngữ.
+ * 2. **Điều hướng là một cây `NavNode`, seed dựng sẵn ba nút gốc.** `DocPage.group`
+ *    đã bị xoá khỏi schema (spec §3.3): nó là chuỗi không theo ngôn ngữ nên sidebar
+ *    bản tiếng Anh sẽ hiện chữ Việt. Thay nó là `NavNodeTranslation`, và mọi nhãn
+ *    nút chứa trong file này đều khai đủ `vi` và `en`.
+ * 3. **Không seed tab "Tham chiếu".** Chưa có nội dung nào cho nó, mà bất biến I2
+ *    cấm publish một nút chứa rỗng — bấm vào sẽ chẳng xổ ra gì.
  *
  * Seed ghi bằng Prisma trực tiếp, không đi qua `src/server/content/mutations.ts`:
  * tầng đó gọi `revalidateTag`, mà `revalidateTag` chỉ chạy được trong một request
@@ -41,6 +43,7 @@
  * mục nội dung thì xoá rồi dựng lại — nên **id của chúng không bền qua các lần seed**.
  */
 import { hasDatabase, prisma } from "../src/server/db";
+import { assertNavInvariants, type NavKind, type NavRow } from "../src/server/content/nav";
 
 /** Một đoạn chữ ở cả hai ngôn ngữ. Mọi nội dung seed đều phải có đủ cả hai. */
 type Text = { vi: string; en: string };
@@ -85,6 +88,22 @@ type SeedDocPage = {
   title: Text;
   description?: Text;
   sections: SeedSection[];
+};
+
+/**
+ * Một nút của cây điều hướng.
+ *
+ * `id` do file này đặt chứ không để `cuid()` sinh: nhờ vậy chạy lại seed thì upsert
+ * theo đúng id cũ, không bao giờ mọc ra một tab "Ứng dụng" thứ hai. Nút chứa khai
+ * `label`; nút lá khai `appSlug` hoặc `docSlug` và **không** khai nhãn, vì nhãn của
+ * nó là tên ứng dụng / tiêu đề trang, dịch một lần rồi dùng ở mọi nơi.
+ */
+type SeedNavNode = {
+  id: string;
+  label?: Text;
+  appSlug?: string;
+  docSlug?: string;
+  children?: SeedNavNode[];
 };
 
 const GITHUB = "https://github.com/LeVanAnhDuc";
@@ -953,6 +972,66 @@ const DOC_PAGES: SeedDocPage[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Cây điều hướng (spec §11)
+// ---------------------------------------------------------------------------
+
+/**
+ * Ba nút gốc = ba mục trên dải tab. Con cháu của tab đang mở là sidebar trái.
+ *
+ * Không có tab **Tham chiếu**: chưa có `App` hay `DocPage` nào thuộc về nó, và I2
+ * chặn publish một nút chứa rỗng. Thêm nó vào đây mà không có nội dung sẽ làm chính
+ * `assertNavInvariants` ở dưới ném lỗi trước khi ghi được dòng nào — đó là ý đồ.
+ *
+ * *Ứng dụng* có thêm một tầng (*Lõi* / *Vệ tinh*) vì đó là khác biệt duy nhất giữa
+ * sáu ứng dụng mà người đọc cần biết trước khi bấm. *Hệ sinh thái* và *Hướng dẫn*
+ * chỉ có một tầng: bốn trang tài liệu không đủ nhiều để đáng gom nhóm.
+ */
+const NAV_TREE: SeedNavNode[] = [
+  {
+    id: "nav-ecosystem",
+    label: { vi: "Hệ sinh thái", en: "Ecosystem" },
+    children: [
+      { id: "nav-doc-ecosystem-overview", docSlug: "ecosystem-overview" },
+      // `home` đang DRAFT (xem ghi chú ở bản ghi của nó), nên nút này cũng DRAFT và
+      // không hiện ra sidebar. Vẫn gắn vào cây để nó không nằm trong danh sách
+      // "nội dung chưa gắn vào đâu" của trang quản trị.
+      { id: "nav-doc-home", docSlug: "home" },
+    ],
+  },
+  {
+    id: "nav-apps",
+    label: { vi: "Ứng dụng", en: "Apps" },
+    children: [
+      {
+        id: "nav-apps-core",
+        label: { vi: "Lõi", en: "Core" },
+        children: [{ id: "nav-app-web-store-apps", appSlug: "web-store-apps" }],
+      },
+      {
+        id: "nav-apps-satellite",
+        label: { vi: "Vệ tinh", en: "Satellites" },
+        children: [
+          { id: "nav-app-match-cv", appSlug: "match-cv" },
+          { id: "nav-app-manage-gym", appSlug: "app-manage-gym" },
+          { id: "nav-app-calculate-badminton", appSlug: "app-calculate-badminton" },
+          { id: "nav-app-ai-study-coach", appSlug: "app-AI-study-coach" },
+          // Repo riêng tư, bản ghi rỗng và đang DRAFT — nút cũng DRAFT.
+          { id: "nav-app-shorten-link", appSlug: "shorten-link" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "nav-guides",
+    label: { vi: "Hướng dẫn", en: "Guides" },
+    children: [
+      { id: "nav-doc-oauth-integration-guide", docSlug: "oauth-integration-guide" },
+      { id: "nav-doc-add-new-app-guide", docSlug: "add-new-app-guide" },
+    ],
+  },
+];
+
+// ---------------------------------------------------------------------------
 // Ghi dữ liệu
 // ---------------------------------------------------------------------------
 
@@ -1059,9 +1138,11 @@ async function seedApp(app: SeedApp): Promise<void> {
 }
 
 async function seedDocPage(page: SeedDocPage): Promise<void> {
+  // Không còn `group`: cột đã bị xoá ở migration `0002_nav_tree`, nhóm sidebar giờ
+  // do `NAV_TREE` phía trên quyết định. Trường này sống sót qua `tsc` vì nó nằm
+  // trong một biến được spread — TypeScript chỉ soát trường lạ trên object literal
+  // viết thẳng tại chỗ — nên chỉ `prisma` lúc chạy mới báo "Unknown argument".
   const general = {
-    // `group` để `null` cho mọi trang: xem ghi chú đầu file.
-    group: null,
     order: page.order,
     status: page.status,
   };
@@ -1106,6 +1187,156 @@ async function seedDocPage(page: SeedDocPage): Promise<void> {
       },
     });
   }
+}
+
+/**
+ * Xoá sạch cây điều hướng cũ, từ lá lên gốc.
+ *
+ * Phải xoá theo tầng: khoá ngoại `NavNode.parentId` dùng `ON DELETE RESTRICT`, nên
+ * một `deleteMany` không điều kiện sẽ đụng phải nút cha trước nút con và Postgres
+ * chặn ngay. Vòng lặp dưới đây bóc dần lớp lá.
+ *
+ * Xoá rồi dựng lại — thay vì chỉ upsert — vì `0002_nav_tree` cũng dựng nút chứa
+ * (từ `DocPage.group` và `App.kind`) với id ngẫu nhiên. Chỉ upsert thì trên một DB
+ * đã migrate kèm dữ liệu sẽ còn lại hai nút "Vệ tinh": một của migration nay đã
+ * rỗng (vi phạm I2) và một của seed. Xoá nút điều hướng **không** chạm nội dung:
+ * `Cascade` chỉ đi theo chiều App/DocPage bị xoá thì nút lá của nó biến mất.
+ */
+async function clearNavTree(): Promise<void> {
+  for (let pass = 0; pass < 64; pass += 1) {
+    const nodes = await prisma.navNode.findMany({ select: { id: true, parentId: true } });
+    if (nodes.length === 0) return;
+
+    const parents = new Set(nodes.map((node) => node.parentId).filter((id) => id !== null));
+    const leaves = nodes.filter((node) => !parents.has(node.id)).map((node) => node.id);
+    if (leaves.length === 0) break; // chỉ xảy ra khi dữ liệu cũ có chu trình
+
+    await prisma.navNode.deleteMany({ where: { id: { in: leaves } } });
+  }
+
+  throw new Error(
+    "[seed] Không xoá hết được cây điều hướng cũ: còn nút mà không nút nào là lá. " +
+      "Dữ liệu trong bảng NavNode có chu trình — sửa `parentId` của một nút trong vòng rồi chạy lại.",
+  );
+}
+
+/**
+ * Dựng cây điều hướng.
+ *
+ * Trạng thái của nút lá **đi theo** trạng thái nội dung nó trỏ tới. Nếu không, một
+ * `DocPage` còn nháp vẫn hiện tên trong sidebar rồi dẫn tới trang 404 — tệ hơn là
+ * không hiện. Nút chứa thì luôn `PUBLISHED`, và I2 tự bảo đảm nút chứa nào cũng có
+ * ít nhất một con đã publish.
+ *
+ * Kiểm I1–I6 **trước khi ghi dòng nào**: seed đi thẳng qua Prisma nên không được
+ * `mutations.ts` canh, và một cây sai bất biến sẽ chỉ nổ ra ở lần đầu người dùng
+ * bấm Lưu trong CMS — xa chỗ gây lỗi hàng tuần.
+ */
+async function seedNavTree(): Promise<void> {
+  const apps = new Map(
+    (await prisma.app.findMany({ select: { id: true, slug: true, status: true } })).map((app) => [
+      app.slug,
+      app,
+    ]),
+  );
+  const docs = new Map(
+    (await prisma.docPage.findMany({ select: { id: true, slug: true, status: true } })).map(
+      (doc) => [doc.slug, doc],
+    ),
+  );
+
+  const defaultLocale = LOCALES.find((locale) => locale.isDefault)!.code;
+
+  /** Thứ tự trong mảng là thứ tự tạo: cha luôn nằm trước con để khoá ngoại thoả. */
+  const planned: {
+    row: NavRow;
+    appId: string | null;
+    docPageId: string | null;
+    labels: { locale: string; label: string }[];
+  }[] = [];
+
+  const walk = (nodes: SeedNavNode[], parentId: string | null): void => {
+    nodes.forEach((node, index) => {
+      const app = node.appSlug === undefined ? undefined : apps.get(node.appSlug);
+      const doc = node.docSlug === undefined ? undefined : docs.get(node.docSlug);
+
+      if (node.appSlug !== undefined && app === undefined) {
+        throw new Error(`[seed] Nút "${node.id}" trỏ tới ứng dụng "${node.appSlug}" không có trong DB.`);
+      }
+      if (node.docSlug !== undefined && doc === undefined) {
+        throw new Error(`[seed] Nút "${node.id}" trỏ tới trang "${node.docSlug}" không có trong DB.`);
+      }
+
+      const kind: NavKind = app ? "APP" : doc ? "DOC" : "CONTAINER";
+
+      // Nhãn của lá lấy từ nội dung, nên ở đây chỉ nút chứa cần bản dịch riêng.
+      const labels =
+        kind === "CONTAINER"
+          ? (["vi", "en"] as const).map((code) => ({ locale: code, label: node.label![code] }))
+          : [];
+
+      if (kind === "CONTAINER" && node.label === undefined) {
+        throw new Error(`[seed] Nút chứa "${node.id}" chưa có nhãn — I5 đòi nhãn ở locale mặc định.`);
+      }
+
+      // Nhãn dùng để kiểm bất biến: lá vẫn phải có nhãn nào đó, và nhãn của nó là
+      // tên nội dung — lấy từ chính dữ liệu seed phía trên chứ không hỏi lại DB.
+      const seedLabels = node.appSlug
+        ? APPS.find((a) => a.slug === node.appSlug)!.name
+        : node.docSlug
+          ? DOC_PAGES.find((d) => d.slug === node.docSlug)!.title
+          : node.label!;
+
+      planned.push({
+        row: {
+          id: node.id,
+          parentId,
+          order: index,
+          status: app?.status ?? doc?.status ?? "PUBLISHED",
+          kind,
+          labels: (["vi", "en"] as const).map((code) => ({ locale: code, value: seedLabels[code] })),
+          href: app ? `/${defaultLocale}/apps/${app.slug}` : doc ? `/${defaultLocale}/docs/${doc.slug}` : null,
+        },
+        appId: app?.id ?? null,
+        docPageId: doc?.id ?? null,
+        labels,
+      });
+
+      if (node.children !== undefined) {
+        if (kind !== "CONTAINER") {
+          throw new Error(`[seed] Nút "${node.id}" có con nhưng trỏ tới nội dung — I1 đòi lá không có con.`);
+        }
+        walk(node.children, node.id);
+      }
+    });
+  };
+
+  walk(NAV_TREE, null);
+
+  assertNavInvariants(
+    planned.map((item) => item.row),
+    defaultLocale,
+  );
+
+  await clearNavTree();
+
+  for (const { row, appId, docPageId, labels } of planned) {
+    await prisma.navNode.create({
+      data: {
+        id: row.id,
+        parentId: row.parentId,
+        order: row.order,
+        status: row.status,
+        kind: row.kind,
+        appId,
+        docPageId,
+        translations: { create: labels },
+      },
+    });
+  }
+
+  const roots = planned.filter((item) => item.row.parentId === null).length;
+  console.log(`[seed] Cây điều hướng: ${planned.length} nút, ${roots} nút gốc (dải tab).`);
 }
 
 /** Anchor trùng trong cùng một trang làm mục lục nhảy sai chỗ (spec §6.4). */
@@ -1157,6 +1388,10 @@ async function main(): Promise<void> {
     await seedDocPage(page);
     console.log(`[seed] Trang ${page.title.vi} (${page.slug}): ${page.sections.length} mục.`);
   }
+
+  // Cây dựng sau cùng: nút lá trỏ tới `App`/`DocPage` bằng khoá ngoại nên nội dung
+  // phải tồn tại trước.
+  await seedNavTree();
 
   console.log("[seed] Xong. Nội dung là bản sơ bộ viết từ README — sửa lại qua trang quản trị.");
 }

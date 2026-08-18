@@ -161,13 +161,13 @@
   gap: 9px;
 }
 
+/* `.tr-bar h3` trong mockup: serif weight 400, 20px. Bản trước để mono 14px/600 —
+   một nhãn mono nhỏ hơn cả thân bài đứng ở vai tiêu đề trang, và `<h1>` của trang
+   quản trị nhìn nhỏ hơn mọi chữ quanh nó. `font-family` và `font-weight` để
+   `globals.css` quyết; ở đây chỉ đặt cỡ. */
 .title {
   margin: 0;
-  font-family: var(--mono);
-  font-size: 14px;
-  font-weight: 600;
-  /* Cỡ dưới 24px không dùng tracking âm: nó ép dấu tiếng Việt. */
-  letter-spacing: 0;
+  font-size: 20px;
 }
 
 .scope {

@@ -22,7 +22,14 @@
 }
 
 /* Liên kết neo: mono, muted, chỉ hiện rõ khi rê chuột hoặc có tiêu điểm. */
+/* Liên kết neo ẩn tới khi hover, nhưng nó vẫn là một đích bấm và vẫn nhận được
+   tiêu điểm bàn phím — nên vẫn phải đạt 24x24 (WCAG 2.2 SC 2.5.8). Chữ 11px cho
+   hộp cao 14px, nên cần `min-height`/`min-width` chứ không chỉ padding. */
 .anchor {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap);
+  min-width: var(--tap);
   font-family: var(--mono);
   font-size: 11px;
   font-weight: 400;

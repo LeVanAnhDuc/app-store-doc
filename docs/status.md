@@ -1,6 +1,6 @@
 # Ducker — đang làm tới đâu
 
-**Cập nhật:** 17.08.2026 · commit `ea922d9`
+**Cập nhật:** 18.08.2026 · sau Task 9 của [kế hoạch cây điều hướng](superpowers/plans/2026-08-18-ducker-navigation-tree.md)
 
 File này để mở ra đầu tiên khi bạn (hoặc một phiên Claude mới) quay lại dự án trên máy khác. Nó trả lời ba câu: đang ở đâu, việc gì đang chặn, và còn nợ những gì.
 
@@ -8,19 +8,27 @@ File này để mở ra đầu tiên khi bạn (hoặc một phiên Claude mới
 
 ## 1. Đang ở đâu
 
-Mã ứng dụng **đã hoàn thành**. 17 task trong [`superpowers/plans/2026-08-17-app-store-doc.md`](superpowers/plans/2026-08-17-app-store-doc.md) đã chạy hết.
+Hai kế hoạch đã chạy hết: 17 task trong [`superpowers/plans/2026-08-17-app-store-doc.md`](superpowers/plans/2026-08-17-app-store-doc.md), và 9 task trong [`superpowers/plans/2026-08-18-ducker-navigation-tree.md`](superpowers/plans/2026-08-18-ducker-navigation-tree.md) — cây điều hướng do CMS quản, giao diện v3, đổi tên Ducker.
+
+Số dưới đây là **kết quả chạy thật ngày 18.08.2026** trên Postgres cục bộ (Docker `app-store-doc-pg`, cổng 15433), không phải con số nhớ lại.
 
 | Kiểm tra | Trạng thái |
 |---|---|
-| `npm run test:run` | **108 xanh**, 6 skip |
+| `npm run test:run` | **185 xanh**, 21 skip (28/29 file) |
+| `DATABASE_URL_TEST=... npx vitest run src/server/content --maxWorkers=1` | **64 xanh**, 0 skip |
 | `npm run typecheck` | sạch |
 | `npm run lint` | sạch |
-| `npm run build` | chạy được **khi không có DB** |
-| `npm run e2e` | 2 test bảo mật xanh, 2 test roundtrip skip |
+| `npm run build` | thành công (và vẫn chạy được khi không có DB) |
+| `npm run e2e` | **10 xanh**, 2 skip (hai test roundtrip cần `DATABASE_URL_TEST`) |
+| `DATABASE_URL_TEST=... npm run e2e` | **12 xanh**, 0 skip |
 
-**Chưa từng chạy thật:** migration, seed, deploy. Và **6 test skip** là 6 test quan trọng nhất — chúng kiểm tầng truy vấn và kiểm lời hứa trung tâm của hệ thống (*sửa nội dung trong CMS → trang công khai đổi mà không cần deploy*). Suite xanh ở trạng thái hiện tại **không** chứng minh hai điều đó.
+21 test skip còn lại đều là test cần DB nằm trong `*.db.test.ts`; đặt `DATABASE_URL_TEST` là chúng chạy — dòng thứ hai của bảng là bằng chứng.
 
-Lý do duy nhất: chưa có thông tin đăng nhập Neon, Cloudflare R2, Vercel.
+**Đã chạy thật:** `prisma migrate deploy` (cả `0001_init` và `0002_nav_tree`), `prisma db seed`, và **xem tận mắt** 5 màn × 3 trạng thái chủ đề × 2 mốc rộng. Lời hứa trung tâm — *sửa nội dung trong CMS → trang công khai đổi mà không cần deploy* — đã được `e2e/content-roundtrip.spec.ts` chứng minh trên DB thật.
+
+**Chưa từng chạy:** deploy. Lý do duy nhất: chưa có thông tin đăng nhập Neon, Cloudflare R2, Vercel.
+
+⚠️ **`prisma db seed` không gọi `revalidateTag`** (không thể: nó chạy ngoài request của Next). Nên sau khi seed, `unstable_cache` trong `.next/cache` vẫn phục vụ cây điều hướng cũ, và `next build` **đọc lại đúng cache đó** — trang dựng ra hiện dải tab của lần seed trước. Đã mất một lượt kiểm vì chuyện này. Sau mỗi lần seed: `rm -rf .next` rồi mới build.
 
 ---
 
@@ -35,6 +43,14 @@ npm run dev                 # http://localhost:3000 → chuyển sang /vi
 ```
 
 Cần Node 20+. Không có `DATABASE_URL` thì trang vẫn mở được nhưng trống nội dung — đúng như thiết kế, không phải lỗi.
+
+Để chạy cả các test cần DB, container `app-store-doc-pg` đã có sẵn **hai** database: `app_store_doc` (dev) và `app_store_doc_test`. `.env` đang để `DATABASE_URL_TEST=` rỗng nên chúng skip mặc định; muốn chạy thì truyền biến ngay trong lệnh:
+
+```bash
+DATABASE_URL_TEST="postgresql://postgres:devpass@localhost:15433/app_store_doc_test" npx vitest run src/server/content --maxWorkers=1
+```
+
+Database test phải được `migrate deploy` **và** `db seed` trước lần chạy đầu: `queries.db.test.ts` đọc dữ liệu seed chứ không tự dựng.
 
 **Bốn lệnh chạy được ngay, không cần thông tin đăng nhập nào:** `test:run`, `typecheck`, `lint`, `build`.
 
@@ -54,18 +70,24 @@ Hai điều đã trả giá để biết: repo tên `superdesign-mcp-claude-code
 
 ## 3. Việc đang chặn — làm theo thứ tự
 
-Từng bước chi tiết ở [`operations.md`](operations.md). Bản rút gọn:
+Từng bước chi tiết ở [`operations.md`](operations.md). Bản rút gọn — ba bước đã làm được cục bộ, phần còn lại vẫn chờ thông tin đăng nhập:
 
 - [ ] **1.** Tạo Neon project → `DATABASE_URL`. Tạo branch `test` → `DATABASE_URL_TEST`
 - [ ] **2.** Tạo bucket Cloudflare R2 + API token → 5 biến `R2_*`. Nhớ bật truy cập công khai cho bucket, nếu không `R2_PUBLIC_BASE_URL` vô dụng
 - [ ] **3.** Sinh `ADMIN_PASSWORD_HASH` (hash bcrypt, **không** phải mật khẩu thô), `AUTH_SECRET`, `PREVIEW_SECRET`
-- [ ] **4.** `npx prisma migrate deploy` — dùng chuỗi **direct** của Neon, không phải chuỗi `-pooler`
-- [ ] **5.** `npx prisma db seed`
+- [x] **4.** `npx prisma migrate deploy` — **đã chạy** trên Postgres cục bộ, cả hai migration. Trên Neon nhớ dùng chuỗi **direct**, không phải chuỗi `-pooler`
+- [x] **5.** `npx prisma db seed` — **đã chạy**, dựng 15 nút điều hướng (3 nút gốc), chạy lại nhiều lần không nhân đôi
 - [ ] **6.** Khai biến trên Vercel (Production + Preview). **Không** khai `ADMIN_PASSWORD` và `DATABASE_URL_TEST` trên Vercel
 - [ ] **7.** Deploy, rồi chạy 5 bước kiểm tay ở `operations.md` mục 6.5
-- [ ] **8.** Chạy 6 test đang skip: đặt `DATABASE_URL_TEST`, `npx prisma migrate reset --force`, rồi `npm run test:run` và `npm run e2e`
+- [x] **8.** Chạy các test từng skip — **đã chạy** cục bộ: 64 xanh ở `src/server/content`, 12 xanh ở e2e
 - [ ] **9.** Rà lại nội dung seed qua CMS — nó viết từ README công khai, **chưa kiểm chứng bằng mã nguồn**, phần "Chạy thử trong 5 phút" có thể sai số cổng hoặc tên script
 - [ ] **10.** Nhập nội dung cho **Shorten Link** — repo private nên không seed được gì, bản ghi đang rỗng ở trạng thái `DRAFT`
+
+### Hai cái bẫy khi chạy lại các bước trên
+
+**`prisma migrate reset` bị Prisma 7 chặn với tác nhân AI.** Lệnh in ra một cảnh báo dài và thoát, đòi biến `PRISMA_USER_CONSENT_FOR_DANGEROUS_AI_ACTION` mang **nguyên văn câu đồng ý của chính người dùng**. Một phiên Claude không tự cấp được sự đồng ý đó. Cách đi vòng không cần reset: tạo một database rỗng khác trong cùng container, `migrate deploy` + `db seed` lên đó rồi đếm, xong thì `DROP DATABASE`.
+
+**Playwright chạy trên cổng riêng 3210, không phải 3000.** Xem chú thích trong `playwright.config.ts`.
 
 ---
 
@@ -73,8 +95,21 @@ Từng bước chi tiết ở [`operations.md`](operations.md). Bản rút gọn
 
 Xếp theo mức đáng làm.
 
+### Đã trả trong đợt cây điều hướng
+
+- ~~**`DocPage.group` đang để `null` hết.**~~ Cột đã bị xoá ở `0002_nav_tree`. Nhóm sidebar giờ là `NavNode` loại `CONTAINER`, nhãn nằm trong `NavNodeTranslation` nên dịch được từng ngôn ngữ. Quyết định treo lâu nhất của dự án đã đóng.
+- ~~**Sidebar chỉ có một tầng.**~~ Cây lồng sâu tuỳ ý; seed dựng sẵn ba tầng (Ứng dụng → Vệ tinh → Match CV).
+- ~~**Test cần DB chưa từng chạy.**~~ 64 xanh trên Postgres cục bộ, cộng 12 e2e xanh.
+- ~~**Không có test nào canh ngưỡng vùng bấm.**~~ `e2e/a11y-tap-target.spec.ts` quét 4 trang. Nó **bắt được hai lỗi thật ngay lần chạy đầu** (tên thẻ ứng dụng cao 18px, liên kết neo cao 14px) — cả hai đã sửa.
+- ~~**Playwright có thể âm thầm test sai app.**~~ `reuseExistingServer: !CI` cộng `baseURL` cổng 3000 nghĩa là bất kỳ server nào chiếm cổng 3000 cũng được nhận. Giờ e2e dùng cổng riêng 3210 và **không bao giờ** mượn server có sẵn.
+
 ### Nên làm sớm
 
+- **`OrderControls` mới dùng ở đúng một chỗ.** Spec §15 đòi bốn chỗ; hiện chỉ `NavEditor`/`NavNodeRow` dùng, còn `/admin/apps`, `/admin/docs`, `/admin/locales` vẫn dùng `SortableList` hoặc hai nút mũi tên. Gộp lại được ngay, không cần đổi API.
+- **Không có nút chuyển chủ đề.** `tokens.css` có đủ ba khối (`:root`, `prefers-color-scheme`, `:root[data-theme="dark"]`) và khối thứ ba **đã kiểm là chạy đúng**, nhưng không thành phần nào đặt `data-theme`, nên trong app chỉ với tới được hai trạng thái đầu. Thêm một nút toggle là dùng được ngay khối thứ ba.
+- **Cỡ chữ ngoài bậc và dưới sàn 14px.** `AppCard.name` 14.5px, `FeatureGrid.name` 13.5px, `UploadDropzone.title` 12.5px, `AppHero.slug` 10.5px, `TopBar.brandMark`/`AdminShell.scope` 10px. Bậc cỡ trong `tokens.css` nói "đừng chèn cỡ ngoài bậc", còn design-rules nói không văn xuôi nào dưới 14px (chỉ chừa nhãn mono VIẾT HOA 11–11.5px). Sáu chỗ này chưa theo.
+- **Chữ thương hiệu chưa theo mockup.** Mockup `.m-brand b` là serif weight 400 cỡ 23px; `TopBar`, `AdminShell` và `LoginForm` đang để sans weight 660 kèm tracking âm. `LoginForm` `h1` cũng còn 19px/660 sans. Sửa thì masthead cao thêm nên phải kiểm lại mốc 375px.
+- **Trình soạn cây không hiện trạng thái nút.** Mỗi hàng có huy hiệu loại (CHỨA / ỨNG DỤNG / TÀI LIỆU) nhưng không có gì cho biết nút đang `DRAFT` — "Trang chủ" và "Shorten Link" trông y như các nút đã publish.
 - **Ảnh không đo được kích thước.** `uploadImage` không giải mã ảnh nên `Media.width`/`height` luôn `null`, thư viện chỉ hiện dung lượng. Cần một thư viện đọc header ảnh (`image-size` chẳng hạn) — chưa cài vì lúc dựng không được `npm install`.
 - **`/admin/apps` sắp xếp bằng hai nút mũi tên**, chưa dùng `SortableList`. Lúc làm trang đó thì `SortableList` chưa tồn tại; giờ có rồi, gộp lại được.
 - **`requireAdmin()` chuyển hướng tới `/admin/login` không có locale.** Middleware tự đoán bằng cookie `NEXT_LOCALE`, nên ai deep-link `/en/admin/apps` mà chưa có cookie sẽ rơi vào `/vi/admin/login`. Sửa thì phải dạy tầng auth biết về locale.
@@ -82,15 +117,14 @@ Xếp theo mức đáng làm.
 
 ### Quyết định còn treo
 
-- **`DocPage.group` đang để `null` hết.** `group` không theo ngôn ngữ, nên đặt tên nhóm tiếng Việt sẽ lộ chữ Việt trong sidebar bản EN. Hai lối: thêm bảng dịch cho `group`, hoặc chấp nhận nhóm không có tên.
-- **`DocPage("home")` đang `DRAFT` và `/docs/home` cố tình 404.** Trang chủ `/[locale]` hiện dựng từ chuỗi giao diện chứ không kết xuất bản ghi này. Publish nó sẽ đưa một liên kết chết vào chỉ mục tìm kiếm. Cần quyết: cho trang chủ đọc thật `DocPage("home")`, hay xoá bản ghi đó đi.
+- **`DocPage("home")` đang `DRAFT` và `/docs/home` cố tình 404.** Nút điều hướng của nó cũng `DRAFT` nên không hiện ra sidebar. Trang chủ `/[locale]` hiện dựng từ chuỗi giao diện chứ không kết xuất bản ghi này. Publish nó sẽ đưa một liên kết chết vào chỉ mục tìm kiếm. Cần quyết: cho trang chủ đọc thật `DocPage("home")`, hay xoá bản ghi đó đi.
 - **HTML thô trong markdown không được kết xuất.** Không có `<kbd>`, `<details>`, `<br>`. Đây là mặc định an toàn của `remark-rehype`; muốn mở thì cài `rehype-raw` + `allowDangerousHtml: true` rồi bỏ bước lọc HTML thô tự viết trong `src/lib/markdown.ts` — sanitize đã sẵn `strip: ['script']` cho tình huống đó.
 - **`<pre>` mang thêm `data-code` chứa nguyên văn mã**, nên phần mã xuất hiện hai lần trong payload. Đổi lại được nút sao chép và mã vẫn lấy lại được sau khi tách token. Không muốn thì bỏ transformer và nới assertion trong `markdown.test.ts`.
 
 ### Đã ghi vào spec, chấp nhận lâu dài
 
 - **Thêm một ngôn ngữ mới cần một lần redeploy.** Sửa **nội dung** thì không. Middleware chạy ở edge nên không chạm DB; danh sách locale sinh lúc `prebuild`. Xem spec §9.3.
-- **`NEXT_PUBLIC_SITE_URL` hiện chỉ `playwright.config.ts` đọc.** Chưa có `sitemap.ts` hay canonical dùng nó.
+- **`NEXT_PUBLIC_SITE_URL` hiện không nơi nào đọc.** `playwright.config.ts` từng đọc nó nhưng đã thôi — giá trị `http://localhost:3000` chính là chỗ e2e bị dắt sang app của dự án khác. Chưa có `sitemap.ts` hay canonical dùng nó.
 - **Trang xem thử không trả được 403/503** mà không bật `experimental.authInterrupts`; hai nhánh từ chối kết xuất khối giải thích với mã 200.
 
 ### Việc lớn của tương lai
@@ -110,7 +144,7 @@ Xếp theo mức đáng làm.
 | Kiến trúc, data model, rủi ro | [`superpowers/specs/2026-08-17-app-store-doc-design.md`](superpowers/specs/2026-08-17-app-store-doc-design.md) |
 | Hạ tầng, deploy, test cần DB | [`operations.md`](operations.md) |
 
-**Năm cái bẫy đã trả giá để biết** (chi tiết trong `CLAUDE.md` và `operations.md`):
+**Bảy cái bẫy đã trả giá để biết** (chi tiết trong `CLAUDE.md` và `operations.md`):
 
 0. **Dấu `$` trong `.env` phải escape thành `\$`.** Next expand biến khi nạp `.env`, nên hash bcrypt (luôn chứa `$`) bị cắt từ 60 ký tự còn 48, và trang đăng nhập chỉ nói "sai mật khẩu". Nháy đơn **không** cứu được. Chi tiết `operations.md` §3.1.
 
@@ -118,7 +152,9 @@ Xếp theo mức đáng làm.
 1. **Server Action là endpoint HTTP riêng.** Bảo vệ `layout.tsx` **không** bảo vệ action. Mọi action ghi dữ liệu phải `await requireAdmin()` ở dòng đầu.
 2. **`vitest` không typecheck.** Suite xanh không chứng minh `tsc` sạch. Luôn chạy `npm run typecheck` riêng.
 3. **`prisma migrate diff` thất bại âm thầm** khi thiếu `prisma.config.ts`: in chuỗi rỗng, thoát **mã 0**, sinh file migration **0 byte** trông như thành công.
-4. **Prisma CLI 7, vitest và tsx đều không đọc `.env`.** Chỉ Next đọc. Với ba cái kia phải đặt biến trong chính phiên shell.
+4. **Prisma CLI 7, vitest và tsx đều không đọc `.env`.** Chỉ Next đọc. Với ba cái kia phải đặt biến trong chính phiên shell. **Playwright cũng không đọc** — `playwright.config.ts` nay tự gọi `loadEnvConfig` của `@next/env`, nếu không thì `process.env.ADMIN_EMAIL` là `undefined` và test đăng nhập đổ với một thông báo không hé ra nguyên nhân.
+5. **`prisma db seed` không làm mới cache của Next.** Seed chạy ngoài request nên không gọi được `revalidateTag`; `unstable_cache` trong `.next/cache` giữ bản cũ, và `next build` đọc lại đúng cache đó. Sau mỗi lần seed: `rm -rf .next`.
+6. **Khai `font-weight` hay `letter-spacing` trong một `.module.css` sẽ thắng quy tắc `h1,h2,h3` của `globals.css`** — selector class mạnh hơn selector thẻ. Năm quy tắc `.title` từng để `font-weight: 700` và tracking âm, âm thầm vô hiệu hoá cả quy tắc serif-400 lẫn quy tắc bỏ tracking. Không test nào bắt được; chỉ chụp ảnh và đo `getComputedStyle` mới thấy.
 
 Và một ràng buộc của máy Windows này: **vitest chạy song song hay flaky khi máy tải nặng.** Test fail chưa được coi là fail thật cho tới khi lặp lại được với `--maxWorkers=1`. Test component dùng `fireEvent`, không dùng `userEvent.type`.
 
@@ -132,4 +168,4 @@ Mọi quyết định đáng kể đều nằm trong **thông điệp commit**, 
 git log --format='%h %s%n%b'
 ```
 
-Mười hai commit, từ `2178c04` (mockup) tới `ea922d9` (tài liệu vận hành).
+Từ `2178c04` (mockup v1) tới đợt cây điều hướng: `f85c188` spec, `6db3c5f` kế hoạch, rồi `366b0a0`…`3e0e0a9` là Task 1–8, và Task 9 (seed cây, test vùng bấm, kiểm giao diện tận mắt) là commit cuối.

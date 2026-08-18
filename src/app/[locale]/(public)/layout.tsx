@@ -37,9 +37,9 @@ export default async function PublicLayout({
    * Điều hướng đến từ **một** nguồn duy nhất: cây `NavNode` do CMS quản.
    *
    * Nút gốc là dải tab trên cùng (spec §3.2). Không còn mục nào viết cứng ở đây:
-   * bản trước dựng tab từ `listNav()` cộng hai mục cố định, nên thứ tự tab không
-   * ai sửa được từ CMS. `getNavTree` trả mảng rỗng khi chưa có DB, và khi đó
-   * `TopBar` đơn giản không dựng dải tab.
+   * bản trước ghép một truy vấn nhóm trang tài liệu với hai mục cố định, nên thứ tự
+   * tab không ai sửa được từ CMS. `getNavTree` trả mảng rỗng khi chưa có DB, và khi
+   * đó `TopBar` đơn giản không dựng dải tab.
    */
   const tree = await getNavTree(locale);
 

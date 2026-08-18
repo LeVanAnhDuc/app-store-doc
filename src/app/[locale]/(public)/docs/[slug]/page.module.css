@@ -18,12 +18,13 @@
   color: var(--muted);
 }
 
+/* Không khai `font-weight` hay `letter-spacing` ở đây: quy tắc `h1,h2,h3` trong
+   `globals.css` đặt serif weight 400 và tracking 0 (mockup `.m-h2`). Selector class
+   mạnh hơn selector thẻ, nên `700` và `-0.022em` cũ đã âm thầm vô hiệu hoá cả hai. */
 .title {
   margin: 0 0 8px;
   font-size: var(--t-2xl);
-  font-weight: 700;
   line-height: var(--lh-head);
-  letter-spacing: -0.022em;
   text-wrap: balance;
 }
 
