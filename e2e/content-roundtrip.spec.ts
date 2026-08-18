@@ -3,6 +3,10 @@ import { test, expect } from "@playwright/test";
 
 test.skip(!process.env.DATABASE_URL_TEST, "cần DATABASE_URL_TEST");
 
+/** Tagline gốc của seed. Test ghi lên nó rồi phải trả lại đúng giá trị này. */
+const TAGLINE_GOC = "Cổng đăng nhập và bảng khởi chạy ứng dụng";
+const TAGLINE_TEST = "Tagline vừa đổi lúc kiểm thử";
+
 test("sửa nội dung trong CMS thì trang công khai đổi mà không cần deploy", async ({ page }) => {
   await page.goto("/vi/admin/login");
   await page.fill('input[name="email"]', process.env.ADMIN_EMAIL!);
@@ -15,7 +19,7 @@ test("sửa nội dung trong CMS thì trang công khai đổi mà không cần d
   await page.waitForURL(/\/admin(?!\/login)/);
 
   await page.goto("/vi/admin/apps/web-store-apps");
-  await page.fill('input[name="tagline"]', "Tagline vừa đổi lúc kiểm thử");
+  await page.fill('input[name="tagline"]', TAGLINE_TEST);
   await page.click('button:has-text("Lưu")');
   // Bắt đúng vùng thông báo, không bắt theo chữ: "Đã lưu" là tiền tố của "Đã lưu trữ"
   // trong ô Trạng thái, nên `getByText("Đã lưu")` khớp hai phần tử và đổ vì strict mode.
@@ -29,8 +33,17 @@ test("sửa nội dung trong CMS thì trang công khai đổi mà không cần d
   await page.goto("/vi/apps/web-store-apps");
   await expect(async () => {
     await page.reload();
-    await expect(page.getByText("Tagline vừa đổi lúc kiểm thử")).toBeVisible({ timeout: 1500 });
+    await expect(page.getByText(TAGLINE_TEST)).toBeVisible({ timeout: 1500 });
   }).toPass({ timeout: 20_000 });
+
+  // Trả lại tagline gốc. Không có bước này thì DB dev mang chữ "Tagline vừa đổi
+  // lúc kiểm thử" mãi mãi — đã xảy ra thật, và chỉ lộ ra khi mở trang bằng mắt
+  // chứ không test nào báo. Một test ghi dữ liệu mà không dọn thì lần sau người
+  // ta không phân biệt được đâu là nội dung thật, đâu là rác của lần chạy trước.
+  await page.goto("/vi/admin/apps/web-store-apps");
+  await page.fill('input[name="tagline"]', TAGLINE_GOC);
+  await page.click('button:has-text("Lưu")');
+  await expect(page.getByRole("status")).toHaveText("Đã lưu");
 });
 
 test("tên ứng dụng hiển thị dạng viết hoa đầu từ, không phải slug", async ({ page }) => {
