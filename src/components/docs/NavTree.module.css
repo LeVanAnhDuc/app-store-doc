@@ -1,0 +1,78 @@
+/* Cây điều hướng công khai — hình khối chép từ `.nav-l`, `.nav-i`, `.nav-i.ct`,
+   `.nav-i.on` và `.nav-c` của mockup v3 mục 02. Mọi màu qua biến CSS
+   (design-rules §2). */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* `.nav-l .nav-l`: mỗi tầng lùi vào 12px và có một kẻ dọc mảnh. Kẻ dọc là thứ
+   duy nhất nói "những mục này thuộc mục trên" khi nhánh mở sâu ba tầng. */
+.list .list {
+  margin-left: 12px;
+  padding-left: 9px;
+  border-left: 1px solid var(--line-soft);
+}
+
+/* `.nav-i` dùng chung cho cả nút chứa (`<button>`) và nút lá (`<a>`) để hai loại
+   nằm thẳng hàng nhau. `min-height: var(--tap)` là ngưỡng bấm WCAG 2.2 SC 2.5.8
+   (design-rules §3) — sidebar là chỗ bấm nhiều nhất của cả trang. */
+.item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 6px;
+  /* Sai khác có chủ ý so với bậc cỡ §3: mockup đặt `.nav-i` ở 15px, và mockup
+     là bản đã duyệt nên nó thắng. */
+  font-family: inherit;
+  font-size: 15px;
+  /* Nhãn có dấu tiếng Việt, leading không dưới 1.7 (design-rules §3). */
+  line-height: 1.7;
+  text-align: left;
+  color: var(--ink-2);
+  background: none;
+  text-decoration: none;
+}
+
+.item:hover {
+  color: var(--ink);
+  background: var(--fill-soft);
+}
+
+/* Tiêu điểm bàn phím phải thấy được ở mọi phần tử tương tác (design-rules §9). */
+.item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* `.nav-i.ct`: nút chứa đậm hơn và mực đầy, vì nó là đầu mục của cả một nhánh. */
+.container {
+  color: var(--ink);
+  font-weight: 640;
+  cursor: pointer;
+}
+
+/* `.nav-i.on`: mục đang xem là **viên nền đầy**, không phải vạch màu bên cạnh.
+   Nền đầy đọc được ở cả ba trạng thái chủ đề và không phụ thuộc vào hue. */
+.item[aria-current="page"] {
+  background: var(--fill);
+  color: var(--ink);
+  font-weight: 560;
+}
+
+/* `.nav-c`: ô mũi xổ. Nút lá để trống ô này chứ không bỏ hẳn — bỏ thì nhãn của
+   lá lệch sang trái so với nhãn của nút chứa cùng tầng. */
+.marker {
+  flex: none;
+  width: 11px;
+  font-family: var(--mono);
+  font-size: 11px;
+  text-align: center;
+  color: var(--muted);
+}

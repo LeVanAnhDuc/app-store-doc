@@ -6,10 +6,11 @@ import { AppHero } from "@/components/docs/AppHero";
 import { DocsShell } from "@/components/docs/DocsShell";
 import { FeatureGrid } from "@/components/docs/FeatureGrid";
 import { SectionBody } from "@/components/docs/SectionBody";
-import { Sidebar, type SidebarGroup } from "@/components/docs/Sidebar";
+import { Sidebar } from "@/components/docs/Sidebar";
 import { Toc } from "@/components/docs/Toc";
 import { defaultLocale, locales } from "@/i18n/locales.generated";
-import { getApp, getStaticSlugs, listApps, listNav } from "@/server/content/queries";
+import { findTrail } from "@/server/content/nav";
+import { getApp, getNavTree, getStaticSlugs } from "@/server/content/queries";
 import styles from "./page.module.css";
 
 /**
@@ -63,7 +64,21 @@ export default async function AppPage({ params }: PageParams) {
   const app = await getApp(slug, locale);
   if (!app) notFound();
 
-  const [apps, nav] = await Promise.all([listApps(locale), listNav(locale)]);
+  const currentHref = `/${locale}/apps/${slug}`;
+
+  /**
+   * Cột trái là **con cháu của tab đang mở**, không phải một danh sách tự gộp.
+   *
+   * Trước đây trang này tự dựng hai nhóm "Lõi" và "Ứng dụng vệ tinh" từ
+   * `App.kind`, cộng thêm các nhóm tài liệu — tức là cấu trúc điều hướng nằm
+   * trong mã chứ không trong CMS. Giờ `findTrail` cho biết trang này nằm ở nhánh
+   * nào, và sidebar chỉ là nhánh đó.
+   *
+   * Trang chưa được gắn vào cây thì `trail` rỗng: không có sidebar, nhưng trang
+   * vẫn mở được bằng URL (spec §5).
+   */
+  const trail = findTrail(await getNavTree(locale), currentHref);
+  const sidebarNodes = trail[0]?.children ?? [];
 
   const statusLabels = {
     core: t("status.core"),
@@ -73,52 +88,31 @@ export default async function AppPage({ params }: PageParams) {
     private: t("status.private"),
   };
 
-  // Cột trái gộp ba nguồn: ứng dụng lõi, ứng dụng vệ tinh, rồi các nhóm tài
-  // liệu — đúng thứ tự của mockup màn 02.
-  const groups: SidebarGroup[] = [
-    {
-      key: "core",
-      label: t("sidebar.core"),
-      items: apps
-        .filter((item) => item.kind === "CORE")
-        .map((item) => ({
-          key: item.slug,
-          href: `/${locale}/apps/${item.slug}`,
-          label: item.name,
-        })),
-    },
-    {
-      key: "satellites",
-      label: t("sidebar.satellites"),
-      items: apps
-        .filter((item) => item.kind !== "CORE")
-        .map((item) => ({
-          key: item.slug,
-          href: `/${locale}/apps/${item.slug}`,
-          label: item.name,
-        })),
-    },
-    ...nav.map((group, index) => ({
-      key: `doc-${group.group ?? index}`,
-      label: group.group ?? t("doc.guides"),
-      items: group.items.map((item) => ({
-        key: item.slug,
-        href: item.href,
-        label: item.title,
-      })),
-    })),
-  ];
+  /**
+   * Nhãn trên tiêu đề là đường đi trong cây, ví dụ "Ứng dụng · Lõi" (mockup v3
+   * mục 02) — nó nói cho người đọc biết mình đang ở đâu trong điều hướng. Bỏ
+   * phần tử cuối vì đó chính là trang đang mở. Trang chưa gắn vào cây thì lùi về
+   * tên chung của khu vực.
+   */
+  const crumb =
+    trail.length > 1
+      ? trail
+          .slice(0, -1)
+          .map((node) => node.label)
+          .join(" · ")
+      : t("nav.apps");
 
   const fallbackLabel = t("fallback.notice");
 
   return (
     <DocsShell
       sidebar={
-        <Sidebar
-          groups={groups}
-          currentHref={`/${locale}/apps/${slug}`}
-          label={t("sidebar.label")}
-        />
+        // `undefined` chứ không phải một `Sidebar` rỗng: `DocsShell` chừa cột theo
+        // việc prop có tồn tại hay không, nên truyền phần tử tự render `null` vào
+        // đây thì lưới vẫn giữ một dải trống 208px bên trái.
+        sidebarNodes.length > 0 ? (
+          <Sidebar nodes={sidebarNodes} activeHref={currentHref} label={t("sidebar.label")} />
+        ) : undefined
       }
       toc={
         app.toc.length > 0 ? <Toc items={app.toc} title={t("toc.title")} /> : undefined
@@ -128,7 +122,7 @@ export default async function AppPage({ params }: PageParams) {
           <AppHero
             app={app}
             locale={locale}
-            crumb={`${t("nav.apps")} / ${statusLabels[app.integration]}`}
+            crumb={crumb}
             labels={{
               status: statusLabels[app.integration],
               privateRepo: t("app.privateRepo"),

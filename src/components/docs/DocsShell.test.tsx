@@ -22,26 +22,30 @@ describe("DocsShell", () => {
 });
 
 describe("Sidebar", () => {
-  const groups = [
-    { key: "core", label: "Lõi", items: [{ key: "a", href: "/vi/apps/a", label: "Web Store Apps" }] },
-    { key: "empty", label: "Ứng dụng vệ tinh", items: [] },
+  const nodes = [
+    {
+      id: "core", kind: "CONTAINER" as const, label: "Lõi", href: null, isFallback: false,
+      children: [
+        { id: "a", kind: "APP" as const, label: "Web Store Apps", href: "/vi/apps/a", isFallback: false, children: [] },
+      ],
+    },
   ];
 
   it("đánh dấu trang đang mở bằng aria-current", () => {
-    render(<Sidebar groups={groups} currentHref="/vi/apps/a" label="Điều hướng tài liệu" />);
+    render(<Sidebar nodes={nodes} activeHref="/vi/apps/a" label="Điều hướng tài liệu" />);
     expect(screen.getByRole("link", { name: "Web Store Apps" })).toHaveAttribute(
       "aria-current",
       "page",
     );
   });
 
-  it("bỏ nhóm rỗng thay vì dựng tiêu đề nhóm không có mục nào", () => {
-    render(<Sidebar groups={groups} label="Điều hướng tài liệu" />);
-    expect(screen.queryByText("Ứng dụng vệ tinh")).toBeNull();
+  it("vùng điều hướng có tên gọi để trình đọc màn hình phân biệt với dải tab", () => {
+    render(<Sidebar nodes={nodes} activeHref="/vi/apps/a" label="Điều hướng tài liệu" />);
+    expect(screen.getByRole("navigation", { name: "Điều hướng tài liệu" })).toBeInTheDocument();
   });
 
-  it("không nhóm nào thì không dựng cột trống", () => {
-    const { container } = render(<Sidebar groups={[]} label="Điều hướng tài liệu" />);
+  it("không nút nào thì không dựng cột trống", () => {
+    const { container } = render(<Sidebar nodes={[]} activeHref="/vi" label="Điều hướng tài liệu" />);
     expect(container).toBeEmptyDOMElement();
   });
 });

@@ -5,10 +5,7 @@
   },
   "nav": {
     "label": "Main navigation",
-    "ecosystem": "Ecosystem",
-    "apps": "Apps",
-    "guides": "Guides",
-    "api": "API"
+    "apps": "Apps"
   },
   "locale": {
     "label": "Language"
@@ -60,9 +57,9 @@
   "app": {
     "features": "Features",
     "techStack": "Tech stack",
-    "viewRepo": "View repo",
+    "viewRepo": "Interface repo",
     "viewRepoOnGithub": "View on GitHub",
-    "viewApiRepo": "View server repo",
+    "viewApiRepo": "Server repo",
     "viewDemo": "Open the demo",
     "privateRepo": "Private repo"
   },
@@ -70,9 +67,7 @@
     "guides": "Guides"
   },
   "sidebar": {
-    "label": "Documentation navigation",
-    "core": "Core",
-    "satellites": "Satellite apps"
+    "label": "Documentation navigation"
   },
   "section": {
     "permalink": "Link to section {title}"

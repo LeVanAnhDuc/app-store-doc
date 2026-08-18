@@ -1,57 +1,12 @@
-/* Cột điều hướng — hình khối chép từ `.m-side` trong mockup đã duyệt. */
+/* Cột điều hướng — hình khối chép từ `.m-side` trong mockup v3 mục 02.
+   Hình khối của chính cây nằm trong `NavTree.module.css`. */
 
 .side {
-  padding: 20px 0;
+  /* `.m-side`: đệm dưới dày để mục cuối không dính đáy khung cuộn. */
+  padding: 20px 12px 40px;
   border-right: 1px solid var(--line);
   background: var(--surface);
   height: 100%;
-}
-
-.group {
-  padding: 0 16px;
-  margin-bottom: 20px;
-}
-
-.group:last-child {
-  margin-bottom: 0;
-}
-
-/* Nhãn nhóm: mono viết hoa giãn chữ — design-rules §3. */
-.heading {
-  margin: 0 0 8px;
-  padding: 0 9px;
-  font-family: var(--mono);
-  font-size: 10px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-
-.list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.link {
-  display: block;
-  padding: 5px 9px;
-  border-radius: 4px;
-  font-size: var(--t-sm);
-  /* Tên trang là văn xuôi có dấu tiếng Việt — leading không dưới 1.7. */
-  line-height: 1.7;
-  color: var(--muted);
-  text-decoration: none;
-}
-
-.link:hover {
-  color: var(--accent);
-}
-
-.link[aria-current="page"] {
-  background: var(--accent-bg);
-  color: var(--accent);
-  font-weight: 560;
 }
 
 /* Một cột: điều hướng nằm cuối trang, kẻ ngang thay cho kẻ dọc. */
@@ -60,19 +15,6 @@
     padding: 24px;
     border-right: 0;
     border-top: 1px solid var(--line);
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-  }
-
-  .group {
-    padding: 0;
-    margin-bottom: 0;
-  }
-
-  .heading,
-  .link {
-    padding-left: 0;
   }
 }
 

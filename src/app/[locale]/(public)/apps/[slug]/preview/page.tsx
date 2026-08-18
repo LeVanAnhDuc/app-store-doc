@@ -7,12 +7,13 @@ import { AppHero } from "@/components/docs/AppHero";
 import { DocsShell } from "@/components/docs/DocsShell";
 import { FeatureGrid } from "@/components/docs/FeatureGrid";
 import { SectionBody } from "@/components/docs/SectionBody";
-import { Sidebar, type SidebarGroup } from "@/components/docs/Sidebar";
+import { Sidebar } from "@/components/docs/Sidebar";
 import { Toc } from "@/components/docs/Toc";
 import { Callout } from "@/components/ui/Callout";
 import { locales } from "@/i18n/locales.generated";
 import { requireAdmin } from "@/server/auth";
-import { getApp, listApps, listNav } from "@/server/content/queries";
+import { findTrail } from "@/server/content/nav";
+import { getApp, getNavTree } from "@/server/content/queries";
 import styles from "./page.module.css";
 
 /**
@@ -109,7 +110,7 @@ export default async function AppPreviewPage({ params, searchParams }: PageParam
   const app = await getApp(slug, locale, { includeDrafts: true });
   if (!app) notFound();
 
-  const [apps, nav] = await Promise.all([listApps(locale), listNav(locale)]);
+  const currentHref = `/${locale}/apps/${slug}`;
 
   const statusLabels = {
     core: t("status.core"),
@@ -127,41 +128,30 @@ export default async function AppPreviewPage({ params, searchParams }: PageParam
         : "admin.publishState.draft",
   );
 
-  // Cột trái dựng đúng như trang công khai. Ứng dụng chưa publish không có trong
-  // `listApps`, nên nó cũng không hiện trong cột trái của chính nó — đó là hiện
-  // trạng thật, và là một lý do nữa để bấm Công khai.
-  const groups: SidebarGroup[] = [
-    {
-      key: "core",
-      label: t("sidebar.core"),
-      items: apps
-        .filter((item) => item.kind === "CORE")
-        .map((item) => ({ key: item.slug, href: `/${locale}/apps/${item.slug}`, label: item.name })),
-    },
-    {
-      key: "satellites",
-      label: t("sidebar.satellites"),
-      items: apps
-        .filter((item) => item.kind !== "CORE")
-        .map((item) => ({ key: item.slug, href: `/${locale}/apps/${item.slug}`, label: item.name })),
-    },
-    ...nav.map((group, index) => ({
-      key: `doc-${group.group ?? index}`,
-      label: group.group ?? t("doc.guides"),
-      items: group.items.map((item) => ({ key: item.slug, href: item.href, label: item.title })),
-    })),
-  ];
+  // Cột trái dựng đúng như trang công khai: con cháu của tab đang mở. Nút của
+  // ứng dụng chưa publish không có trong cây công khai, nên nó cũng không hiện
+  // trong cột trái của chính nó — đó là hiện trạng thật, và là một lý do nữa để
+  // bấm Công khai.
+  const trail = findTrail(await getNavTree(locale), currentHref);
+  const sidebarNodes = trail[0]?.children ?? [];
+
+  const crumb =
+    trail.length > 1
+      ? trail
+          .slice(0, -1)
+          .map((node) => node.label)
+          .join(" · ")
+      : t("nav.apps");
 
   const fallbackLabel = t("fallback.notice");
 
   return (
     <DocsShell
       sidebar={
-        <Sidebar
-          groups={groups}
-          currentHref={`/${locale}/apps/${slug}`}
-          label={t("sidebar.label")}
-        />
+        // `undefined` chứ không phải một `Sidebar` rỗng — xem chú thích ở trang thật.
+        sidebarNodes.length > 0 ? (
+          <Sidebar nodes={sidebarNodes} activeHref={currentHref} label={t("sidebar.label")} />
+        ) : undefined
       }
       toc={app.toc.length > 0 ? <Toc items={app.toc} title={t("toc.title")} /> : undefined}
       main={
@@ -179,7 +169,7 @@ export default async function AppPreviewPage({ params, searchParams }: PageParam
           <AppHero
             app={app}
             locale={locale}
-            crumb={`${t("nav.apps")} / ${statusLabels[app.integration]}`}
+            crumb={crumb}
             labels={{
               status: statusLabels[app.integration],
               privateRepo: t("app.privateRepo"),

@@ -1,13 +1,20 @@
-/* Thanh trên cùng — hình khối chép từ `.m-top` và các lớp con trong mockup đã duyệt. */
+/* Thanh trên cùng — hai hàng, hình khối chép từ `.m-mast` và `.m-tabs` của
+   mockup v3 mục 02. */
 
-.top {
+/* Đường kẻ đặt ở đây, không ở hàng tab: cây rỗng thì không có hàng tab, mà
+   thanh trên cùng vẫn phải có đáy để không lẫn vào nội dung. */
+.header {
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+}
+
+/* `.m-mast`. */
+.mast {
   display: flex;
   align-items: center;
   gap: 18px;
   min-height: 52px;
   padding: 8px 20px;
-  border-bottom: 1px solid var(--line);
-  background: var(--surface);
 }
 
 .brand {
@@ -36,29 +43,6 @@
   font-weight: 700;
 }
 
-.nav {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  min-width: 0;
-}
-
-.navLink {
-  color: var(--muted);
-  font-size: 13.5px;
-  text-decoration: none;
-  white-space: nowrap;
-}
-
-.navLink:hover {
-  color: var(--ink);
-}
-
-.navLink[aria-current="page"] {
-  color: var(--ink);
-  font-weight: 560;
-}
-
 .right {
   margin-left: auto;
   display: flex;
@@ -78,7 +62,13 @@
 }
 
 .lang {
+  display: flex;
+  align-items: center;
+  /* Ngưỡng bấm WCAG 2.2 SC 2.5.8 (design-rules §3). */
+  min-width: var(--tap);
+  min-height: var(--tap);
   padding: 4px 8px;
+  justify-content: center;
   color: var(--muted);
   text-decoration: none;
 }
@@ -92,22 +82,64 @@
   color: var(--bg);
 }
 
-/* Đáp ứng tới 375px: điều hướng xuống dòng dưới thương hiệu, không cuộn ngang. */
+/* `.m-tabs`: dải tab dựng từ nút gốc của cây. Cuộn ngang trong hộp riêng khi
+   nhiều tab, để thân trang không bao giờ cuộn ngang (design-rules §9). */
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  padding: 0 20px;
+  overflow-x: auto;
+}
+
+/* `.m-tab`. Cỡ 15px chép từ mockup — mockup là bản đã duyệt nên nó thắng bậc cỡ. */
+.tab {
+  display: flex;
+  align-items: center;
+  min-height: var(--tap);
+  padding: 11px 0 12px;
+  border-bottom: 2px solid transparent;
+  /* Kéo gạch chân xuống trùng với đường kẻ đáy của cả thanh. */
+  margin-bottom: -1px;
+  font-size: 15px;
+  color: var(--muted);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--ink);
+}
+
+/* `.m-tab.on`: tab đang mở gạch chân bằng mực, không phải bằng màu nhấn. */
+.tab[aria-current="page"] {
+  color: var(--ink);
+  font-weight: 600;
+  border-bottom-color: var(--ink);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Đáp ứng tới 375px. */
 @media (max-width: 720px) {
-  .top {
-    flex-wrap: wrap;
+  .mast {
     gap: 10px 14px;
     padding: 10px 16px;
   }
 
-  .nav {
-    order: 3;
-    width: 100%;
-    gap: 14px;
-    font-size: var(--t-sm);
-  }
-
   .right {
     gap: 8px;
+  }
+
+  .tabs {
+    gap: 16px;
+    padding: 0 16px;
+  }
+
+  .tab {
+    font-size: var(--t-sm);
   }
 }

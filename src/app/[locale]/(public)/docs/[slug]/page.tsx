@@ -5,17 +5,19 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { DocsShell } from "@/components/docs/DocsShell";
 import { FallbackNotice } from "@/components/docs/FallbackNotice";
 import { SectionBody } from "@/components/docs/SectionBody";
-import { Sidebar, type SidebarGroup } from "@/components/docs/Sidebar";
+import { Sidebar } from "@/components/docs/Sidebar";
 import { Toc } from "@/components/docs/Toc";
 import { defaultLocale, locales } from "@/i18n/locales.generated";
-import { LANDING_DOC_SLUG, getDocPage, getStaticSlugs, listNav } from "@/server/content/queries";
+import { findTrail } from "@/server/content/nav";
+import { LANDING_DOC_SLUG, getDocPage, getNavTree, getStaticSlugs } from "@/server/content/queries";
 import styles from "./page.module.css";
 
 /**
  * Trang hướng dẫn — ba cột theo mockup màn 03.
  *
- * Cùng khung với trang ứng dụng, khác ở chỗ không có khối tính năng và cột trái
- * chỉ gồm các nhóm tài liệu.
+ * Cùng khung với trang ứng dụng, khác ở chỗ không có khối tính năng. Cột trái
+ * dựng từ đúng cây điều hướng đó, nên một bài hướng dẫn nằm cạnh ứng dụng trong
+ * cùng một nhánh vẫn hiện đúng chỗ.
  */
 
 type PageParams = { params: Promise<{ locale: string; slug: string }> };
@@ -69,28 +71,31 @@ export default async function DocPage({ params }: PageParams) {
   const page = await getDocPage(slug, locale);
   if (!page) notFound();
 
-  const nav = await listNav(locale);
+  const currentHref = `/${locale}/docs/${slug}`;
 
-  const groups: SidebarGroup[] = nav.map((group, index) => ({
-    key: `doc-${group.group ?? index}`,
-    label: group.group ?? t("doc.guides"),
-    items: group.items.map((item) => ({
-      key: item.slug,
-      href: item.href,
-      label: item.title,
-    })),
-  }));
+  // Cột trái là con cháu của tab đang mở, đúng như trang ứng dụng — cùng một cây,
+  // cùng một cách dựng. Bài chưa gắn vào cây thì không có cột trái.
+  const trail = findTrail(await getNavTree(locale), currentHref);
+  const sidebarNodes = trail[0]?.children ?? [];
+
+  // "Hướng dẫn · Tích hợp" — đường đi trong cây, bỏ phần tử cuối vì đó là bài này.
+  const crumb =
+    trail.length > 1
+      ? trail
+          .slice(0, -1)
+          .map((node) => node.label)
+          .join(" · ")
+      : t("doc.guides");
 
   const fallbackLabel = t("fallback.notice");
 
   return (
     <DocsShell
       sidebar={
-        <Sidebar
-          groups={groups}
-          currentHref={`/${locale}/docs/${slug}`}
-          label={t("sidebar.label")}
-        />
+        // `undefined` chứ không phải một `Sidebar` rỗng — xem chú thích ở trang ứng dụng.
+        sidebarNodes.length > 0 ? (
+          <Sidebar nodes={sidebarNodes} activeHref={currentHref} label={t("sidebar.label")} />
+        ) : undefined
       }
       toc={
         page.toc.length > 0 ? <Toc items={page.toc} title={t("toc.title")} /> : undefined
@@ -98,7 +103,7 @@ export default async function DocPage({ params }: PageParams) {
       main={
         <article className={styles.main}>
           <header className={styles.head}>
-            <p className={styles.crumb}>{t("doc.guides")}</p>
+            <p className={styles.crumb}>{crumb}</p>
             <h1 className={styles.title}>{page.title}</h1>
             <FallbackNotice
               shownLocale={page.locale}

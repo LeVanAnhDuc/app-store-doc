@@ -5,10 +5,7 @@
   },
   "nav": {
     "label": "Điều hướng chính",
-    "ecosystem": "Hệ sinh thái",
-    "apps": "Ứng dụng",
-    "guides": "Hướng dẫn",
-    "api": "API"
+    "apps": "Ứng dụng"
   },
   "locale": {
     "label": "Ngôn ngữ"
@@ -60,9 +57,9 @@
   "app": {
     "features": "Tính năng",
     "techStack": "Công nghệ sử dụng",
-    "viewRepo": "Xem repo",
+    "viewRepo": "Repo giao diện",
     "viewRepoOnGithub": "Xem trên GitHub",
-    "viewApiRepo": "Xem repo máy chủ",
+    "viewApiRepo": "Repo máy chủ",
     "viewDemo": "Mở bản chạy thử",
     "privateRepo": "Repo riêng tư"
   },
@@ -70,9 +67,7 @@
     "guides": "Hướng dẫn"
   },
   "sidebar": {
-    "label": "Điều hướng tài liệu",
-    "core": "Lõi",
-    "satellites": "Ứng dụng vệ tinh"
+    "label": "Điều hướng tài liệu"
   },
   "section": {
     "permalink": "Liên kết tới mục {title}"
