@@ -30,6 +30,8 @@ Số dưới đây là **kết quả chạy thật ngày 19.08.2026** trên Post
 
 ⚠️ **`prisma db seed` không gọi `revalidateTag`** (không thể: nó chạy ngoài request của Next). Nên sau khi seed, `unstable_cache` trong `.next/cache` vẫn phục vụ cây điều hướng cũ, và `next build` **đọc lại đúng cache đó** — trang dựng ra hiện dải tab của lần seed trước. Đã mất một lượt kiểm vì chuyện này. Sau mỗi lần seed: `rm -rf .next` rồi mới build.
 
+⚠️ **Cùng loại bẫy, nguồn khác: ghi từ một tiến trình server khác cũng không lan sang.** `npm run e2e` dựng server riêng ở cổng 3210; nó ghi DB rồi tự gọi `revalidateTag`, nhưng dev server ở cổng 3000 **không hề biết** — hai tiến trình, hai cache. Tệ hơn, cache nằm trên đĩa trong `.next/cache` nên **khởi động lại dev server cũng không hết**. Đã mất một lượt truy lỗi vì chuyện này: DB hiện giá trị đúng mà trang vẫn hiện giá trị cũ. Quy tắc chung: **nội dung đổi mà không đi qua chính server đang chạy thì phải `rm -rf .next`** — dù nguồn là `db seed`, một bộ e2e, hay `psql` gõ tay.
+
 ---
 
 ## 2. Dựng lại môi trường trên máy mới
