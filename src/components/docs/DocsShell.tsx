@@ -19,8 +19,10 @@ export type DocsShellProps = {
  * `undefined` khi không có gì để dựng — `Toc` tự trả `null` khi rỗng, nhưng
  * phần tử vẫn tồn tại trong cây nên lưới không tự biết điều đó.
  *
- * Tới 980px cả ba gập thành một cột: mục lục lên đầu bài, điều hướng xuống cuối
- * trang (design-rules §9, mockup màn 07).
+ * Tới 980px cả ba gập thành một cột: mục lục lên đầu bài, còn cột điều hướng
+ * ẩn hẳn — nơi gọi dựng `NavDrawer` ngay đầu bài thay cho nó (design-rules §9,
+ * mockup mục 07). Prop `sidebar` vẫn truyền như cũ ở mọi bề rộng; chỉ CSS quyết
+ * định bề nào thấy nó.
  */
 export function DocsShell({ sidebar, main, toc }: DocsShellProps) {
   return (

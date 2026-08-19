@@ -10,13 +10,12 @@ import NextAuth, { AuthError, type User } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
+
+import { LOGIN_PATH, loginRedirectPath } from "../login-path";
 import type { SessionUser } from "../types";
 
 /** Vai trò duy nhất hiện có. `requireAdmin` kiểm tra đúng chuỗi này. */
 const ADMIN_ROLE = "admin";
-
-/** Trang đăng nhập, dùng cho cả `pages.signIn` lẫn nơi `requireAdmin` đá về. */
-const LOGIN_PATH = "/admin/login";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -35,6 +34,10 @@ const {
   trustHost: true,
   // Không có bảng session trong DB — token nằm gọn trong cookie.
   session: { strategy: "jwt" },
+  // Đường dẫn trần, không tiền tố ngôn ngữ: đây là lối thoát nội bộ của Auth.js
+  // (ta không dùng — trang đăng nhập gọi thẳng `signInWithPassword`), và nó là
+  // hằng số cấu hình nên không đọc được ngôn ngữ của request. Mọi chuyển hướng
+  // do chính ta phát ra đều đi qua `loginRedirectPath()` và **có** tiền tố.
   pages: { signIn: LOGIN_PATH },
   cookies: {
     sessionToken: {
@@ -124,7 +127,10 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
  */
 export async function requireAdmin(): Promise<SessionUser> {
   const user = await getCurrentUser();
-  if (!user || !user.roles.includes(ADMIN_ROLE)) redirect(LOGIN_PATH);
+  // Giữ nguyên ngôn ngữ người dùng đang dùng: đá về `/admin/login` trần là giao
+  // việc đoán ngôn ngữ cho middleware, và middleware đoán trượt ở mọi request
+  // nền. Xem `../login-path.ts`.
+  if (!user || !user.roles.includes(ADMIN_ROLE)) redirect(await loginRedirectPath());
   return user;
 }
 
@@ -153,7 +159,7 @@ export async function signInWithPassword(email: string, password: string): Promi
   }
 }
 
-/** Đăng xuất rồi đưa về trang đăng nhập. */
+/** Đăng xuất rồi đưa về trang đăng nhập, đúng ngôn ngữ đang dùng. */
 export async function signOut(): Promise<void> {
-  await authSignOut({ redirectTo: LOGIN_PATH });
+  await authSignOut({ redirectTo: await loginRedirectPath() });
 }

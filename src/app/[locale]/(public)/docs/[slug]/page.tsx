@@ -4,6 +4,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { DocsShell } from "@/components/docs/DocsShell";
 import { FallbackNotice } from "@/components/docs/FallbackNotice";
+import { NavDrawer } from "@/components/docs/NavDrawer";
 import { SectionBody } from "@/components/docs/SectionBody";
 import { Sidebar } from "@/components/docs/Sidebar";
 import { Toc } from "@/components/docs/Toc";
@@ -112,6 +113,15 @@ export default async function DocPage({ params }: PageParams) {
             />
             {page.description ? <p className={styles.lede}>{page.description}</p> : null}
           </header>
+          {/* Ngăn kéo điều hướng của màn hẹp, đặt NGAY ĐẦU BÀI như mockup mục 07 —
+              ngay dưới tiêu đề, trước mục nội dung đầu tiên. Ở màn rộng nó ẩn
+              hoàn toàn vì cột trái đã làm đúng việc đó. Cùng `sidebarNodes`,
+              cùng `NavTree`: một cây, hai chỗ hiện. */}
+          <NavDrawer
+            nodes={sidebarNodes}
+            activeHref={currentHref}
+            labels={{ open: t("sidebar.label"), close: t("search.close") }}
+          />
 
           {page.sections.map((section) => (
             <SectionBody

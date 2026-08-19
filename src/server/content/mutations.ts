@@ -593,6 +593,71 @@ export async function setDefaultLocale(code: string): Promise<void> {
   revalidate(tags.searchIndex());
 }
 
+/**
+ * Sắp lại thứ tự ngôn ngữ. `codes` là danh sách **đầy đủ** theo đúng thứ tự mới;
+ * `order` lấy từ vị trí trong mảng, cùng quy ước `reorderApps` và `saveFeatures`.
+ *
+ * Nhận **mã** chứ không nhận id: khoá chính của `Locale` là `code`. Bảng này
+ * không có cột `id` nào để nhầm.
+ *
+ * Kiểm đủ số lượng trước khi ghi, cùng lý do `reorderApps`: gửi lên thiếu một mã
+ * nghĩa là bảng phía trình duyệt đã cũ, và ghi tiếp sẽ để lại hai ngôn ngữ cùng
+ * `order` — mà `order` trùng thì thứ tự rơi về `code` chứ không phải thứ tự người
+ * vận hành vừa xếp.
+ *
+ * Thứ tự **không** đụng tới bất biến "đúng một mặc định và nó đang bật": hàm này
+ * không ghi `isDefault` lẫn `enabled`, và vị trí trong danh sách không mang ý
+ * nghĩa nào với cơ chế fallback. Vẫn gọi `assertSingleDefaultLocale` trước khi
+ * cam kết, cùng lối `setLocaleEnabled`: quy tắc ở đây là **mọi** lượt ghi vào
+ * bảng `Locale` đều rời transaction với bảng ở trạng thái hợp lệ, chứ không phải
+ * "lượt ghi nào có khả năng phá thì mới kiểm" — quy tắc thứ hai đòi người viết
+ * hàm ghi tiếp theo phải tự nhận ra mình thuộc loại nào.
+ */
+export async function reorderLocales(codes: string[]): Promise<void> {
+  const unique = new Set(codes);
+  if (unique.size !== codes.length) {
+    throw new Error("Danh sách thứ tự có ngôn ngữ bị lặp. Hãy tải lại trang rồi thử lại.");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const rows = await tx.locale.findMany({
+      select: { code: true, isDefault: true, enabled: true },
+    });
+
+    if (rows.length !== codes.length) {
+      throw new Error(
+        `Danh sách thứ tự có ${codes.length} ngôn ngữ nhưng cơ sở dữ liệu có ${rows.length}. ` +
+          "Có người vừa thêm hoặc xoá ngôn ngữ — hãy tải lại trang rồi sắp lại.",
+      );
+    }
+
+    const known = new Set(rows.map((row) => row.code));
+    const unknown = codes.filter((code) => !known.has(code));
+    if (unknown.length > 0) {
+      throw new Error(
+        `Danh sách thứ tự có ngôn ngữ không tồn tại (${unknown.join(", ")}). ` +
+          "Hãy tải lại trang rồi thử lại.",
+      );
+    }
+
+    for (const [index, code] of codes.entries()) {
+      await tx.locale.update({ where: { code }, data: { order: index } });
+    }
+
+    assertSingleDefaultLocale(rows);
+  });
+
+  // Ba tag y như `setLocaleEnabled`. Hôm nay **chưa** tag nào phụ thuộc vào thứ
+  // tự ngôn ngữ — chỗ thứ tự này hiện ra là nút chuyển ngôn ngữ, mà nút đó đọc
+  // `locales.generated.ts` sinh lúc prebuild, nên nó đổi ở lần deploy kế tiếp
+  // chứ không đổi vì một lượt revalidate. Vẫn làm mới cả ba vì thiếu một tag là
+  // lỗi im lặng không có gì để lần, còn thừa một tag chỉ tốn một lượt dựng lại
+  // — cùng cân nhắc đã ghi ở `revalidateNav`.
+  revalidate(tags.nav());
+  revalidate(tags.appsList());
+  revalidate(tags.searchIndex());
+}
+
 // ---------------------------------------------------------------------------
 // Cây điều hướng
 // ---------------------------------------------------------------------------

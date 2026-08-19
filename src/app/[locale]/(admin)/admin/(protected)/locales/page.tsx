@@ -9,7 +9,7 @@ import {
   AdminTitle,
 } from "@/components/admin/AdminShell";
 import { listLocalesForAdmin } from "@/server/content/queries";
-import { setDefaultLocale, setLocaleEnabled } from "../../actions";
+import { reorderLocales, setDefaultLocale, setLocaleEnabled } from "../../actions";
 import { LocaleTable } from "./LocaleTable";
 import styles from "./page.module.css";
 
@@ -59,7 +59,12 @@ export default async function AdminLocalesPage({ params }: PageParams) {
               <p className={styles.emptyBody}>{t("admin.locales.emptyBody")}</p>
             </div>
           ) : (
-            <LocaleTable rows={rows} setEnabled={setLocaleEnabled} setDefault={setDefaultLocale} />
+            <LocaleTable
+              rows={rows}
+              setEnabled={setLocaleEnabled}
+              setDefault={setDefaultLocale}
+              reorder={reorderLocales}
+            />
           )}
         </AdminBlock>
 

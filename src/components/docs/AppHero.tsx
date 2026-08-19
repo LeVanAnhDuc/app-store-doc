@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { Badge } from "@/components/ui/Badge";
 import { Chip } from "@/components/ui/Chip";
 import type { AppDetail } from "@/server/content/queries";
@@ -22,6 +24,18 @@ export type AppHeroProps = {
   /** Đường dẫn phân cấp, ví dụ "Ứng dụng / Lõi". */
   crumb: string;
   labels: AppHeroLabels;
+  /**
+   * Khối chèn **ngay dưới dòng mô tả**, trước hàng metadata.
+   *
+   * Đúng một chỗ dùng: nút mở ngăn kéo điều hướng của màn hẹp (`NavDrawer`),
+   * và mockup mục 07 đặt nó đúng chỗ này — sau tiêu đề, trước nội dung. Đặt
+   * nó ngoài `AppHero`, ngay sau thẻ này, thì ở 375×667 nó rơi xuống y=639,
+   * tức là **dưới mép màn hình** — đo thật, không đoán: hàng metadata
+   * (slug, huy hiệu, chip công nghệ, liên kết repo) cao 114px và đoạn tóm tắt
+   * cao 84px chen vào giữa. Khung điện thoại trong mockup không vẽ hai thứ đó
+   * nên chỗ này không lộ ra trên giấy.
+   */
+  drawer?: ReactNode;
 };
 
 /**
@@ -34,7 +48,7 @@ export type AppHeroProps = {
  * mà thay bằng huy hiệu nói thẳng repo đang riêng tư. Liên kết bản chạy thử vẫn
  * giữ: nó là trang web công khai, không phải kho mã.
  */
-export function AppHero({ app, locale, crumb, labels }: AppHeroProps) {
+export function AppHero({ app, locale, crumb, labels, drawer }: AppHeroProps) {
   const showRepoLinks = !app.isRepoPrivate;
   // Trạng thái tích hợp đã là "Repo riêng tư" thì thôi, không dựng hai huy hiệu
   // nói cùng một chuyện.
@@ -48,6 +62,8 @@ export function AppHero({ app, locale, crumb, labels }: AppHeroProps) {
       <FallbackNotice shownLocale={app.locale} wantedLocale={locale} label={labels.fallback} />
 
       {app.tagline ? <p className={styles.tagline}>{app.tagline}</p> : null}
+
+      {drawer}
 
       <div className={styles.meta}>
         <span className={styles.slug}>{app.slug}</span>

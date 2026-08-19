@@ -188,6 +188,23 @@ export async function setDefaultLocale(raw: unknown): Promise<void> {
   await content.setDefaultLocale(input.code);
 }
 
+/**
+ * Sắp lại thứ tự ngôn ngữ. `codes` là danh sách **đầy đủ** theo thứ tự mới.
+ *
+ * `codes` chứ không phải `ids`: khoá chính của bảng `Locale` là `code`. Đây là
+ * chỗ duy nhất trong file này lệch khỏi `reorderApps`/`reorderNavSiblings`, và
+ * nó lệch vì lược đồ, không phải vì tuỳ hứng.
+ */
+const reorderLocalesSchema = z.object({
+  codes: z.array(localeCodeSchema).min(1),
+});
+
+export async function reorderLocales(raw: unknown): Promise<void> {
+  await requireAdmin(); // luôn là dòng đầu tiên
+  const input = reorderLocalesSchema.parse(raw);
+  await content.reorderLocales(input.codes);
+}
+
 // ---------------------------------------------------------------------------
 // Cây điều hướng
 // ---------------------------------------------------------------------------

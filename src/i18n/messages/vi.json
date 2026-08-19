@@ -371,7 +371,9 @@
       "scope": "{count, plural, =0 {Chưa có ngôn ngữ nào} other {# ngôn ngữ}}",
       "invariant": "Đúng một ngôn ngữ mặc định, và nó phải đang bật",
       "hint": "Ngôn ngữ mặc định là chỗ mọi bản dịch còn thiếu lùi về. Vì vậy không tắt được nó, và luôn phải có đúng một ngôn ngữ giữ vai trò đó.",
+      "orderHint": "Thứ tự này là thứ tự nút chuyển ngôn ngữ trên trang công khai. Đổi bằng bộ bốn nút ⤒ ↑ ↓ ⤓; lưu ngay sau mỗi lần bấm, nhưng trang công khai đổi theo ở lần deploy kế tiếp — danh sách locale được sinh lúc prebuild.",
       "tableLabel": "Bảng ngôn ngữ, cuộn ngang được",
+      "colOrder": "Thứ tự",
       "colCode": "Mã",
       "colLabel": "Tên gọi",
       "colState": "Trạng thái",
@@ -393,7 +395,12 @@
       "redeployTitle": "Cần một lần redeploy",
       "redeployBody": "Ngôn ngữ {codes} đã bật trong cơ sở dữ liệu nhưng định tuyến chưa phục vụ. Danh sách locale được sinh ở bước prebuild và middleware đọc từ đó, nên deploy lại một lần là xong.",
       "emptyTitle": "Bảng ngôn ngữ đang trống",
-      "emptyBody": "Chạy seed để tạo hai ngôn ngữ đầu tiên: tiếng Việt (mặc định) và tiếng Anh."
+      "emptyBody": "Chạy seed để tạo hai ngôn ngữ đầu tiên: tiếng Việt (mặc định) và tiếng Anh.",
+      "orderTop": "Đưa {code} lên đầu",
+      "orderUp": "Đưa {code} lên một bậc",
+      "orderDown": "Đưa {code} xuống một bậc",
+      "orderBottom": "Đưa {code} xuống cuối",
+      "orderSaved": "Đã lưu thứ tự ngôn ngữ"
     }
   },
   "error": {

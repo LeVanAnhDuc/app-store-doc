@@ -6,6 +6,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AppHero } from "@/components/docs/AppHero";
 import { DocsShell } from "@/components/docs/DocsShell";
 import { FeatureGrid } from "@/components/docs/FeatureGrid";
+import { NavDrawer } from "@/components/docs/NavDrawer";
 import { SectionBody } from "@/components/docs/SectionBody";
 import { Sidebar } from "@/components/docs/Sidebar";
 import { Toc } from "@/components/docs/Toc";
@@ -178,6 +179,17 @@ export default async function AppPreviewPage({ params, searchParams }: PageParam
               demo: t("app.viewDemo"),
               fallback: fallbackLabel,
             }}
+            drawer={
+              /* Ngăn kéo điều hướng của màn hẹp, đặt NGAY ĐẦU BÀI như mockup mục
+                 07 — ngay dưới dòng mô tả, trước nội dung. Ở màn rộng nó ẩn hoàn
+                 toàn vì cột trái đã làm đúng việc đó. Cùng `sidebarNodes`, cùng
+                 `NavTree`: một cây, hai chỗ hiện. */
+              <NavDrawer
+                nodes={sidebarNodes}
+                activeHref={currentHref}
+                labels={{ open: t("sidebar.label"), close: t("search.close") }}
+              />
+            }
           />
 
           <FeatureGrid

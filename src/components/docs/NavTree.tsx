@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 
 import { findTrail, type NavTreeNode } from "@/server/content/nav";
 import styles from "./NavTree.module.css";
@@ -39,6 +39,16 @@ export function NavTree({ nodes, activeHref }: NavTreeProps) {
    */
   const [toggled, setToggled] = useState<Record<string, boolean>>({});
 
+  /**
+   * Tiền tố riêng cho `id` của mỗi danh sách con.
+   *
+   * Cây này nay dựng **hai lần trên cùng một trang**: một lần ở cột trái, một
+   * lần trong ngăn kéo của màn hẹp. Lấy thẳng `nav-${node.id}` thì hai bản dùng
+   * trùng `id`, và `aria-controls` của bản này trỏ vào phần tử của bản kia —
+   * DOM sai luật, mà trình đọc màn hình thì đi theo `id` tìm thấy trước.
+   */
+  const uid = useId();
+
   const onTrail = new Set(findTrail(nodes, activeHref).map((node) => node.id));
 
   const toggle = (id: string, expanded: boolean) =>
@@ -71,7 +81,7 @@ export function NavTree({ nodes, activeHref }: NavTreeProps) {
         }
 
         const expanded = toggled[node.id] ?? onTrail.has(node.id);
-        const listId = `nav-${node.id}`;
+        const listId = `nav-${uid}-${node.id}`;
 
         return (
           <li key={node.id}>

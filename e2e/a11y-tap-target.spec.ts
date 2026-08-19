@@ -54,3 +54,67 @@ for (const path of PAGES) {
     expect(overflow).toBeLessThanOrEqual(1);
   });
 }
+
+// ---------------------------------------------------------------------------
+// Ngăn kéo điều hướng của màn hẹp (mockup mục 07).
+//
+// Hai test trên chỉ đo trạng thái ĐÓNG: nút mở nằm trong luồng nên nó được quét,
+// còn mọi thứ bên trong ngăn kéo thì chưa tồn tại trong DOM. Mở ra rồi đo lại là
+// cách duy nhất biết cây trong ngăn kéo có đạt ngưỡng bấm hay không.
+// ---------------------------------------------------------------------------
+
+/** Trang chắc chắn có cột trái, nên chắc chắn có ngăn kéo ở 375px. */
+const DRAWER_PAGE = "/vi/apps/web-store-apps";
+
+test("ở 375px điều hướng tới được ngay đầu bài, không phải cuộn", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  const response = await page.goto(DRAWER_PAGE);
+  expect(response?.status()).toBe(200);
+
+  const trigger = page.getByRole("button", { name: /Điều hướng tài liệu/ });
+  await expect(trigger).toBeVisible();
+
+  // "Không phải cuộn" đo được: đỉnh nút phải nằm trong khung nhìn đầu tiên.
+  const box = await trigger.boundingBox();
+  expect(box, "nút mở ngăn kéo phải có hình").not.toBeNull();
+  expect(box!.y).toBeLessThan(800);
+
+  // Cột trái không được vừa ẩn vừa chiếm chỗ: đóng thì nó không che nội dung nào.
+  expect(await page.locator("[role=dialog]").count()).toBe(0);
+});
+
+test("ngăn kéo mở ra đủ ngưỡng bấm và đóng được bằng Esc — 375px", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 800 });
+  const response = await page.goto(DRAWER_PAGE);
+  expect(response?.status()).toBe(200);
+
+  await page.getByRole("button", { name: /Điều hướng tài liệu/ }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog).toBeVisible();
+
+  const small = await page.evaluate(() => {
+    const panel = document.querySelector("[role=dialog]");
+    if (!panel) return [{ t: "MISSING", txt: "", w: 0, h: 0 }];
+    return [...panel.querySelectorAll<HTMLElement>("a, button, [role=button]")]
+      .map((e) => {
+        const r = e.getBoundingClientRect();
+        return {
+          t: e.tagName,
+          txt: (e.textContent || "").trim().slice(0, 24),
+          w: Math.round(r.width),
+          h: Math.round(r.height),
+        };
+      })
+      .filter((x) => x.h > 0 && (x.h < 24 || x.w < 24));
+  });
+  expect(small, JSON.stringify(small, null, 2)).toEqual([]);
+
+  await page.keyboard.press("Escape");
+  await expect(dialog).toHaveCount(0);
+
+  // Tiêu điểm trở về nút mở, không rơi về <body>.
+  const focused = await page.evaluate(
+    () => document.activeElement?.getAttribute("aria-haspopup") ?? "",
+  );
+  expect(focused).toBe("dialog");
+});

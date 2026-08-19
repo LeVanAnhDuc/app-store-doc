@@ -143,3 +143,112 @@ async function secondFeatureId(): Promise<string> {
   });
   return rows[1].id;
 }
+
+/**
+ * Thứ tự ngôn ngữ. Bảng `Locale` là bảng dùng chung của cả bộ test — nó tới từ
+ * seed, không phải do file này dựng ra — nên mọi test dưới đây **trả lại đúng
+ * thứ tự cũ** ở `afterAll`. Thêm một ngôn ngữ thứ ba đang tắt để phép sắp có
+ * thứ để sắp kể cả khi DB test mới chỉ có `vi` và `en`: với hai dòng thì "đưa
+ * lên đầu" và "lên một bậc" cho cùng một kết quả, và một test không phân biệt
+ * được hai thứ đó thì không chứng minh được gì.
+ */
+const TEST_LOCALE = "zz";
+
+describe.skipIf(!hasDb)("reorderLocales (cần DATABASE_URL_TEST)", () => {
+  /** Thứ tự lúc đầu, để trả lại nguyên trạng. */
+  let original: { code: string; order: number }[] = [];
+
+  beforeAll(async () => {
+    const { prisma } = await import("@/server/db");
+    original = await prisma.locale.findMany({ select: { code: true, order: true } });
+    await prisma.locale.deleteMany({ where: { code: TEST_LOCALE } });
+    await prisma.locale.create({
+      data: { code: TEST_LOCALE, label: "Ngôn ngữ chỉ có trong test", enabled: false, order: 99 },
+    });
+  });
+
+  afterAll(async () => {
+    const { prisma } = await import("@/server/db");
+    await prisma.locale.deleteMany({ where: { code: TEST_LOCALE } });
+    for (const row of original) {
+      await prisma.locale.update({ where: { code: row.code }, data: { order: row.order } });
+    }
+  });
+
+  it("ghi order liên tục 0..n-1 theo đúng thứ tự gửi lên, và bảng quản trị đọc lại đúng thứ tự đó", async () => {
+    const { reorderLocales } = await import("./mutations");
+    const { listLocalesForAdmin } = await import("./queries");
+
+    const codes = (await listLocalesForAdmin()).map((row) => row.code);
+    const reversed = [...codes].reverse();
+
+    await reorderLocales(reversed);
+
+    const after = await listLocalesForAdmin();
+    expect(after.map((row) => row.code)).toEqual(reversed);
+    // Liên tục, không lỗ hổng: bộ nút thứ tự tính "lên một bậc" bằng chỉ số.
+    expect(after.map((row) => row.order)).toEqual(after.map((_, index) => index));
+  });
+
+  it("sắp lại thứ tự không đụng tới mặc định và bật/tắt — hai bất biến của §6.4 còn nguyên", async () => {
+    const { reorderLocales } = await import("./mutations");
+    const { listLocalesForAdmin } = await import("./queries");
+
+    const before = await listLocalesForAdmin();
+    const flagsOf = (rows: typeof before) =>
+      [...rows]
+        .map((row) => `${row.code}:${row.isDefault}:${row.enabled}`)
+        .sort();
+
+    await reorderLocales([...before.map((row) => row.code)].reverse());
+
+    expect(flagsOf(await listLocalesForAdmin())).toEqual(flagsOf(before));
+  });
+
+  it("danh sách thiếu một mã bị từ chối, và thứ tự trong DB không đổi", async () => {
+    const { reorderLocales } = await import("./mutations");
+    const { listLocalesForAdmin } = await import("./queries");
+
+    const before = await listLocalesForAdmin();
+    const short = before.map((row) => row.code).slice(1);
+
+    await expect(reorderLocales(short)).rejects.toThrow(/hãy tải lại trang/i);
+    expect((await listLocalesForAdmin()).map((row) => row.code)).toEqual(
+      before.map((row) => row.code),
+    );
+  });
+
+  it("mã lặp bị từ chối trước khi chạm DB", async () => {
+    const { reorderLocales } = await import("./mutations");
+    const { listLocalesForAdmin } = await import("./queries");
+
+    const before = await listLocalesForAdmin();
+    const doubled = [before[0].code, ...before.map((row) => row.code)];
+
+    await expect(reorderLocales(doubled)).rejects.toThrow(/bị lặp/);
+    expect((await listLocalesForAdmin()).map((row) => row.code)).toEqual(
+      before.map((row) => row.code),
+    );
+  });
+
+  it("mã không tồn tại bị từ chối và người dùng đọc được mã đó, không đọc lỗi Prisma", async () => {
+    const { reorderLocales } = await import("./mutations");
+    const { listLocalesForAdmin } = await import("./queries");
+
+    const before = await listLocalesForAdmin();
+    const swapped = ["qq", ...before.map((row) => row.code).slice(1)];
+
+    let message = "";
+    try {
+      await reorderLocales(swapped);
+    } catch (error) {
+      message = String(error);
+    }
+
+    expect(message).toMatch(/không tồn tại \(qq\)/);
+    expect(message).not.toMatch(/P20\d\d/);
+    expect((await listLocalesForAdmin()).map((row) => row.code)).toEqual(
+      before.map((row) => row.code),
+    );
+  });
+});

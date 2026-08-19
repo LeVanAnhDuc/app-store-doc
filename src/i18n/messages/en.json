@@ -371,7 +371,9 @@
       "scope": "{count, plural, =0 {No languages yet} one {# language} other {# languages}}",
       "invariant": "Exactly one default language, and it must be on",
       "hint": "The default language is where every missing translation falls back to. That is why it cannot be turned off, and why exactly one language must always hold that role.",
+      "orderHint": "This is the order of the language switcher on the public site. Reorder with the four buttons ⤒ ↑ ↓ ⤓; each press saves immediately, but the public site follows on the next deploy — the locale list is generated at prebuild.",
       "tableLabel": "Language table, scrolls horizontally",
+      "colOrder": "Order",
       "colCode": "Code",
       "colLabel": "Name",
       "colState": "State",
@@ -393,7 +395,12 @@
       "redeployTitle": "A redeploy is needed",
       "redeployBody": "{codes} is on in the database but routing does not serve it yet. The locale list is generated at prebuild and the middleware reads it from there, so one more deploy finishes the job.",
       "emptyTitle": "The language table is empty",
-      "emptyBody": "Run the seed to create the first two languages: Vietnamese (default) and English."
+      "emptyBody": "Run the seed to create the first two languages: Vietnamese (default) and English.",
+      "orderTop": "Move {code} to the top",
+      "orderUp": "Move {code} up one place",
+      "orderDown": "Move {code} down one place",
+      "orderBottom": "Move {code} to the bottom",
+      "orderSaved": "Language order saved"
     }
   },
   "error": {
