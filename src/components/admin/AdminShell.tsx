@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import styles from "./AdminShell.module.css";
 
 /** Số đếm cạnh từng mục điều hướng. Đếm mọi trạng thái, kể cả bản nháp. */
@@ -149,6 +150,20 @@ export function AdminShell({
             );
           })}
         </nav>
+
+        {/* Ngoài `<form>` đăng xuất một cách cố ý: ba nút chủ đề là `type="button"`
+            nên không gửi form, nhưng đặt chúng trong form đăng xuất là mời người
+            đọc mã hiểu nhầm rằng chúng có liên quan tới nhau. */}
+        <div className={styles.theme}>
+          <ThemeToggle
+            labels={{
+              group: t("theme.label"),
+              system: t("theme.system"),
+              light: t("theme.light"),
+              dark: t("theme.dark"),
+            }}
+          />
+        </div>
 
         <form className={styles.account} action={signOutAction}>
           <span className={styles.accountLabel}>{t("admin.signedInAs")}</span>

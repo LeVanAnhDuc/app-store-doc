@@ -7,6 +7,12 @@
     "label": "Main navigation",
     "apps": "Apps"
   },
+  "theme": {
+    "label": "Theme",
+    "system": "Match system",
+    "light": "Light",
+    "dark": "Dark"
+  },
   "locale": {
     "label": "Language"
   },

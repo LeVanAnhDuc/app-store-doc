@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 
+import { ThemeScript } from "@/components/ui/ThemeScript";
 import { locales } from "@/i18n/locales.generated";
 
 /**
@@ -45,8 +46,12 @@ export default async function AdminRootLayout({
   setRequestLocale(locale);
 
   return (
-    <html lang={locale}>
+    // `suppressHydrationWarning`: `ThemeScript` đặt `data-theme` lên chính thẻ
+    // này trước khi hydrate — cùng lý do như `(public)/layout.tsx`.
+    <html lang={locale} suppressHydrationWarning>
       <body>
+        {/* Đầu body, trước mọi thứ khác: chạy trước khung hình đầu tiên. */}
+        <ThemeScript />
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
       </body>
     </html>

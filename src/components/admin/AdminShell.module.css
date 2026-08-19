@@ -100,8 +100,15 @@
   border: 0;
 }
 
-.account {
+/* Đáy cột trái bắt đầu từ đây: `margin-top: auto` dời từ `.account` sang, để
+   nút chủ đề và khối tài khoản dính nhau thành một cụm dưới cùng thay vì bị
+   khoảng trống tự do chen vào giữa. */
+.theme {
   margin-top: auto;
+  padding: 0 16px;
+}
+
+.account {
   display: flex;
   flex-direction: column;
   align-items: flex-start;

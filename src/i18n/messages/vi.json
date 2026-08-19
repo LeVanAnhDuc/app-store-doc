@@ -7,6 +7,12 @@
     "label": "Điều hướng chính",
     "apps": "Ứng dụng"
   },
+  "theme": {
+    "label": "Chủ đề giao diện",
+    "system": "Theo hệ thống",
+    "light": "Sáng",
+    "dark": "Tối"
+  },
   "locale": {
     "label": "Ngôn ngữ"
   },

@@ -1,0 +1,79 @@
+/* Nút chuyển chủ đề — cùng hình khối với nút chuyển ngôn ngữ của `TopBar`:
+   một hộp viền, các nút dính nhau, nút đang chọn nền mực chữ nền.
+   Mọi màu qua biến CSS, không mã màu trực tiếp (design-rules §2). */
+
+/* Cố ý KHÔNG `overflow: hidden` như `.langs`: viền tiêu điểm của nút giữa sẽ bị
+   cắt mất, mà đây là đường đi duy nhất của người chỉ dùng bàn phím. Bo góc vì
+   vậy đặt lên từng nút đầu/cuối. */
+/* `inline-flex`, không phải `flex`: cột trái của trang quản trị là flex dọc, nên
+   một hộp `display: flex` cấp khối bị kéo giãn hết chiều ngang và cái viền chạy
+   dài quá ba nút. Đã thấy tận mắt trước khi sửa. */
+.group {
+  display: inline-flex;
+  flex: none;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+}
+
+/* min-width VÀ min-height đều ≥ --tap (28px): WCAG 2.2 SC 2.5.8 đòi 24×24,
+   và e2e `a11y-tap-target.spec.ts` quét cả trang nên số này phải đúng thật.
+   Không khai `font-size`: nút chỉ chứa ký hiệu SVG, không chứa chữ. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0 4px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.button:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+/* Vạch ngăn giữa ba nút — đường kẻ, không phải khoảng trống (design-rules §5). */
+.button + .button {
+  border-left: 1px solid var(--line);
+}
+
+.button:hover[aria-pressed="false"] {
+  color: var(--ink);
+}
+
+/* Nút đang chọn: nền đầy bằng mực, đúng lối `.lang[aria-current="true"]`.
+   Nhấn mạnh đến từ nền đầy chứ không từ hue (design-rules §2). */
+.button[aria-pressed="true"] {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Viền tiêu điểm nổi lên trên hai nút bên cạnh, cùng cách `OrderControls` làm. */
+.button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  position: relative;
+  z-index: 1;
+}
+
+.icon {
+  display: block;
+  width: 14px;
+  height: 14px;
+}
+
+/* Chuyển động chỉ bật cho ai không yêu cầu giảm chuyển động (design-rules §9). */
+@media (prefers-reduced-motion: no-preference) {
+  .button {
+    transition:
+      color 0.12s ease,
+      background-color 0.12s ease;
+  }
+}

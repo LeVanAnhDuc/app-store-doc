@@ -5,3 +5,5 @@ export { CodeBlock, type CodeBlockProps } from "./CodeBlock";
 export { DataTable, type DataTableProps } from "./DataTable";
 export { WireDiagram, type WireDiagramProps, type WireItem } from "./WireDiagram";
 export { OrderControls, type OrderControlsProps, type OrderControlsLabels, type OrderMove } from "./OrderControls";
+export { ThemeToggle, type ThemeToggleProps, type ThemeToggleLabels, type ThemeChoice } from "./ThemeToggle";
+export { ThemeScript, THEME_STORAGE_KEY } from "./ThemeScript";

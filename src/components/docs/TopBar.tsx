@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 
 import { locales } from "@/i18n/locales.generated";
 import { findTrail, firstLeafHref, type NavTreeNode } from "@/server/content/nav";
+import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { SearchDialog } from "./SearchDialog";
 import styles from "./TopBar.module.css";
 
@@ -37,8 +38,8 @@ function withLocale(pathname: string, nextLocale: string): string {
 
 /**
  * Thanh trên cùng của mọi trang công khai: thương hiệu, ô tìm kiếm, nút chuyển
- * ngôn ngữ — rồi **dải tab dựng từ nút gốc của cây điều hướng** (mockup v3 mục
- * 02: `.m-mast` trên, `.m-tabs` dưới).
+ * ngôn ngữ, nút chuyển chủ đề — rồi **dải tab dựng từ nút gốc của cây điều
+ * hướng** (mockup v3 mục 02: `.m-mast` trên, `.m-tabs` dưới).
  *
  * Không còn mục nào viết cứng. Trước đây bốn mục "Hệ sinh thái · Ứng dụng ·
  * Hướng dẫn · API" nằm thẳng trong mã, nên thêm một nhóm nội dung trong CMS
@@ -82,6 +83,17 @@ export function TopBar({ locale, tree = [] }: TopBarProps) {
               </a>
             ))}
           </nav>
+
+          {/* Nhãn truyền xuống chứ không gọi `useTranslations` bên trong nút:
+              `ThemeToggle` phải render được trần trong test, không provider. */}
+          <ThemeToggle
+            labels={{
+              group: t("theme.label"),
+              system: t("theme.system"),
+              light: t("theme.light"),
+              dark: t("theme.dark"),
+            }}
+          />
         </div>
       </div>
 

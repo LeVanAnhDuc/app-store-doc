@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 
 import { TopBar } from "@/components/docs/TopBar";
+import { ThemeScript } from "@/components/ui/ThemeScript";
 import { locales } from "@/i18n/locales.generated";
 import { getNavTree } from "@/server/content/queries";
 import styles from "./layout.module.css";
@@ -44,8 +45,17 @@ export default async function PublicLayout({
   const tree = await getNavTree(locale);
 
   return (
-    <html lang={locale}>
+    /**
+     * `suppressHydrationWarning` chỉ cho MỘT việc: `ThemeScript` sửa thuộc tính
+     * `data-theme` của chính thẻ này trước khi React hydrate, nên HTML máy chủ
+     * in ra và DOM lúc hydrate cố ý khác nhau. Không có nó thì console đỏ một
+     * cảnh báo mà nguyên nhân nằm cách đó hai file.
+     */
+    <html lang={locale} suppressHydrationWarning>
       <body>
+        {/* Phải là phần tử ĐẦU TIÊN của body: script đồng bộ ở đây chạy trước
+            khung hình đầu tiên, nên không có nháy màu sai. */}
+        <ThemeScript />
         <NextIntlClientProvider>
           <div className={styles.shell}>
             <TopBar locale={locale} tree={tree} />

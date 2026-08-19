@@ -135,21 +135,26 @@
 
 /* Đáp ứng tới 375px. */
 @media (max-width: 720px) {
-  /* Đo ở 375px sau khi chữ thương hiệu lên 23px: 106 + 72 + 60 cộng khoảng cách
-     là 258px, còn thừa trong 343px lòng trong — vẫn đủ một hàng, không cần gập.
-     Chỉ hạ đệm ngang và khoảng cách xuống cho khỏi chật. */
+  /* Đo lại ở 375px sau khi thêm nút chủ đề (86px). Hàng này giờ gồm:
+     thương hiệu 106 + tìm kiếm 73 + ngôn ngữ 61 + chủ đề 86 = 326px chữ nghĩa,
+     cộng ba khoảng cách. Với đệm 16px và khoảng cách 12/8 thì lòng trong chỉ
+     còn 343px và ô tìm kiếm bị bóp còn 63px — nhãn "Tìm kiếm" gãy làm hai dòng,
+     đẩy hàng cao lên 55px. Hạ đệm xuống 12px và khoảng cách xuống 10/6 trả lại
+     đủ 351px, ô tìm kiếm về một dòng. Vẫn một hàng, không cuộn ngang (§9).
+     Đo lại con số này mỗi lần thêm thứ gì vào hàng trên cùng. */
   .mast {
-    gap: 12px;
-    padding: 8px 16px;
+    gap: 10px;
+    padding: 8px 12px;
   }
 
   .right {
-    gap: 8px;
+    gap: 6px;
   }
 
+  /* Đệm trùng với `.mast` để thương hiệu và tab đầu tiên thẳng cột. */
   .tabs {
     gap: 16px;
-    padding: 0 16px;
+    padding: 0 12px;
   }
 
   .tab {
