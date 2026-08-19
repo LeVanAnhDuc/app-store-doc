@@ -5,6 +5,7 @@ import type { Media } from "@prisma/client";
 
 import { prisma } from "@/server/db";
 
+import { readImageDimensions } from "./dimensions";
 import { detectImageMime, extensionForMime } from "./mime";
 
 /**
@@ -109,9 +110,9 @@ export type UploadInput = {
 /**
  * Tải ảnh lên R2 rồi ghi bản ghi `Media`.
  *
- * Thứ tự bắt buộc: nhận dạng định dạng → kiểm kích thước → sinh đường dẫn ngẫu nhiên
- * → `PutObject` → chỉ khi lên kho thành công mới ghi DB. Ghi DB trước sẽ để lại bản
- * ghi trỏ tới ảnh không tồn tại nếu R2 lỗi.
+ * Thứ tự bắt buộc: nhận dạng định dạng → kiểm dung lượng → đo rộng × cao → sinh đường
+ * dẫn ngẫu nhiên → `PutObject` → chỉ khi lên kho thành công mới ghi DB. Ghi DB trước
+ * sẽ để lại bản ghi trỏ tới ảnh không tồn tại nếu R2 lỗi.
  */
 export async function uploadImage(file: UploadInput): Promise<Media> {
   // 1. Không tin đuôi tệp: soi magic bytes trước mọi thứ khác.
@@ -130,13 +131,18 @@ export async function uploadImage(file: UploadInput): Promise<Media> {
     );
   }
 
+  // 3. Đo rộng × cao trên chính buffer đã có trong bộ nhớ, sau khi biết chắc là ảnh.
+  // Hàm này không bao giờ ném: số đo là thứ "biết thì hay", không phải điều kiện để
+  // nhận ảnh. Đọc không được thì `null` và ảnh vẫn lên — hiện đúng phần biết chắc.
+  const dimensions = readImageDimensions(file.bytes);
+
   const config = readConfig();
 
-  // 3. Tên tệp người dùng gửi lên không bao giờ chạm tới đường dẫn lưu trữ: nó vừa là
+  // 4. Tên tệp người dùng gửi lên không bao giờ chạm tới đường dẫn lưu trữ: nó vừa là
   // vector path traversal ("../../x"), vừa gây va chạm khi hai người cùng tải "logo.png".
   const pathname = `${randomUUID()}.${extensionForMime(mimeType)}`;
 
-  // 4. Đưa lên kho trước.
+  // 5. Đưa lên kho trước.
   await getClient(config).send(
     new PutObjectCommand({
       Bucket: config.bucket,
@@ -148,13 +154,15 @@ export async function uploadImage(file: UploadInput): Promise<Media> {
     }),
   );
 
-  // 5. Thành công rồi mới ghi bản ghi.
+  // 6. Thành công rồi mới ghi bản ghi.
   return prisma.media.create({
     data: {
       url: publicUrlFor(config, pathname),
       pathname,
       alt: file.alt ?? null,
       sizeBytes: file.bytes.byteLength,
+      width: dimensions?.width ?? null,
+      height: dimensions?.height ?? null,
       mimeType,
     },
   });

@@ -14,7 +14,7 @@ Số dưới đây là **kết quả chạy thật ngày 19.08.2026** trên Post
 
 | Kiểm tra | Trạng thái |
 |---|---|
-| `npm run test:run` | **205 xanh**, 21 skip (29/30 file) |
+| `npm run test:run` | **215 xanh**, 21 skip (30/31 file) |
 | `DATABASE_URL_TEST=... npx vitest run src/server/content --maxWorkers=1` | **64 xanh**, 0 skip |
 | `npm run typecheck` | sạch |
 | `npm run lint` | sạch |
@@ -99,6 +99,7 @@ Xếp theo mức đáng làm.
 
 ### Đã trả trong đợt cây điều hướng
 - ~~**Không có nút chuyển chủ đề.**~~ `ThemeToggle` có ba nút (theo hệ thống · sáng · tối) trong `TopBar` và `AdminShell`. Khối `:root[data-theme="dark"]` nay là mã sống. Ba trạng thái chứ không phải hai: bật/tắt hai trạng thái sẽ **mất đường về "theo hệ thống"**, mà đó là mặc định và là chỗ đa số người dùng đang ở. Chống nháy màu bằng script đồng bộ đặt làm con đầu tiên của `<body>` — đã chứng minh bằng thí nghiệm đối chứng, xem mô tả trong `ThemeScript.tsx`.
+- ~~**Ảnh không đo được kích thước.**~~ `readImageDimensions` (dùng `image-size`) đo từ header, gọi sau khi `detectImageMime` xác nhận là ảnh thật và trước khi đẩy lên R2 — cùng buffer đã có trong bộ nhớ. **Không bao giờ ném**: đo hỏng thì `null` và ảnh vẫn lên, vì số đo là thứ "biết thì hay" chứ không phải điều kiện nhận ảnh. Đo thật trước khi viết mã: `image-size` suy được kích thước SVG từ `viewBox` kể cả khi `width="100%"`, nhưng **ném lỗi** với dữ liệu rác và buffer rỗng.
 
 - ~~**`OrderControls` mới dùng ở một chỗ.**~~ Spec §15 đòi bốn **chỗ dùng**: nút gốc, nút con, `Feature`, `Section`. Hai chỗ đầu do `NavEditor`/`NavNodeRow`, hai chỗ sau do `SortableList` (dùng trong `AppEditor` và `SectionsEditor`). `AppsTable` cũng đổi từ hai mũi tên tự chế sang `OrderControls`. `SortableList` được **thêm** bộ nút chứ không bỏ kéo thả và đường bàn phím — ba lối vào cùng tồn tại, vì đường bàn phím cũ vô hình (phải đọc `aria-label` mới biết có) và chỉ đi được một bậc.
 - ~~**Cỡ chữ ngoài bậc ở sáu chỗ.**~~ Đã đưa về bậc. Kèm theo có test quét toàn bộ `*.module.css` — nó **đỏ đúng sáu chỗ đó trước khi sửa**, nên không phải lời hứa suông.
@@ -114,7 +115,6 @@ Xếp theo mức đáng làm.
 
 - **30 file `.module.css` còn ngoài bậc cỡ.** Test `tokens.test.ts` quét mọi `*.module.css` và tìm ra **132 vi phạm**; sáu chỗ trong danh sách cũ đã sửa, 126 chỗ còn lại nằm ở 30 file được liệt kê trong hằng `KNOWN_DEBT` của chính test đó. Danh sách chỉ miễn trừ **đường dẫn có thật** — gõ sai một dòng thì test đỏ chứ không âm thầm miễn trừ số không.
 - **`/admin/docs` và `/admin/locales` không sắp xếp lại được.** `DocPage.order` và `Locale.order` có trong schema và được `orderBy` dùng, nhưng **không mutation nào ghi chúng** — `mutations.ts` chỉ có `reorderApps` và `reorderSiblings`. Thêm nút thứ tự vào hai trang đó trước khi có mutation sẽ cho ra bốn nút di chuyển hàng trên màn hình rồi mất thay đổi khi tải lại. Riêng `/admin/docs` còn có một quyết định đã ghi trong mã: thứ tự thuộc về khối "Thông tin chung" của trình soạn trang, thêm cửa thứ hai "chỉ tạo thêm một chỗ để hai con số lệch nhau".
-- **Ảnh không đo được kích thước.** `uploadImage` không giải mã ảnh nên `Media.width`/`height` luôn `null`, thư viện chỉ hiện dung lượng. Cần một thư viện đọc header ảnh (`image-size` chẳng hạn) — chưa cài vì lúc dựng không được `npm install`.
 - **`requireAdmin()` chuyển hướng tới `/admin/login` không có locale.** Middleware tự đoán bằng cookie `NEXT_LOCALE`, nên ai deep-link `/en/admin/apps` mà chưa có cookie sẽ rơi vào `/vi/admin/login`. Sửa thì phải dạy tầng auth biết về locale.
 - **Điều hướng trên mobile chuyển xuống cuối trang** thay vì ngăn kéo bấm từ nút ☰ như mockup màn 07 — `TopBar` chưa có ngăn kéo.
 

@@ -15,10 +15,11 @@ import styles from "./MediaLibrary.module.css";
  * Ảnh **không** gắn cứng vào một ứng dụng: sơ đồ kiến trúc xuất hiện lại ở nhiều
  * trang hướng dẫn, nên một thư viện dùng chung là đúng mô hình (ghi chú của mockup).
  *
- * Kích thước điểm ảnh chỉ hiện khi biết. `uploadImage` không đo ảnh — nó cố tình
- * chỉ soi magic bytes và không giải mã nội dung — nên `width`/`height` của ảnh tải
- * qua CMS đang là `null`. Mockup vẽ "1600×900 · 84 KB"; ở đây hiện đúng phần biết
- * chắc, chứ không bịa số đo.
+ * Kích thước điểm ảnh chỉ hiện khi biết. `uploadImage` nay đo rộng × cao từ header
+ * ảnh (`readImageDimensions`), nên ảnh tải qua CMS thường có đủ số đo như mockup vẽ:
+ * "1600×900 · 84 KB". Nhưng phép đo **được phép thất bại mà không chặn lượt tải** —
+ * định dạng lạ thì `width`/`height` vẫn `null`. Khi đó hiện mỗi dung lượng: đúng
+ * phần biết chắc, không bịa số đo.
  */
 export type MediaLibraryProps = {
   items: MediaItem[];
