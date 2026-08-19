@@ -6,12 +6,15 @@
   flex-wrap: wrap;
   gap: 7px;
   margin: 0 0 10px;
-  font-size: var(--t-xs);
+  /* Ghi chú vẫn là văn xuôi có dấu tiếng Việt, nên nó ở sàn 14px của §3;
+     13px cũ nằm dưới sàn. */
+  font-size: var(--t-sm);
   line-height: 1.7;
   color: var(--muted);
 }
 
-/* Mã ngôn ngữ: nhãn mono viết hoa, cùng ngôn ngữ hình khối với huy hiệu. */
+/* Mã ngôn ngữ: nhãn mono VIẾT HOA — đúng ngoại lệ duy nhất của §3, nên được
+   xuống 11px. 10px cũ thấp hơn cả ngoại lệ đó. */
 .code {
   flex: none;
   border: 1px solid var(--line);
@@ -19,7 +22,7 @@
   padding: 1px 5px;
   background: var(--surface-2);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);

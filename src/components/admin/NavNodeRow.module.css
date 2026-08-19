@@ -155,7 +155,7 @@
   min-width: var(--tap);
   min-height: var(--tap);
   padding: 0 8px;
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   color: var(--muted);
   background: var(--bg);
   border: 1px solid var(--line);

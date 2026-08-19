@@ -16,10 +16,11 @@
   grid-column: 1 / -1;
 }
 
+/* Nhãn mono VIẾT HOA — ngoại lệ 11px duy nhất mà §3 cho phép dưới sàn 14px. */
 .label {
   display: block;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -37,7 +38,7 @@
   background: var(--surface);
   color: var(--ink);
   font-family: var(--sans);
-  font-size: 12.5px;
+  font-size: var(--t-sm);
 }
 
 .area {
@@ -47,12 +48,12 @@
 
 .mono {
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--t-xs);
 }
 
 .hint {
   margin: 5px 0 0;
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   line-height: var(--lh-body);
   color: var(--muted);
 }

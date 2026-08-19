@@ -67,12 +67,17 @@
 }
 
 /* `.nav-c`: ô mũi xổ. Nút lá để trống ô này chứ không bỏ hẳn — bỏ thì nhãn của
-   lá lệch sang trái so với nhãn của nút chứa cùng tầng. */
+   lá lệch sang trái so với nhãn của nút chứa cùng tầng.
+
+   Mockup đặt `.nav-c` ở 11px, nhưng 11px là ngoại lệ dành riêng cho nhãn mono
+   VIẾT HOA (§3) và ô này chứa một hình mũi `▾ ▸` chứ không phải chữ để đọc —
+   nó không thuộc diện ngoại lệ. Về bậc nhãn mono 12px. Ô vẫn rộng 11px: mũi xổ
+   ở 12px chỉ chiếm khoảng 7px nên không tràn, và nhãn không bị xô sang phải. */
 .marker {
   flex: none;
   width: 11px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--t-2xs);
   text-align: center;
   color: var(--muted);
 }

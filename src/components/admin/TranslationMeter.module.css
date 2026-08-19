@@ -2,7 +2,7 @@
 
 .meter {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   letter-spacing: 0.05em;
   /* Số liệu xếp cạnh nhau: chữ số cùng bề rộng để 3/8 và 11/12 không nhảy. */
   font-variant-numeric: tabular-nums;

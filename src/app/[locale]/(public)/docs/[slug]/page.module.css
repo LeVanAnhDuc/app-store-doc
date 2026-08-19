@@ -10,10 +10,13 @@
   border-bottom: 1px solid var(--line);
 }
 
+/* Đường dẫn phân cấp là chữ thường có dấu, không phải nhãn VIẾT HOA, nên không
+   hưởng ngoại lệ 11px của §3; nó về bậc nhãn mono 12px — giống `.crumb` của
+   AppHero. */
 .crumb {
   margin: 0 0 14px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--t-2xs);
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -53,7 +56,8 @@
     letter-spacing: normal;
   }
 
+  /* Câu dẫn vẫn là văn xuôi ở màn hẹp — sàn 14px của §3, không phải 13.5px. */
   .lede {
-    font-size: 13.5px;
+    font-size: var(--t-sm);
   }
 }

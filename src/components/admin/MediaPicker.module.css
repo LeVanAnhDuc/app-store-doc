@@ -4,6 +4,11 @@
   display: inline-block;
 }
 
+/* `white-space: nowrap` không phải trang trí: nút này là một ô của `.inline`
+   trong trình soạn ứng dụng, và ở 12px (10.5px cũ thấp hơn cả ngoại lệ 11px của
+   §3) chữ "Chọn ảnh" đủ dài để flex bẻ nó thành hai dòng, đẩy nút cao hơn ô nhập
+   bên cạnh. Cấm xuống dòng thì bề rộng tối thiểu của nút được giữ và ô nhập
+   (`min-width: 0`) là thứ co lại. */
 .trigger {
   padding: 3px 9px;
   border: 1px solid var(--line);
@@ -11,7 +16,8 @@
   background: var(--surface);
   color: var(--ink);
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
+  white-space: nowrap;
   cursor: pointer;
 }
 
@@ -63,9 +69,10 @@
   margin-bottom: 9px;
 }
 
+/* Nhãn mono VIẾT HOA — ngoại lệ 11px duy nhất mà §3 cho phép dưới sàn 14px. */
 .title {
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -78,7 +85,7 @@
   border-radius: 4px;
   background: var(--surface);
   color: var(--ink);
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   cursor: pointer;
 }
 
@@ -122,7 +129,7 @@
 .name {
   padding: 0 7px;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -131,7 +138,7 @@
 .meta {
   padding: 0 7px;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--t-2xs);
   font-variant-numeric: tabular-nums;
   color: var(--muted);
 }
@@ -139,7 +146,7 @@
 .hint,
 .error {
   margin: 0;
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   line-height: var(--lh-body);
   color: var(--muted);
 }

@@ -5,7 +5,10 @@
 .chip {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 10px;
+  /* Chip mang tên công nghệ viết như người ta viết (`Next.js`, `PostgreSQL`),
+     tức mono chữ thường — không hưởng ngoại lệ 11px của §3. Bậc nhãn mono là
+     12px, và mockup `.m-chip` cũng đúng 12px. */
+  font-size: var(--t-2xs);
   line-height: 1.6;
   letter-spacing: 0.01em;
   color: var(--muted);

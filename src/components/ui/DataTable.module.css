@@ -15,7 +15,9 @@
 .table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12.5px;
+  /* Ô bảng là văn xuôi — sàn 14px của §3. `.scroll` ở trên đã cuộn ngang riêng
+     nên chữ to hơn không làm thân trang cuộn ngang. */
+  font-size: var(--t-sm);
   /* Số liệu xếp cột phải thẳng hàng. */
   font-variant-numeric: tabular-nums;
 }
@@ -30,10 +32,11 @@
   padding-bottom: 8px;
 }
 
+/* Tiêu đề cột là nhãn mono VIẾT HOA; mockup `.g-tbl th` đặt 12px. */
 .table th {
   text-align: left;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);

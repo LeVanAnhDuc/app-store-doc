@@ -38,8 +38,12 @@
   /* --bg là nền trang: gần trắng ở chủ đề sáng, gần đen ở chủ đề tối —
      luôn tương phản với --accent ở cả hai chiều. Không viết mã màu tay. */
   color: var(--bg);
+  /* Nhãn trục là chữ viết tắt mono VIẾT HOA ("IDMS"), đúng ngoại lệ 11px của §3
+     — nhưng `text-transform` phải được KHAI, không dựa vào việc chuỗi truyền vào
+     tình cờ đã hoa. 10.5px cũ thì ngoài bậc. */
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 11px;
+  text-transform: uppercase;
   letter-spacing: 0.1em;
   padding: 4px 9px;
   border-radius: 3px;
@@ -98,9 +102,13 @@
   letter-spacing: -0.006em;
 }
 
+/* Mô tả là văn xuôi — sàn 14px của §3. Cùng cỡ với `.name` nhưng nhạt hơn và
+   không đậm, nên thứ bậc vẫn đọc được mà hàng không cao thêm.
+   Nét nối không lệch theo: `.lead` cao 0 và `.row` canh `align-items: center`,
+   nên nét luôn nằm giữa hàng bất kể chữ cao bao nhiêu. */
 .desc {
   color: var(--muted);
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   margin-left: 10px;
 }
 
@@ -119,7 +127,8 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  font-size: 12px;
+  /* Chú giải là văn xuôi ("Nối qua IDMS", "Chạy độc lập") — sàn 14px của §3. */
+  font-size: var(--t-sm);
   line-height: 1.7;
   color: var(--muted);
 }

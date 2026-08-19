@@ -29,7 +29,7 @@
   background: none;
   color: var(--muted);
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   cursor: pointer;
 }
 
@@ -49,10 +49,11 @@
   padding: 11px 13px;
 }
 
+/* Nhãn mono VIẾT HOA — ngoại lệ 11px duy nhất mà §3 cho phép dưới sàn 14px. */
 .label {
   display: block;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -70,7 +71,7 @@
   background: var(--surface);
   color: var(--ink);
   font-family: var(--mono);
-  font-size: 11.5px;
+  font-size: var(--t-sm);
   /* Markdown là văn xuôi: dấu tiếng Việt cần chỗ (design-rules §3). */
   line-height: var(--lh-body);
   resize: vertical;

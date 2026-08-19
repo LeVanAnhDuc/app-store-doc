@@ -12,7 +12,8 @@
   background: var(--surface);
   color: var(--muted);
   font-family: inherit;
-  font-size: 12.5px;
+  /* Nhãn nút là văn xuôi, và mockup `.m-search` cũng đặt 14px. */
+  font-size: var(--t-sm);
   line-height: 1.7;
   cursor: pointer;
 }
@@ -22,9 +23,11 @@
   color: var(--ink);
 }
 
+/* Phím tắt là nhãn mono chữ thường (`Ctrl K`), không viết hoa toàn phần, nên
+   không hưởng ngoại lệ 11px — nó về bậc nhãn mono 12px. Mockup `.m-kbd` cũng 12px. */
 .kbd {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   border: 1px solid var(--line);
   border-radius: 3px;
   padding: 1px 4px;
@@ -85,7 +88,8 @@
   background: var(--surface-2);
   color: var(--muted);
   font-family: inherit;
-  font-size: var(--t-xs);
+  /* Nhãn nút là văn xuôi — sàn 14px của §3, 13px cũ nằm dưới sàn. */
+  font-size: var(--t-sm);
   cursor: pointer;
 }
 
@@ -135,10 +139,11 @@
   line-height: 1.7;
 }
 
-/* Đường dẫn ở vai phụ: mono, cỡ nhỏ, màu --muted. */
+/* Đường dẫn ở vai phụ: mono, cỡ nhỏ, màu --muted. Đường dẫn viết thường nên
+   không hưởng ngoại lệ 11px — bậc nhãn mono là 12px (giống `.slug` của AppCard). */
 .resultHref {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   color: var(--muted);
   overflow-wrap: anywhere;
 }

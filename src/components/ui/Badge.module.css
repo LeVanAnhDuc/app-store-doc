@@ -5,7 +5,9 @@
 .badge {
   display: inline-block;
   font-family: var(--mono);
-  font-size: 10px;
+  /* Nhãn mono VIẾT HOA — ngoại lệ duy nhất của §3, đáy là 11px. Mockup
+     `.m-badge` cũng đúng 11px; 10px cũ nằm dưới cả ngoại lệ đó. */
+  font-size: 11px;
   line-height: 1.6;
   letter-spacing: 0.09em;
   text-transform: uppercase;

@@ -100,38 +100,7 @@ function moduleStylesheets(dir: string): string[] {
  * sửa một tệp thì xoá dòng của nó khỏi đây. Tệp MỚI không nằm trong danh
  * sách nên bị soi ngay từ dòng đầu.
  */
-const KNOWN_DEBT = new Set<string>([
-  "src/app/[locale]/(admin)/admin/(protected)/docs/page.module.css",
-  "src/app/[locale]/(admin)/admin/(protected)/docs/[id]/DocPageEditor.module.css",
-  "src/app/[locale]/(admin)/admin/(protected)/locales/LocaleTable.module.css",
-  "src/app/[locale]/(admin)/admin/(protected)/locales/page.module.css",
-  "src/app/[locale]/(admin)/admin/(protected)/media/page.module.css",
-  "src/app/[locale]/(admin)/admin/(protected)/page.module.css",
-  "src/app/[locale]/(public)/docs/[slug]/page.module.css",
-  "src/components/admin/AppEditor.module.css",
-  "src/components/admin/AppsTable.module.css",
-  "src/components/admin/FeatureRow.module.css",
-  "src/components/admin/LocaleSwitch.module.css",
-  "src/components/admin/MarkdownEditor.module.css",
-  "src/components/admin/MediaLibrary.module.css",
-  "src/components/admin/MediaPicker.module.css",
-  "src/components/admin/NavEditor.module.css",
-  "src/components/admin/NavNodeRow.module.css",
-  "src/components/admin/SectionRow.module.css",
-  "src/components/admin/SectionsEditor.module.css",
-  "src/components/admin/SortableList.module.css",
-  "src/components/admin/TranslationMeter.module.css",
-  "src/components/docs/FallbackNotice.module.css",
-  "src/components/docs/NavTree.module.css",
-  "src/components/docs/SearchDialog.module.css",
-  "src/components/docs/SectionBody.module.css",
-  "src/components/docs/Toc.module.css",
-  "src/components/ui/Badge.module.css",
-  "src/components/ui/Chip.module.css",
-  "src/components/ui/CodeBlock.module.css",
-  "src/components/ui/DataTable.module.css",
-  "src/components/ui/WireDiagram.module.css",
-]);
+const KNOWN_DEBT = new Set<string>([]);
 
 type Finding = { file: string; selector: string; size: number; why: string };
 

@@ -2,7 +2,7 @@
 
 .text {
   margin: 0 0 10px;
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   color: var(--muted);
   line-height: var(--lh-body);
   max-width: var(--measure);
@@ -14,7 +14,7 @@
 
 .link {
   display: inline-block;
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   color: var(--accent);
 }
 
@@ -42,27 +42,28 @@
 }
 
 .name {
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   color: var(--ink);
 }
 
 /* Thiếu bản dịch dùng màu trạng thái, không phải màu trang trí. */
 .noName {
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   color: var(--st-standalone);
 }
 
 /* Slug repo luôn ở vai trò phụ: mono, cỡ nhỏ, --muted (design-rules §1). */
 .slug {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   color: var(--muted);
 }
 
+/* Nhãn mono VIẾT HOA — ngoại lệ 11px duy nhất mà §3 cho phép dưới sàn 14px. */
 .state {
   margin-left: auto;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
