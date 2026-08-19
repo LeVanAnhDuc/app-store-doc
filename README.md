@@ -64,10 +64,11 @@ Tính đến 17.08.2026, chưa ứng dụng vệ tinh nào thực sự nối và
 | Việc | Tài liệu |
 |---|---|
 | **Quay lại dự án — đang làm tới đâu, còn nợ gì** | **[`docs/status.md`](docs/status.md) — mở file này trước** |
+| Vì sao mọi thứ thành ra như thế — quyết định, cách làm việc, bẫy đã trả giá | [`docs/session-log.md`](docs/session-log.md) |
 | **Dựng hạ tầng, deploy, chạy test cần DB** | **[`docs/operations.md`](docs/operations.md)** |
 | **Dựng bất kỳ giao diện nào** | **[`docs/design/design-rules.md`](docs/design/design-rules.md) — bắt buộc** |
-| Giao diện đã được duyệt | [`docs/design/mockups/index.html`](docs/design/mockups/index.html) — mở trực tiếp bằng trình duyệt |
-| Kiến trúc, data model, i18n, auth, kiểm thử | [`docs/superpowers/specs/2026-08-17-app-store-doc-design.md`](docs/superpowers/specs/2026-08-17-app-store-doc-design.md) |
+| Giao diện đã được duyệt | [`docs/design/mockups/v3/index.html`](docs/design/mockups/v3/index.html) — **v3 là bản đang dùng**; `mockups/index.html` và `v2/` là ảnh chụp lịch sử của quyết định cũ |
+| Kiến trúc, data model, i18n, auth, kiểm thử | [spec 17.08](docs/superpowers/specs/2026-08-17-app-store-doc-design.md) — bản gốc · [spec 18.08](docs/superpowers/specs/2026-08-18-ducker-navigation-tree-design.md) — **thay thế §6, §7, §8, §9.3** của bản gốc |
 | Kế hoạch thực thi từng task | [`docs/superpowers/plans/2026-08-17-app-store-doc.md`](docs/superpowers/plans/2026-08-17-app-store-doc.md) |
 | Quy ước khi sửa mã trong repo này | [`CLAUDE.md`](CLAUDE.md) |
 

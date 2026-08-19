@@ -9,9 +9,10 @@ Next.js 16 · Prisma 7 · PostgreSQL (Neon) · Auth.js · next-intl · Cloudflar
 | Việc | Tài liệu |
 |---|---|
 | **Bắt đầu phiên mới — đang làm tới đâu, còn nợ gì** | **[`docs/status.md`](docs/status.md) — đọc trước tiên** |
+| **Trước khi lật một quyết định, hoặc khi thấy mã trông kỳ lạ** | **[`docs/session-log.md`](docs/session-log.md)** — quyết định và lý do, mười cái bẫy đã trả giá |
 | **Dựng bất kỳ giao diện nào** | **[`docs/design/design-rules.md`](docs/design/design-rules.md) — bắt buộc** |
-| Kiến trúc, data model, i18n, auth | [`docs/superpowers/specs/2026-08-17-app-store-doc-design.md`](docs/superpowers/specs/2026-08-17-app-store-doc-design.md) |
-| Giao diện đã được duyệt | [`docs/design/mockups/index.html`](docs/design/mockups/index.html) — mở bằng trình duyệt |
+| Giao diện đã được duyệt | [`docs/design/mockups/v3/index.html`](docs/design/mockups/v3/index.html) — bản v3 là bản đang dùng; `mockups/index.html` và `v2/` là ảnh chụp lịch sử |
+| Kiến trúc, data model, i18n, auth | [spec 17.08](docs/superpowers/specs/2026-08-17-app-store-doc-design.md) và [spec 18.08](docs/superpowers/specs/2026-08-18-ducker-navigation-tree-design.md) — bản sau thay thế §6, §7, §8, §9.3 của bản trước |
 
 ## Ba ranh giới không được vượt
 

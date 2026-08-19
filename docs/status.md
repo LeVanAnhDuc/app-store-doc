@@ -148,8 +148,9 @@ Xếp theo mức đáng làm.
 |---|---|
 | Quy ước, ba ranh giới, bốn cái bẫy | [`../CLAUDE.md`](../CLAUDE.md) |
 | **Dựng bất kỳ giao diện nào** | [`design/design-rules.md`](design/design-rules.md) — **bắt buộc** |
-| Giao diện đã duyệt | [`design/mockups/index.html`](design/mockups/index.html) |
-| Kiến trúc, data model, rủi ro | [`superpowers/specs/2026-08-17-app-store-doc-design.md`](superpowers/specs/2026-08-17-app-store-doc-design.md) |
+| Giao diện đã duyệt | [`design/mockups/v3/index.html`](design/mockups/v3/index.html) — **v3 là bản đang dùng**; `mockups/index.html` và `v2/` là ảnh chụp lịch sử |
+| Kiến trúc, data model, rủi ro | [spec 17.08](superpowers/specs/2026-08-17-app-store-doc-design.md) · [spec 18.08](superpowers/specs/2026-08-18-ducker-navigation-tree-design.md) — bản sau thay thế §6, §7, §8, §9.3 |
+| **Quyết định và lý do, bẫy đã trả giá** | **[`session-log.md`](session-log.md)** |
 | Hạ tầng, deploy, test cần DB | [`operations.md`](operations.md) |
 
 **Bảy cái bẫy đã trả giá để biết** (chi tiết trong `CLAUDE.md` và `operations.md`):
