@@ -13,32 +13,11 @@
   line-height: var(--lh-body);
 }
 
-.moveGroup {
+/* Nhóm hành động cuối dòng. `.move` cũ đã bỏ: bộ nút thứ tự nay là
+   `OrderControls`, và nó mang sẵn hình khối lẫn ngưỡng vùng bấm của chính nó. */
+.actionGroup {
   display: flex;
   gap: 4px;
-}
-
-.move {
-  width: 24px;
-  height: 24px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  background: var(--surface);
-  color: var(--ink);
-  font-family: var(--mono);
-  font-size: var(--t-xs);
-  cursor: pointer;
-}
-
-.move:hover:not(:disabled) {
-  background: var(--surface-2);
-}
-
-.move:disabled {
-  opacity: 0.4;
-  cursor: default;
 }
 
 .name {
@@ -77,6 +56,11 @@
 }
 
 .action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
   padding: 5px 11px;
   border: 1px solid var(--line);
   border-radius: 5px;
@@ -88,9 +72,9 @@
   cursor: pointer;
 }
 
-/* `.action` dùng cho cả `<button>` và liên kết "Soạn nội dung". */
+/* `.action` dùng cho cả `<button>` và liên kết "Soạn nội dung"; liên kết chỉ cần
+   bỏ gạch chân, `display` giữ nguyên `inline-flex` để nó cũng đạt ngưỡng vùng bấm. */
 a.action {
-  display: inline-block;
   text-decoration: none;
 }
 

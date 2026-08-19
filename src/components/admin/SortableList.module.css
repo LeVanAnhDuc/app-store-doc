@@ -30,9 +30,16 @@
   padding: 9px 12px;
 }
 
+/* Tay cầm là `<button>` thật nên nó phải đạt ngưỡng vùng bấm như mọi nút khác
+   (design-rules §3): nó vừa là đích kéo của chuột, vừa là đường bàn phím. */
 .handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
-  padding: 0 2px;
+  min-width: var(--tap);
+  min-height: var(--tap);
+  padding: 0;
   border: 0;
   background: none;
   color: var(--muted);
@@ -79,6 +86,11 @@
 }
 
 .action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--tap);
+  min-height: var(--tap);
   padding: 4px 9px;
   border: 1px solid var(--line);
   border-radius: 5px;

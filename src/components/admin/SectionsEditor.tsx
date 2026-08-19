@@ -163,6 +163,12 @@ export function SectionsEditor({
             remove: t("admin.editor.remove"),
             expand: t("admin.editor.expand"),
             collapse: t("admin.editor.collapse"),
+            order: {
+              top: t("admin.editor.orderTop"),
+              up: t("admin.editor.orderUp"),
+              down: t("admin.editor.orderDown"),
+              bottom: t("admin.editor.orderBottom"),
+            },
           }}
           onReorder={(keys) => onChange(keys.flatMap((key) => sections.filter((r) => r.key === key)))}
           onRemove={(key) => onChange(sections.filter((row) => row.key !== key))}

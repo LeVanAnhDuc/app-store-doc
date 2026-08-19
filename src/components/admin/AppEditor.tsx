@@ -317,6 +317,12 @@ export function AppEditor({
     remove: t("admin.editor.remove"),
     expand: t("admin.editor.expand"),
     collapse: t("admin.editor.collapse"),
+    order: {
+      top: t("admin.editor.orderTop"),
+      up: t("admin.editor.orderUp"),
+      down: t("admin.editor.orderDown"),
+      bottom: t("admin.editor.orderBottom"),
+    },
   };
 
   // -------------------------------------------------------------------------

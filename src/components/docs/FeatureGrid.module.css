@@ -4,10 +4,13 @@
   margin-top: 30px;
 }
 
+/* `<h2>`: không khai `font-weight` — design-rules §3 để h1–h3 ở serif 400, mà
+   selector class ở đây mạnh hơn selector thẻ nên khai lại là vô hiệu hoá nó.
+   Bỏ weight rồi thì 18px không còn đứng trên tên tính năng 16px nữa, nên nó
+   nhận đúng bậc H2 (26px) — cùng cỡ với các tiêu đề mục khác của trang. */
 .title {
   margin: 0 0 16px;
-  font-size: var(--t-lg);
-  font-weight: 650;
+  font-size: var(--t-2xl);
   line-height: var(--lh-head);
 }
 
@@ -23,16 +26,18 @@
   padding: 13px 15px;
 }
 
+/* Tên tính năng và mô tả cùng lên một bậc: 13.5/12.5px cũ đều dưới sàn 14px.
+   Chênh lệch giữa hai dòng giờ do bậc cỡ và màu gánh, không do nửa pixel —
+   và cũng không do `font-weight`, vì đây là `<h3>` (xem chú thích `.title`). */
 .name {
   margin: 0 0 4px;
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: var(--t-md);
   line-height: var(--lh-head);
 }
 
 .desc {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   /* Văn xuôi: leading không dưới 1.7 vì dấu tiếng Việt chồng nhau. */
   line-height: 1.7;
   color: var(--muted);

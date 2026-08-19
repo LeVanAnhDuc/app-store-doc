@@ -25,25 +25,31 @@
   opacity: 0.75;
 }
 
+/* Câu chính của vùng thả lên cỡ thân bài; câu hướng dẫn xuống một bậc nhưng
+   vẫn ở sàn 14px — cả hai trước đây đều là văn xuôi dưới sàn. */
 .title {
-  font-size: 12.5px;
+  font-size: var(--t-md);
   font-weight: 600;
   color: var(--ink);
 }
 
 .hint {
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   line-height: var(--lh-body);
 }
 
 .pick {
+  display: inline-flex;
+  align-items: center;
+  /* Ngưỡng bấm WCAG 2.2 SC 2.5.8: hai lớp đệm 5px cộng chữ cũ chỉ ra 27px. */
+  min-height: var(--tap);
   margin-top: 4px;
   padding: 5px 11px;
   border: 1px solid var(--line);
   border-radius: 5px;
   background: var(--surface);
   color: var(--ink);
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   cursor: pointer;
 }
 
@@ -69,7 +75,7 @@
 .notice {
   margin: 4px 0 0;
   min-height: 1.2em;
-  font-size: var(--t-xs);
+  font-size: var(--t-sm);
   line-height: var(--lh-body);
   color: var(--muted);
 }

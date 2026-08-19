@@ -1,6 +1,6 @@
 # Ducker — đang làm tới đâu
 
-**Cập nhật:** 18.08.2026 · sau Task 9 của [kế hoạch cây điều hướng](superpowers/plans/2026-08-18-ducker-navigation-tree.md)
+**Cập nhật:** 19.08.2026 · sau Task 9 của [kế hoạch cây điều hướng](superpowers/plans/2026-08-18-ducker-navigation-tree.md), cộng một lượt trả nợ giao diện
 
 File này để mở ra đầu tiên khi bạn (hoặc một phiên Claude mới) quay lại dự án trên máy khác. Nó trả lời ba câu: đang ở đâu, việc gì đang chặn, và còn nợ những gì.
 
@@ -10,11 +10,11 @@ File này để mở ra đầu tiên khi bạn (hoặc một phiên Claude mới
 
 Hai kế hoạch đã chạy hết: 17 task trong [`superpowers/plans/2026-08-17-app-store-doc.md`](superpowers/plans/2026-08-17-app-store-doc.md), và 9 task trong [`superpowers/plans/2026-08-18-ducker-navigation-tree.md`](superpowers/plans/2026-08-18-ducker-navigation-tree.md) — cây điều hướng do CMS quản, giao diện v3, đổi tên Ducker.
 
-Số dưới đây là **kết quả chạy thật ngày 18.08.2026** trên Postgres cục bộ (Docker `app-store-doc-pg`, cổng 15433), không phải con số nhớ lại.
+Số dưới đây là **kết quả chạy thật ngày 19.08.2026** trên Postgres cục bộ (Docker `app-store-doc-pg`, cổng 15433), không phải con số nhớ lại.
 
 | Kiểm tra | Trạng thái |
 |---|---|
-| `npm run test:run` | **185 xanh**, 21 skip (28/29 file) |
+| `npm run test:run` | **194 xanh**, 21 skip (28/29 file) |
 | `DATABASE_URL_TEST=... npx vitest run src/server/content --maxWorkers=1` | **64 xanh**, 0 skip |
 | `npm run typecheck` | sạch |
 | `npm run lint` | sạch |
@@ -97,6 +97,10 @@ Xếp theo mức đáng làm.
 
 ### Đã trả trong đợt cây điều hướng
 
+- ~~**`OrderControls` mới dùng ở một chỗ.**~~ Spec §15 đòi bốn **chỗ dùng**: nút gốc, nút con, `Feature`, `Section`. Hai chỗ đầu do `NavEditor`/`NavNodeRow`, hai chỗ sau do `SortableList` (dùng trong `AppEditor` và `SectionsEditor`). `AppsTable` cũng đổi từ hai mũi tên tự chế sang `OrderControls`. `SortableList` được **thêm** bộ nút chứ không bỏ kéo thả và đường bàn phím — ba lối vào cùng tồn tại, vì đường bàn phím cũ vô hình (phải đọc `aria-label` mới biết có) và chỉ đi được một bậc.
+- ~~**Cỡ chữ ngoài bậc ở sáu chỗ.**~~ Đã đưa về bậc. Kèm theo có test quét toàn bộ `*.module.css` — nó **đỏ đúng sáu chỗ đó trước khi sửa**, nên không phải lời hứa suông.
+- ~~**Chữ thương hiệu chưa theo mockup.**~~ `TopBar`/`AdminShell`/`LoginForm` nay serif 400 cỡ 23px (`--t-brand`), masthead đúng 62px. Đã đo thật ở 375px: thương hiệu 106 + tìm kiếm 72 + ngôn ngữ 60 + gap = 258px trong lòng 343px, nên **bỏ `flex-wrap`** đi, một hàng, không tràn.
+- ~~**Trình soạn cây không hiện trạng thái nút.**~~ Hàng của nút `DRAFT`/`ARCHIVED` có huy hiệu riêng, màu `--st-planned` (không thêm màu mới).
 - ~~**`DocPage.group` đang để `null` hết.**~~ Cột đã bị xoá ở `0002_nav_tree`. Nhóm sidebar giờ là `NavNode` loại `CONTAINER`, nhãn nằm trong `NavNodeTranslation` nên dịch được từng ngôn ngữ. Quyết định treo lâu nhất của dự án đã đóng.
 - ~~**Sidebar chỉ có một tầng.**~~ Cây lồng sâu tuỳ ý; seed dựng sẵn ba tầng (Ứng dụng → Vệ tinh → Match CV).
 - ~~**Test cần DB chưa từng chạy.**~~ 64 xanh trên Postgres cục bộ, cộng 12 e2e xanh.
@@ -105,11 +109,9 @@ Xếp theo mức đáng làm.
 
 ### Nên làm sớm
 
-- **`OrderControls` mới dùng ở đúng một chỗ.** Spec §15 đòi bốn chỗ; hiện chỉ `NavEditor`/`NavNodeRow` dùng, còn `/admin/apps`, `/admin/docs`, `/admin/locales` vẫn dùng `SortableList` hoặc hai nút mũi tên. Gộp lại được ngay, không cần đổi API.
 - **Không có nút chuyển chủ đề.** `tokens.css` có đủ ba khối (`:root`, `prefers-color-scheme`, `:root[data-theme="dark"]`) và khối thứ ba **đã kiểm là chạy đúng**, nhưng không thành phần nào đặt `data-theme`, nên trong app chỉ với tới được hai trạng thái đầu. Thêm một nút toggle là dùng được ngay khối thứ ba.
-- **Cỡ chữ ngoài bậc và dưới sàn 14px.** `AppCard.name` 14.5px, `FeatureGrid.name` 13.5px, `UploadDropzone.title` 12.5px, `AppHero.slug` 10.5px, `TopBar.brandMark`/`AdminShell.scope` 10px. Bậc cỡ trong `tokens.css` nói "đừng chèn cỡ ngoài bậc", còn design-rules nói không văn xuôi nào dưới 14px (chỉ chừa nhãn mono VIẾT HOA 11–11.5px). Sáu chỗ này chưa theo.
-- **Chữ thương hiệu chưa theo mockup.** Mockup `.m-brand b` là serif weight 400 cỡ 23px; `TopBar`, `AdminShell` và `LoginForm` đang để sans weight 660 kèm tracking âm. `LoginForm` `h1` cũng còn 19px/660 sans. Sửa thì masthead cao thêm nên phải kiểm lại mốc 375px.
-- **Trình soạn cây không hiện trạng thái nút.** Mỗi hàng có huy hiệu loại (CHỨA / ỨNG DỤNG / TÀI LIỆU) nhưng không có gì cho biết nút đang `DRAFT` — "Trang chủ" và "Shorten Link" trông y như các nút đã publish.
+- **30 file `.module.css` còn ngoài bậc cỡ.** Test `tokens.test.ts` quét mọi `*.module.css` và tìm ra **132 vi phạm**; sáu chỗ trong danh sách cũ đã sửa, 126 chỗ còn lại nằm ở 30 file được liệt kê trong hằng `KNOWN_DEBT` của chính test đó. Danh sách chỉ miễn trừ **đường dẫn có thật** — gõ sai một dòng thì test đỏ chứ không âm thầm miễn trừ số không.
+- **`/admin/docs` và `/admin/locales` không sắp xếp lại được.** `DocPage.order` và `Locale.order` có trong schema và được `orderBy` dùng, nhưng **không mutation nào ghi chúng** — `mutations.ts` chỉ có `reorderApps` và `reorderSiblings`. Thêm nút thứ tự vào hai trang đó trước khi có mutation sẽ cho ra bốn nút di chuyển hàng trên màn hình rồi mất thay đổi khi tải lại. Riêng `/admin/docs` còn có một quyết định đã ghi trong mã: thứ tự thuộc về khối "Thông tin chung" của trình soạn trang, thêm cửa thứ hai "chỉ tạo thêm một chỗ để hai con số lệch nhau".
 - **Ảnh không đo được kích thước.** `uploadImage` không giải mã ảnh nên `Media.width`/`height` luôn `null`, thư viện chỉ hiện dung lượng. Cần một thư viện đọc header ảnh (`image-size` chẳng hạn) — chưa cài vì lúc dựng không được `npm install`.
 - **`/admin/apps` sắp xếp bằng hai nút mũi tên**, chưa dùng `SortableList`. Lúc làm trang đó thì `SortableList` chưa tồn tại; giờ có rồi, gộp lại được.
 - **`requireAdmin()` chuyển hướng tới `/admin/login` không có locale.** Middleware tự đoán bằng cookie `NEXT_LOCALE`, nên ai deep-link `/en/admin/apps` mà chưa có cookie sẽ rơi vào `/vi/admin/login`. Sửa thì phải dạy tầng auth biết về locale.

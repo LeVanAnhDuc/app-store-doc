@@ -285,6 +285,23 @@ describe("NavEditor", () => {
     expect(within(row("c-core")).queryByText(labels.emptyContainer)).toBeNull();
   });
 
+  it("nút chưa publish có huy hiệu trạng thái, nút đã publish thì không", () => {
+    setup();
+
+    // "Đã ngừng" là nút duy nhất đang DRAFT trong cây mẫu. Không có huy hiệu thì
+    // nó trông y hệt nút đã publish, và người vận hành không hiểu vì sao nó
+    // không xuất hiện trên trang công khai.
+    expect(within(row("c-retired")).getByText(labels.statusDraft)).toBeInTheDocument();
+
+    // Đã publish là trường hợp thường: gắn nhãn cho nó chỉ làm hàng dài thêm.
+    for (const id of ["r-eco", "r-apps", "c-core", "a-store", "d-overview"]) {
+      const scope = within(row(id));
+      expect(scope.queryByText(labels.statusDraft), id).toBeNull();
+      expect(scope.queryByText(labels.statusPublished), id).toBeNull();
+      expect(scope.queryByText(labels.statusArchived), id).toBeNull();
+    }
+  });
+
   it("lỗi từ tầng ghi nổi lên tận giao diện, không bị bắt im", async () => {
     const updateNode = vi
       .fn()

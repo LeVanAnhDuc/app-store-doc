@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 import { Badge, type StatusKind } from "@/components/ui/Badge";
 import { DataTable } from "@/components/ui/DataTable";
+import { OrderControls, type OrderMove } from "@/components/ui/OrderControls";
 import type { AdminAppRow } from "@/server/content/queries";
 import styles from "./AppsTable.module.css";
 
@@ -39,10 +40,18 @@ const STATUS_LABEL_KEY: Record<AdminAppRow["status"], string> = {
   ARCHIVED: "admin.publishState.archived",
 };
 
-/** Đổi chỗ hai phần tử liền nhau, trả mảng mới. */
-function swap<T>(items: T[], from: number, to: number): T[] {
+/**
+ * Chuyển một phần tử từ `from` sang `to`, trả mảng mới.
+ *
+ * Rút một phần tử ra rồi chèn lại, **không** hoán đổi hai ô: với hai vị trí liền
+ * nhau hai cách cho cùng kết quả, nhưng "đưa lên đầu" thì không — hoán đổi phần
+ * tử thứ năm với phần tử đầu sẽ ném phần tử đầu xuống vị trí thứ năm thay vì
+ * đẩy cả bốn phần tử giữa xuống một bậc.
+ */
+function move<T>(items: T[], from: number, to: number): T[] {
   const next = [...items];
-  [next[from], next[to]] = [next[to], next[from]];
+  const [picked] = next.splice(from, 1);
+  next.splice(to, 0, picked);
   return next;
 }
 
@@ -58,8 +67,12 @@ function reasonOf(error: unknown): string {
  * đổ thì thông báo lỗi hiện ra và lần refresh kế tiếp kéo lại thứ tự thật —
  * không có trạng thái nào chỉ tồn tại trong trình duyệt.
  *
- * Kéo thả là việc của Task 15 (`SortableList`). Hai nút mũi tên ở đây làm được
- * cùng việc mà bàn phím dùng được ngay.
+ * Thứ tự đổi bằng `OrderControls` — cùng một bộ nút với trình soạn cây và với
+ * hai danh sách trong trang soạn nội dung, nên người vận hành học một lần dùng
+ * được ở mọi chỗ. Bộ nút **không** bị vô hiệu trong lúc `pending`: mỗi lần bấm
+ * gửi đi *cả* danh sách id theo thứ tự cục bộ mới nhất, nên bấm ba lần liên tiếp
+ * thì lần ghi cuối vẫn mang đúng thứ tự cuối. Khoá nút lại chỉ đổi một chuyện
+ * đúng thành một chuyện khó chịu.
  */
 export function AppsTable({ rows, setStatus, reorder }: AppsTableProps) {
   const t = useTranslations();
@@ -91,11 +104,14 @@ export function AppsTable({ rows, setStatus, reorder }: AppsTableProps) {
     });
   }
 
-  function move(index: number, delta: number) {
-    const target = index + delta;
-    if (target < 0 || target >= order.length) return;
+  /** Bốn hướng của `OrderControls` quy về một chỉ số đích. */
+  function moveTo(index: number, to: OrderMove) {
+    const target =
+      to === "top" ? 0 : to === "bottom" ? order.length - 1 : to === "up" ? index - 1 : index + 1;
 
-    const next = swap(order, index, target);
+    if (target === index || target < 0 || target >= order.length) return;
+
+    const next = move(order, index, target);
     setOrder(next);
     run(() => reorder({ ids: next.map((row) => row.id) }), t("admin.apps.orderSaved"));
   }
@@ -139,26 +155,29 @@ export function AppsTable({ rows, setStatus, reorder }: AppsTableProps) {
             return (
               <tr key={row.id}>
                 <td>
-                  <div className={styles.moveGroup}>
-                    <button
-                      className={styles.move}
-                      type="button"
-                      onClick={() => move(index, -1)}
-                      disabled={pending || index === 0}
-                      aria-label={t("admin.apps.moveUp", { name: label })}
-                    >
-                      <span aria-hidden="true">↑</span>
-                    </button>
-                    <button
-                      className={styles.move}
-                      type="button"
-                      onClick={() => move(index, 1)}
-                      disabled={pending || index === order.length - 1}
-                      aria-label={t("admin.apps.moveDown", { name: label })}
-                    >
-                      <span aria-hidden="true">↓</span>
-                    </button>
-                  </div>
+                  {/*
+                    Cùng bộ nút với trình soạn cây và với hai danh sách trong
+                    trang soạn nội dung (spec §7.1): bốn ký hiệu như nhau, luật
+                    mờ ở hai đầu như nhau, ngưỡng vùng bấm như nhau. Hai nút mũi
+                    tên tự chế trước đây chỉ cao 24px và không có "lên đầu" /
+                    "xuống cuối" — với mười ứng dụng thì đưa mục cuối lên đầu
+                    tốn chín lần bấm, mỗi lần một lượt ghi máy chủ.
+
+                    Nhãn dựng theo từng dòng để mỗi nút có tên gọi riêng: bảng
+                    mười dòng mà bốn mươi nút cùng tên thì trình đọc màn hình
+                    không nói được nút nào thuộc ứng dụng nào.
+                  */}
+                  <OrderControls
+                    index={index}
+                    total={order.length}
+                    onMove={(to) => moveTo(index, to)}
+                    labels={{
+                      top: t("admin.apps.orderTop", { name: label }),
+                      up: t("admin.apps.orderUp", { name: label }),
+                      down: t("admin.apps.orderDown", { name: label }),
+                      bottom: t("admin.apps.orderBottom", { name: label }),
+                    }}
+                  />
                 </td>
 
                 <td>
@@ -187,7 +206,7 @@ export function AppsTable({ rows, setStatus, reorder }: AppsTableProps) {
                 </td>
 
                 <td>
-                  <div className={styles.moveGroup}>
+                  <div className={styles.actionGroup}>
                     {/* Liên kết bằng slug: nó là thứ người vận hành đọc được
                         trên URL. Trang soạn thảo nhận cả id lẫn slug. */}
                     <a className={styles.action} href={`/${locale}/admin/apps/${row.slug}`}>

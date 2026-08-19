@@ -6,10 +6,12 @@
   border-bottom: 1px solid var(--line);
 }
 
+/* Đường dẫn phân cấp là chữ thường có dấu, không phải nhãn VIẾT HOA, nên
+   không được hưởng ngoại lệ 11px; nó về bậc nhãn mono 12px. */
 .crumb {
   margin: 0 0 14px;
   font-family: var(--mono);
-  font-size: 11px;
+  font-size: var(--t-2xs);
   letter-spacing: 0.04em;
   color: var(--muted);
 }
@@ -39,10 +41,11 @@
   gap: 8px;
 }
 
-/* Slug repo luôn ở vai phụ: mono, cỡ nhỏ, màu --muted (design-rules §1). */
+/* Slug repo luôn ở vai phụ: mono, cỡ nhỏ, màu --muted (design-rules §1).
+   12px là bậc "nhãn mono" — 10.5px cũ thấp hơn cả ngoại lệ 11px của §3. */
 .slug {
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   letter-spacing: 0.01em;
   color: var(--muted);
   overflow-wrap: anywhere;
@@ -62,10 +65,11 @@
   border-bottom: 1px solid currentColor;
 }
 
+/* Đoạn tóm tắt là văn xuôi thật, nên nó ở cỡ thân bài chứ không phải 14.5px. */
 .summary {
   margin: 20px 0 0;
   max-width: var(--measure);
-  font-size: 14.5px;
+  font-size: var(--t-md);
   line-height: var(--lh-body);
 }
 
@@ -77,7 +81,7 @@
   }
 
   .tagline {
-    font-size: 13.5px;
+    font-size: var(--t-sm);
   }
 
   /* Ở màn hẹp không còn chỗ để đẩy liên kết sang phải; bỏ khoảng đệm đi để

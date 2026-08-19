@@ -8,39 +8,46 @@
   background: var(--surface);
 }
 
-/* `.m-mast`. */
+/* `.m-mast`: mockup để hàng này cao 62px, đệm ngang 22px, khoảng cách 16px. */
 .mast {
   display: flex;
   align-items: center;
-  gap: 18px;
-  min-height: 52px;
-  padding: 8px 20px;
+  gap: 16px;
+  min-height: 62px;
+  padding: 8px 22px;
 }
 
+/* `.m-brand b`: serif weight 400, 23px. Bản trước để sans 660 kèm tracking âm —
+   đúng thứ v3 đã bỏ ở mọi chỗ khác, và tracking âm ép dấu tiếng Việt vào nhau. */
 .brand {
   display: flex;
   align-items: center;
   gap: 9px;
   color: var(--ink);
-  font-weight: 660;
-  letter-spacing: -0.01em;
+  font-family: var(--serif);
+  font-size: var(--t-brand);
+  font-weight: 400;
+  letter-spacing: 0;
   text-decoration: none;
   white-space: nowrap;
 }
 
+/* Ô ký hiệu lớn theo chữ thương hiệu: 18px cạnh chữ 23px trông như bị bỏ quên.
+   Chữ trong ô lên 12px — 10px cũ thấp hơn cả ngoại lệ mono 11px của §3. */
 .brandMark {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   flex: none;
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--accent);
   /* --bg tương phản với --accent ở cả chủ đề sáng lẫn tối. Không mã màu tay. */
   color: var(--bg);
   display: grid;
   place-items: center;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--t-2xs);
   font-weight: 700;
+  text-transform: uppercase;
 }
 
 .right {
@@ -57,8 +64,11 @@
   border-radius: 5px;
   overflow: hidden;
   font-family: var(--mono);
+  /* 11px là ngoại lệ duy nhất của sàn 14px (§3), và chỉ có giá trị khi chữ
+     thật sự VIẾT HOA — khai ở đây chứ không phó mặc cho `toUpperCase()` bên JS. */
   font-size: 11px;
   letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .lang {
@@ -125,9 +135,12 @@
 
 /* Đáp ứng tới 375px. */
 @media (max-width: 720px) {
+  /* Đo ở 375px sau khi chữ thương hiệu lên 23px: 106 + 72 + 60 cộng khoảng cách
+     là 258px, còn thừa trong 343px lòng trong — vẫn đủ một hàng, không cần gập.
+     Chỉ hạ đệm ngang và khoảng cách xuống cho khỏi chật. */
   .mast {
-    gap: 10px 14px;
-    padding: 10px 16px;
+    gap: 12px;
+    padding: 8px 16px;
   }
 
   .right {

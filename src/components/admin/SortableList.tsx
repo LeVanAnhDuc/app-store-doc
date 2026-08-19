@@ -2,6 +2,12 @@
 
 import { useEffect, useRef, useState, type DragEvent, type KeyboardEvent, type ReactNode } from "react";
 
+import {
+  OrderControls,
+  type OrderControlsLabels,
+  type OrderMove,
+} from "@/components/ui/OrderControls";
+
 import styles from "./SortableList.module.css";
 
 /** Một dòng trong danh sách sắp xếp được. */
@@ -29,6 +35,12 @@ export type SortableListLabels = {
   expand: string;
   /** Ghép trước tên mục cho nút đóng khối soạn thảo. */
   collapse: string;
+  /**
+   * Bốn nhãn của bộ nút thứ tự, **ghép trước tên mục** như `handle` và `remove`:
+   * trong một danh sách mười mục, bốn nút mỗi mục mà cùng tên "Lên một bậc" thì
+   * trình đọc màn hình đọc ra bốn mươi nút không phân biệt được với nhau.
+   */
+  order: OrderControlsLabels;
 };
 
 const DEFAULT_LABELS: SortableListLabels = {
@@ -37,6 +49,12 @@ const DEFAULT_LABELS: SortableListLabels = {
   remove: "Xoá",
   expand: "Mở khối soạn",
   collapse: "Đóng khối soạn",
+  order: {
+    top: "Đưa lên đầu",
+    up: "Lên một bậc",
+    down: "Xuống một bậc",
+    bottom: "Đưa xuống cuối",
+  },
 };
 
 export type SortableListProps = {
@@ -67,6 +85,17 @@ function move<T>(items: T[], from: number, to: number): T[] {
  * Component **không giữ thứ tự trong state**: `items` là nguồn sự thật duy nhất
  * và mỗi lần đổi chỗ gọi `onReorder` với danh sách id đầy đủ. Giữ thêm một bản
  * thứ tự ở đây sẽ lệch với dữ liệu của trang ngay lần lưu thất bại đầu tiên.
+ *
+ * Ba đường đổi thứ tự cùng tồn tại, cố ý:
+ *
+ * 1. **Kéo thả** — nhanh nhất khi có chuột, nhưng chỉ có chuột.
+ * 2. **Mũi tên trên tay cầm** — đường bàn phím có sẵn từ đầu, đổi được một bậc.
+ * 3. **`OrderControls`** — bốn nút thấy được, thêm "lên đầu"/"xuống cuối" mà hai
+ *    đường kia không làm nổi trong một thao tác, và **nhìn thấy được**: mũi tên
+ *    trên tay cầm là một đường ẩn, phải đọc `aria-label` mới biết nó tồn tại.
+ *
+ * Bộ nút là component dùng chung với trình soạn cây (spec §7.1, §15), nên bốn
+ * ký hiệu và luật mờ ở hai đầu giống hệt nhau ở mọi chỗ trong CMS.
  */
 export function SortableList({ items, onReorder, onRemove, labels }: SortableListProps) {
   const text = { ...DEFAULT_LABELS, ...labels };
@@ -102,6 +131,22 @@ export function SortableList({ items, onReorder, onRemove, labels }: SortableLis
     reorderTo(index, index + (event.key === "ArrowDown" ? 1 : -1), id);
   }
 
+  /**
+   * Bốn hướng của `OrderControls` quy về một chỉ số đích.
+   *
+   * Không đi qua `reorderTo`: hàm đó trả tiêu điểm về **tay cầm kéo**, đúng cho
+   * đường mũi tên nhưng sai ở đây — người vừa bấm `↓` phải bấm tiếp được `↓`.
+   * Nút nằm trong `<li key={item.id}>` nên React chuyển chỗ chính nút đó thay vì
+   * dựng nút mới, và trình duyệt giữ nguyên tiêu điểm khi một nút được chuyển chỗ.
+   */
+  function onOrderMove(index: number, to: OrderMove) {
+    const target =
+      to === "top" ? 0 : to === "bottom" ? items.length - 1 : to === "up" ? index - 1 : index + 1;
+
+    if (target === index || target < 0 || target >= items.length) return;
+    onReorder(move(items, index, target).map((item) => item.id));
+  }
+
   function onDrop(event: DragEvent<HTMLLIElement>, targetIndex: number) {
     event.preventDefault();
     setOverId(null);
@@ -122,6 +167,16 @@ export function SortableList({ items, onReorder, onRemove, labels }: SortableLis
       {items.map((item, index) => {
         const open = openIds.includes(item.id);
         const detailId = `sortable-detail-${item.id}`;
+
+        // Nhãn dựng lại theo từng mục để mỗi nút có một tên gọi riêng. Ghép
+        // bằng khoảng trắng, cùng lối với tay cầm ("Sắp xếp {tên}") và nút xoá,
+        // nên chuỗi trong `messages` không cần dấu giữ chỗ ICU nào.
+        const orderLabels: OrderControlsLabels = {
+          top: `${text.order.top} ${item.label}`,
+          up: `${text.order.up} ${item.label}`,
+          down: `${text.order.down} ${item.label}`,
+          bottom: `${text.order.bottom} ${item.label}`,
+        };
 
         return (
           <li
@@ -167,6 +222,13 @@ export function SortableList({ items, onReorder, onRemove, labels }: SortableLis
 
               <div className={styles.right}>
                 {item.note ? <span className={styles.note}>{item.note}</span> : null}
+
+                <OrderControls
+                  index={index}
+                  total={items.length}
+                  onMove={(to) => onOrderMove(index, to)}
+                  labels={orderLabels}
+                />
 
                 {item.detail === undefined ? null : (
                   <button

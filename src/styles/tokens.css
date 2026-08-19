@@ -64,6 +64,12 @@
   --t-3xl: 36px;  /* H1                     */
   --t-4xl: 44px;
 
+  /* Chữ thương hiệu — `.m-brand b` của mockup v3: serif 400, 23px. Cỡ này đứng
+     ngoài bậc trên vì nó là chữ ký hình ảnh, không phải chữ để đọc thành đoạn;
+     có tên riêng để ba nơi dùng nó (thanh trên, khung quản trị, màn đăng nhập)
+     không trôi mỗi nơi một số. */
+  --t-brand: 23px;
+
   /* Ngưỡng bấm nhỏ nhất — WCAG 2.2 SC 2.5.8 đòi 24x24 CSS px.
      Lấy 28 chứ không phải 24 để còn chỗ thở. Áp min-height/min-width
      cho MỌI phần tử bấm được. */

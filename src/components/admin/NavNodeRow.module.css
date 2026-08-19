@@ -104,6 +104,25 @@
   color: var(--st-connected);
 }
 
+/* Huy hiệu trạng thái, cùng hình khối với `.kind` để hai huy hiệu đứng cạnh nhau
+   đọc như một dải chứ không như hai thứ rời rạc.
+
+   Màu lấy từ bộ màu trạng thái đã có, **không** thêm màu mới: `--st-planned` là
+   đúng màu mà `Badge kind="planned"` đang dùng cho `DRAFT` ở bảng ứng dụng và
+   bảng trang hướng dẫn. Một trạng thái chỉ nên có một màu trong toàn bộ CMS. */
+.status {
+  flex: none;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  background: var(--st-planned-bg);
+  color: var(--st-planned);
+  white-space: nowrap;
+}
+
 /* `.m-scope`: số con. */
 .count {
   font-family: var(--mono);

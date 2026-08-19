@@ -27,3 +27,7 @@ superdesign/design_iterations/
 
 # next
 .next/
+
+# Ảnh chụp và thư mục tạm khi soát giao diện bằng trình duyệt
+.playwright-mcp/
+/*.png

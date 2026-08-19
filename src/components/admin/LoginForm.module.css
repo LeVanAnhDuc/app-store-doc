@@ -20,35 +20,40 @@
   box-shadow: var(--shadow);
 }
 
+/* `.m-brand b`: serif weight 400, 23px — cùng chữ thương hiệu với hai nơi kia. */
 .brand {
   display: flex;
   align-items: center;
   gap: 9px;
   color: var(--ink);
-  font-weight: 660;
-  letter-spacing: -0.01em;
+  font-family: var(--serif);
+  font-size: var(--t-brand);
+  font-weight: 400;
+  letter-spacing: 0;
 }
 
 .brandMark {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   flex: none;
-  border-radius: 4px;
+  border-radius: 5px;
   background: var(--accent);
   /* --bg tương phản với --accent ở cả chủ đề sáng lẫn tối. Không mã màu tay. */
   color: var(--bg);
   display: grid;
   place-items: center;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--t-2xs);
   font-weight: 700;
+  text-transform: uppercase;
 }
 
+/* 19px/660 sans kèm tracking âm là chữ của mockup v1, trước khi v3 quyết tiêu
+   đề là serif 400. Đây là `<h1>`, nên bỏ hẳn `font-weight` và `letter-spacing`
+   để quy tắc `h1,h2,h3` của `globals.css` thắng — khai lại ở đây là vô hiệu
+   hoá nó, vì selector class mạnh hơn selector thẻ. */
 .title {
-  /* 19px lấy nguyên từ mockup `.m-login h2`; mockup thắng khi mâu thuẫn. */
-  font-size: 19px;
-  font-weight: 660;
-  letter-spacing: -0.015em;
+  font-size: var(--t-2xl);
   margin: 16px 0 5px;
 }
 
@@ -63,10 +68,11 @@
   margin-bottom: 13px;
 }
 
+/* Nhãn mono VIẾT HOA — ngoại lệ 11px duy nhất mà §3 cho phép dưới sàn 14px. */
 .label {
   display: block;
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.09em;
   text-transform: uppercase;
   color: var(--muted);
@@ -79,7 +85,7 @@
   border-radius: 5px;
   padding: 7px 10px;
   font-family: var(--sans);
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   background: var(--bg);
   color: var(--ink);
 }
@@ -91,7 +97,7 @@
   border-radius: 5px;
   background: var(--st-private-bg);
   color: var(--st-private);
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   /* Câu lỗi là văn xuôi, dấu tiếng Việt cần chỗ. */
   line-height: var(--lh-body);
 }
@@ -105,7 +111,7 @@
   background: var(--accent);
   color: var(--bg);
   font-family: var(--sans);
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   font-weight: 560;
   cursor: pointer;
 }
@@ -115,12 +121,13 @@
   opacity: 0.65;
 }
 
+/* Dòng chân trang là văn xuôi mono; 10.5px cũ thấp hơn cả ngoại lệ 11px. */
 .foot {
   margin-top: 20px;
   padding-top: 15px;
   border-top: 1px solid var(--line-soft);
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   color: var(--muted);
   line-height: 1.7;
 }

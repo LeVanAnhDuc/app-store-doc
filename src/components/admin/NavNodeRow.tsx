@@ -159,6 +159,22 @@ export function NavNodeRow({
         {navKindLabel(node.kind, labels)}
       </span>
 
+      {/*
+        Huy hiệu trạng thái chỉ hiện khi nút **chưa** ra ngoài được. Nút đã
+        publish là trường hợp thường, gắn nhãn cho nó chỉ làm hàng dài thêm mà
+        không nói thêm gì; còn `DRAFT` và `ARCHIVED` trông y hệt nút đã publish
+        nếu không có gì đánh dấu — và đó chính là lúc người vận hành không hiểu
+        vì sao mục vừa thêm không xuất hiện trên trang công khai.
+
+        Chữ chứ không phải chấm màu: chấm màu bắt người đọc học bảng chú giải,
+        và người không phân biệt được màu thì không đọc được gì cả.
+      */}
+      {node.status === "PUBLISHED" ? null : (
+        <span className={styles.status} data-status={node.status}>
+          {node.status === "DRAFT" ? labels.statusDraft : labels.statusArchived}
+        </span>
+      )}
+
       {count === null ? null : (
         <span className={styles.count} data-warn={count.warn ? "true" : undefined}>
           {count.text}

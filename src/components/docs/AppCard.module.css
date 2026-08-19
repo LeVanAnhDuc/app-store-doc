@@ -18,19 +18,22 @@
   gap: 10px;
 }
 
-/* Tên hiển thị: đây là tiêu đề của thẻ, và chỉ có tên hiển thị ở đây. */
+/* Tên hiển thị: đây là tiêu đề của thẻ, và chỉ có tên hiển thị ở đây.
+
+   Không khai `font-weight` hay `letter-spacing`: đây là `<h3>`, mà quy tắc
+   `h1,h2,h3` của `globals.css` đã đặt serif 400 và tracking 0. Selector class
+   mạnh hơn selector thẻ, nên `650` và `-0.012em` cũ âm thầm vô hiệu hoá cả hai
+   và ép dấu tiếng Việt vào nhau. */
 .name {
   margin: 0;
   min-width: 0;
-  font-size: 14.5px;
-  font-weight: 650;
+  font-size: var(--t-md);
   line-height: var(--lh-head);
-  letter-spacing: -0.012em;
 }
 
-/* `inline-flex` + `min-height` chỉ để đạt ngưỡng bấm: chữ 14.5px cho hộp cao 18px,
-   dưới 24px mà WCAG 2.2 SC 2.5.8 đòi. Lỗi này sống qua toàn bộ bộ test cho tới khi
-   `e2e/a11y-tap-target.spec.ts` quét ra. */
+/* `inline-flex` + `min-height` chỉ để đạt ngưỡng bấm: cỡ chữ ở đây cho hộp cao
+   18px, dưới 24px mà WCAG 2.2 SC 2.5.8 đòi. Lỗi này sống qua toàn bộ bộ test cho
+   tới khi `e2e/a11y-tap-target.spec.ts` quét ra. */
 .nameLink {
   display: inline-flex;
   align-items: center;
@@ -43,11 +46,12 @@
   color: var(--accent);
 }
 
-/* Slug repo luôn ở vai phụ: mono, cỡ nhỏ, màu --muted (design-rules §1). */
+/* Slug repo luôn ở vai phụ: mono, cỡ nhỏ, màu --muted (design-rules §1).
+   12px là bậc "nhãn mono" — 10.5px cũ thấp hơn cả ngoại lệ 11px của §3. */
 .slug {
   margin: 0;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: var(--t-2xs);
   line-height: 1.7;
   letter-spacing: 0.01em;
   color: var(--muted);
@@ -67,7 +71,7 @@
 
 .tagline {
   margin: 0;
-  font-size: 12.5px;
+  font-size: var(--t-sm);
   /* Văn xuôi: leading không dưới 1.7 vì dấu tiếng Việt chồng nhau. */
   line-height: 1.7;
   color: var(--muted);
