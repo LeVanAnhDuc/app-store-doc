@@ -1,12 +1,17 @@
-# Ducker — documentation for an app ecosystem, editable without a deploy
+# Ducker — the front door to an app ecosystem, editable without a deploy
 
 > The project's display name is **Ducker**, and the GitHub repository slug is
 > `web-app-ducker` to match it. Dated specs and plans under `docs/superpowers/`
 > still carry the original `app-store-doc` slug in their filenames and prose —
 > those are historical records and are left as written.
 
-A documentation site for [@LeVanAnhDuc](https://github.com/LeVanAnhDuc)'s app
-ecosystem, with an admin CMS attached.
+The public entry point to [@LeVanAnhDuc](https://github.com/LeVanAnhDuc)'s app
+ecosystem: a landing page, a directory of every app, a detail page per app, and
+the documentation — all driven by an admin CMS.
+
+Docs are one content type here, not the whole product. `App`, `Feature`,
+`DocPage`, `Section` and `NavNode` are peers in the schema, which is why the
+ecosystem showcase lives on this site rather than in a separate app.
 
 Every app gets its own section — what it is, how to try it, how to use it, what
 it does — plus ecosystem overview pages and an OAuth integration guide. Content
@@ -21,7 +26,7 @@ is edited through the CMS, and the public pages change without a redeploy.
 
 ## Features
 
-- **Public documentation pages**
+- **Public ecosystem pages**
   - A page per app — hero, feature grid, and body sections rendered from Markdown
   - An ecosystem overview, per-app detail pages, and standalone doc pages
   - A table of contents, a search dialog, and a sidebar navigation tree

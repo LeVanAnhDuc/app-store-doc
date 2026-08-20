@@ -45,7 +45,7 @@ model Locale {
 
 model App {
   id            String           @id @default(cuid())
-  slug          String           @unique // "web-store-apps"
+  slug          String           @unique // "web-app-match-cv"
   kind          AppKind          @default(SATELLITE)
   status        Status           @default(DRAFT)
   order         Int              @default(0)
