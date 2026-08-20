@@ -127,8 +127,7 @@ const APPS: SeedApp[] = [
     kind: "CORE",
     status: "PUBLISHED",
     order: 0,
-    repoUrl: `${GITHUB}/web-store-apps`,
-    apiRepoUrl: `${GITHUB}/api-web-store-apps`,
+    repoUrl: `${GITHUB}/web-app-store`,
     techStack: [
       "Next.js 15",
       "React 19",
@@ -228,29 +227,31 @@ const APPS: SeedApp[] = [
         title: { vi: "Chạy thử trong 5 phút", en: "Run it in five minutes" },
         body: {
           vi:
-            "Cần Node 20 trở lên. Máy chủ `api-web-store-apps` phải chạy trước, mặc định ở cổng 5000.\n\n" +
+            "Cần Node 20 trở lên. Client và server nay nằm cùng một kho; server phải chạy " +
+            "trước, mặc định ở cổng 5000 (`APP_PORT`).\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/api-web-store-apps.git\n" +
-            "cd api-web-store-apps && npm install && npm run dev\n" +
+            "git clone https://github.com/LeVanAnhDuc/web-app-store.git\n" +
+            "cd web-app-store/server && yarn install && yarn dev\n" +
             "```\n\n" +
-            "Rồi tới giao diện:\n\n" +
+            "Rồi tới giao diện, ở một shell khác:\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/web-store-apps.git\n" +
-            "cd web-store-apps && npm install && npm run dev\n" +
+            "cd web-app-store/client && yarn install && yarn dev\n" +
             "```\n\n" +
-            "Phần này viết từ README, chưa chạy thử — số cổng và tên script có thể đã khác.",
+            "Tên script lấy từ `package.json` của từng bên; chưa chạy thử nên số cổng và " +
+            "biến môi trường vẫn nên đối chiếu với `.env.example`.",
           en:
-            "Needs Node 20 or newer. Start `api-web-store-apps` first; it listens on port 5000 by default.\n\n" +
+            "Needs Node 20 or newer. The client and server now live in one repository; start " +
+            "the server first, on port 5000 by default (`APP_PORT`).\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/api-web-store-apps.git\n" +
-            "cd api-web-store-apps && npm install && npm run dev\n" +
+            "git clone https://github.com/LeVanAnhDuc/web-app-store.git\n" +
+            "cd web-app-store/server && yarn install && yarn dev\n" +
             "```\n\n" +
-            "Then the front end:\n\n" +
+            "Then the front end, in a second shell:\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/web-store-apps.git\n" +
-            "cd web-store-apps && npm install && npm run dev\n" +
+            "cd web-app-store/client && yarn install && yarn dev\n" +
             "```\n\n" +
-            "Written from the README and never executed — ports and script names may differ.",
+            "Script names come from each side's `package.json`; nothing was executed, so check " +
+            "ports and environment variables against `.env.example`.",
         },
       },
       {
@@ -279,8 +280,7 @@ const APPS: SeedApp[] = [
     kind: "SATELLITE",
     status: "PUBLISHED",
     order: 1,
-    repoUrl: `${GITHUB}/client-web-app-match-cv`,
-    apiRepoUrl: `${GITHUB}/api-web-app-match-cv`,
+    repoUrl: `${GITHUB}/web-app-match-cv`,
     techStack: [
       "TanStack Start",
       "Ant Design",
@@ -349,21 +349,34 @@ const APPS: SeedApp[] = [
         title: { vi: "Chạy thử trong 5 phút", en: "Run it in five minutes" },
         body: {
           vi:
-            "Cần PostgreSQL có phần mở rộng `pgvector` và một khoá OpenRouter.\n\n" +
+            "Cần PostgreSQL có phần mở rộng `pgvector` và một khoá OpenRouter. Client và " +
+            "server nay nằm cùng một kho; server mặc định ở cổng 5200, client ở 5300.\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/api-web-app-match-cv.git\n" +
-            "cd api-web-app-match-cv && npm install\n" +
-            "npx prisma migrate deploy && npm run start:dev\n" +
+            "git clone https://github.com/LeVanAnhDuc/web-app-match-cv.git\n" +
+            "cd web-app-match-cv/server && yarn install\n" +
+            "npx prisma migrate deploy && yarn start:dev\n" +
             "```\n\n" +
-            "Phần này viết từ README, chưa chạy thử — tên biến môi trường có thể đã khác.",
+            "Rồi tới giao diện, ở một shell khác:\n\n" +
+            "```bash\n" +
+            "cd web-app-match-cv/client && yarn install && yarn dev\n" +
+            "```\n\n" +
+            "Tên script lấy từ `package.json` của từng bên; chưa chạy thử nên tên biến môi " +
+            "trường vẫn nên đối chiếu với `.env.example`.",
           en:
-            "Needs PostgreSQL with the `pgvector` extension and an OpenRouter key.\n\n" +
+            "Needs PostgreSQL with the `pgvector` extension and an OpenRouter key. The client " +
+            "and server now live in one repository; the server defaults to port 5200 and the " +
+            "client to 5300.\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/api-web-app-match-cv.git\n" +
-            "cd api-web-app-match-cv && npm install\n" +
-            "npx prisma migrate deploy && npm run start:dev\n" +
+            "git clone https://github.com/LeVanAnhDuc/web-app-match-cv.git\n" +
+            "cd web-app-match-cv/server && yarn install\n" +
+            "npx prisma migrate deploy && yarn start:dev\n" +
             "```\n\n" +
-            "Written from the README and never executed — environment variable names may differ.",
+            "Then the front end, in a second shell:\n\n" +
+            "```bash\n" +
+            "cd web-app-match-cv/client && yarn install && yarn dev\n" +
+            "```\n\n" +
+            "Script names come from each side's `package.json`; nothing was executed, so check " +
+            "environment variable names against `.env.example`.",
         },
       },
       {
@@ -390,7 +403,7 @@ const APPS: SeedApp[] = [
     kind: "SATELLITE",
     status: "PUBLISHED",
     order: 2,
-    repoUrl: `${GITHUB}/app-manage-gym`,
+    repoUrl: `${GITHUB}/web-app-manage-gym`,
     techStack: ["Next.js 16", "React 19", "Prisma 7", "PostgreSQL", "Auth.js"],
     name: { vi: "Manage Gym", en: "Manage Gym" },
     tagline: {
@@ -451,16 +464,16 @@ const APPS: SeedApp[] = [
           vi:
             "Cần Node 20 trở lên và một PostgreSQL.\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/app-manage-gym.git\n" +
-            "cd app-manage-gym && npm install\n" +
+            "git clone https://github.com/LeVanAnhDuc/web-app-manage-gym.git\n" +
+            "cd web-app-manage-gym && npm install\n" +
             "npx prisma migrate deploy && npm run dev\n" +
             "```\n\n" +
             "Phần này viết từ README, chưa chạy thử — danh sách biến môi trường có thể đã khác.",
           en:
             "Needs Node 20 or newer and a PostgreSQL database.\n\n" +
             "```bash\n" +
-            "git clone https://github.com/LeVanAnhDuc/app-manage-gym.git\n" +
-            "cd app-manage-gym && npm install\n" +
+            "git clone https://github.com/LeVanAnhDuc/web-app-manage-gym.git\n" +
+            "cd web-app-manage-gym && npm install\n" +
             "npx prisma migrate deploy && npm run dev\n" +
             "```\n\n" +
             "Written from the README and never executed — the environment variables may differ.",
@@ -577,7 +590,7 @@ const APPS: SeedApp[] = [
     kind: "SATELLITE",
     status: "PUBLISHED",
     order: 4,
-    repoUrl: `${GITHUB}/app-AI-study-coach`,
+    repoUrl: `${GITHUB}/web-app-AI-study-coach`,
     techStack: [],
     name: { vi: "AI Study Coach", en: "AI Study Coach" },
     tagline: {

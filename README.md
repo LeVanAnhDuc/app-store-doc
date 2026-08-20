@@ -135,12 +135,16 @@ from Neon and R2: [`docs/operations.md`](docs/operations.md).
 
 | Repo | Role |
 |---|---|
-| [`web-store-apps`](https://github.com/LeVanAnhDuc/web-store-apps) · [`api-web-store-apps`](https://github.com/LeVanAnhDuc/api-web-store-apps) | IDMS — the OAuth 2.0/OIDC identity server and sign-in portal |
-| [`client-web-app-match-cv`](https://github.com/LeVanAnhDuc/client-web-app-match-cv) · [`api-web-app-match-cv`](https://github.com/LeVanAnhDuc/api-web-app-match-cv) | Matching a CV against a job description |
-| [`app-manage-gym`](https://github.com/LeVanAnhDuc/app-manage-gym) | Training log |
-| [`app-AI-study-coach`](https://github.com/LeVanAnhDuc/app-AI-study-coach) | Study assistant |
+| [`web-app-store`](https://github.com/LeVanAnhDuc/web-app-store) | IDMS — the sign-in gateway and app launcher. The OAuth 2.0/OIDC provider itself is not built yet |
+| [`web-app-match-cv`](https://github.com/LeVanAnhDuc/web-app-match-cv) | Matching a CV against a job description |
+| [`web-app-manage-gym`](https://github.com/LeVanAnhDuc/web-app-manage-gym) | Training log |
+| [`web-app-AI-study-coach`](https://github.com/LeVanAnhDuc/web-app-AI-study-coach) | Study assistant |
+| [`web-app-AI-workflow-automation-platform`](https://github.com/LeVanAnhDuc/web-app-AI-workflow-automation-platform) | Ducker Flow Grid — visual workflow automation |
 | [`app-calculate-badminton`](https://github.com/LeVanAnhDuc/app-calculate-badminton) | Splitting badminton court costs |
-| `client-web-app-shorten-link` | Link shortener (private repo) |
+| [`web-app-shorten-link`](https://github.com/LeVanAnhDuc/web-app-shorten-link) | Link shortener |
+
+The client and API halves of IDMS, CV matching and the link shortener each live
+in one repository now — they used to be split into `client-…` and `api-…` pairs.
 
 As of 17.08.2026, no satellite app is actually wired into IDMS yet.
 

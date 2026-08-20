@@ -33,7 +33,7 @@ Nhờ vậy đổi cache, đổi DB, đổi nhà cung cấp lưu trữ, đổi c
 
 ## Tên ứng dụng
 
-Tên hiển thị viết hoa đầu từ, có khoảng trắng: **Manage Gym**, không phải `app-manage-gym`. Slug repo chỉ xuất hiện ở vai trò phụ, chữ mono, màu `--muted`. Bảng ánh xạ đầy đủ trong `docs/design/design-rules.md` §1.
+Tên hiển thị viết hoa đầu từ, có khoảng trắng: **Manage Gym**, không phải `web-app-manage-gym`. Slug repo chỉ xuất hiện ở vai trò phụ, chữ mono, màu `--muted`. Bảng ánh xạ đầy đủ trong `docs/design/design-rules.md` §1.
 
 ## README (REQUIRED — keep in sync with features)
 
