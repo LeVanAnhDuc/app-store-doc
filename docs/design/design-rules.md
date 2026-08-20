@@ -1,4 +1,4 @@
-# Quy tắc thiết kế — app-store-doc
+# Quy tắc thiết kế — Ducker
 
 Bắt buộc với mọi phiên làm việc dựng UI cho dự án này. Mockup gốc: [`mockups/index.html`](mockups/index.html).
 

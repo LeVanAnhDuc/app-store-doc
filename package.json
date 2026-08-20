@@ -1,5 +1,5 @@
 {
-  "name": "app-store-doc",
+  "name": "web-app-ducker",
   "version": "1.0.0",
   "description": "Trang tài liệu cho hệ sinh thái ứng dụng của [@LeVanAnhDuc](https://github.com/LeVanAnhDuc), kèm trang quản trị nội dung.",
   "private": true,
@@ -17,15 +17,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/LeVanAnhDuc/app-store-doc.git"
+    "url": "git+https://github.com/LeVanAnhDuc/web-app-ducker.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/LeVanAnhDuc/app-store-doc/issues"
+    "url": "https://github.com/LeVanAnhDuc/web-app-ducker/issues"
   },
-  "homepage": "https://github.com/LeVanAnhDuc/app-store-doc#readme",
+  "homepage": "https://github.com/LeVanAnhDuc/web-app-ducker#readme",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1111.0",
     "@prisma/adapter-pg": "^7.9.1",

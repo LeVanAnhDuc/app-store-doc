@@ -1,7 +1,8 @@
 # Ducker
 
 Trang tài liệu hệ sinh thái ứng dụng + CMS quản trị nội dung.
-Tên hiển thị: **Ducker**. Slug kho mã: `app-store-doc` — không đổi.
+Tên hiển thị: **Ducker**. Slug kho mã: `web-app-ducker` (đổi từ `app-store-doc` ngày 20.08.2026).
+Các spec/plan có ngày trong `docs/superpowers/` vẫn giữ slug cũ — bản ghi lịch sử, không sửa.
 Next.js 16 · Prisma 7 · PostgreSQL (Neon) · Auth.js · next-intl · Cloudflare R2 · Vercel
 
 ## Đọc trước khi làm

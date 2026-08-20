@@ -37,8 +37,8 @@ Số dưới đây là **kết quả chạy thật ngày 19.08.2026** trên Post
 ## 2. Dựng lại môi trường trên máy mới
 
 ```bash
-git clone https://github.com/LeVanAnhDuc/app-store-doc.git
-cd app-store-doc
+git clone https://github.com/LeVanAnhDuc/web-app-ducker.git
+cd web-app-ducker
 npm install                 # postinstall tự chạy `prisma generate`
 cp .env.example .env        # PowerShell: Copy-Item .env.example .env
 npm run dev                 # http://localhost:3000 → chuyển sang /vi

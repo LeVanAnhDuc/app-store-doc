@@ -72,7 +72,7 @@ Song song với đó, vẫn tạo `.env` ở gốc repo (copy từ `.env.example
 ### 1.1 Tạo project
 
 1. Đăng nhập [console.neon.tech](https://console.neon.tech).
-2. **New Project**. Đặt tên `app-store-doc`. Chọn region gần người đọc nhất — `Asia Pacific (Singapore)` nếu phục vụ Việt Nam. Postgres để mặc định.
+2. **New Project**. Đặt tên `web-app-ducker`. Chọn region gần người đọc nhất — `Asia Pacific (Singapore)` nếu phục vụ Việt Nam. Postgres để mặc định.
 3. Sau khi tạo, Neon hiện hộp **Connection string**. Ở đó có hai lựa chọn cần phân biệt:
    - **Pooled connection** — host chứa `-pooler`. Dùng cho **ứng dụng** (`DATABASE_URL` trên Vercel). Serverless mở rất nhiều kết nối ngắn; đi qua pooler mới không cạn connection.
    - **Direct connection** — host **không** có `-pooler`. Dùng cho **`prisma migrate deploy`** và `prisma migrate reset`. Migration chạy DDL và lấy advisory lock, hai thứ không đáng tin qua pooler.
@@ -109,7 +109,7 @@ Trang công khai không bị ảnh hưởng: nó là HTML tĩnh trên CDN của 
 ### 2.1 Tạo bucket
 
 1. Dashboard Cloudflare → **R2** → **Create bucket**.
-2. Tên: `app-store-doc-media`. Location để **Automatic**.
+2. Tên: `web-app-ducker-media`. Location để **Automatic**.
 3. Ở trang tổng quan R2, copy **Account ID** → `R2_ACCOUNT_ID`.
 
 `R2_BUCKET` chính là tên bucket vừa đặt.
@@ -351,7 +351,7 @@ Sau lần deploy đầu, **nguồn sự thật là DB**. Sửa nội dung qua CM
 
 ### 6.1 Import project
 
-1. [vercel.com](https://vercel.com) → **Add New** → **Project** → import repo `app-store-doc`.
+1. [vercel.com](https://vercel.com) → **Add New** → **Project** → import repo `web-app-ducker`.
 2. Framework Preset: Vercel tự nhận **Next.js**. Build Command để mặc định (`npm run build`) — `prebuild` tự chạy trước nó.
 
 ### 6.2 Khai biến môi trường
@@ -366,7 +366,7 @@ Vào **Settings → Environment Variables**, khai cho cả **Production** và **
 | `ADMIN_PASSWORD_HASH` | mục 3 — **hash**, không phải mật khẩu |
 | `PREVIEW_SECRET` | mục 4 |
 | `R2_ACCOUNT_ID` · `R2_ACCESS_KEY_ID` · `R2_SECRET_ACCESS_KEY` · `R2_BUCKET` · `R2_PUBLIC_BASE_URL` | mục 2 |
-| `NEXT_PUBLIC_SITE_URL` | URL thật, ví dụ `https://app-store-doc.vercel.app` |
+| `NEXT_PUBLIC_SITE_URL` | URL thật, ví dụ `https://web-app-ducker.vercel.app` |
 
 **Không** khai `ADMIN_PASSWORD` và `DATABASE_URL_TEST` trên Vercel. Cái đầu là mật khẩu thô chỉ dùng cho e2e cục bộ; cái sau trỏ vào branch mà `prisma migrate reset` xoá định kỳ.
 

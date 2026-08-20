@@ -1,7 +1,9 @@
 # Ducker — documentation for an app ecosystem, editable without a deploy
 
-> The project's display name is **Ducker**. The GitHub repository keeps the slug
-> `app-store-doc` — the slug only ever appears in a secondary role.
+> The project's display name is **Ducker**, and the GitHub repository slug is
+> `web-app-ducker` to match it. Dated specs and plans under `docs/superpowers/`
+> still carry the original `app-store-doc` slug in their filenames and prose —
+> those are historical records and are left as written.
 
 A documentation site for [@LeVanAnhDuc](https://github.com/LeVanAnhDuc)'s app
 ecosystem, with an admin CMS attached.
