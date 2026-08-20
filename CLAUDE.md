@@ -35,9 +35,18 @@ Nhờ vậy đổi cache, đổi DB, đổi nhà cung cấp lưu trữ, đổi c
 
 Tên hiển thị viết hoa đầu từ, có khoảng trắng: **Manage Gym**, không phải `app-manage-gym`. Slug repo chỉ xuất hiện ở vai trò phụ, chữ mono, màu `--muted`. Bảng ánh xạ đầy đủ trong `docs/design/design-rules.md` §1.
 
-## Ngôn ngữ
+## README (REQUIRED — keep in sync with features)
 
-Nội dung, chú thích mã, thông điệp commit: **tiếng Việt**. Định danh trong mã (biến, hàm, kiểu): **tiếng Anh**.
+`README.md` describes what the app does for its users — it is not a boilerplate page. Every commit that adds or changes user-facing behaviour (`feat:`) MUST update the `## Features` section of `README.md` in the same branch, before merging — one short English bullet in the existing style.
+
+While touching README, refresh any stale numbers you notice (test counts, stack versions).
+
+README-only documentation commits use a `docs:` prefix.
+
+## Language
+
+Everything is written in English: product content, code comments, commit
+messages, documentation, and identifiers in code.
 
 <!-- BEGIN:nextjs-agent-rules -->
 

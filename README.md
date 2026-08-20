@@ -1,81 +1,165 @@
-# Ducker
+# Ducker — documentation for an app ecosystem, editable without a deploy
 
-> Tên hiển thị của dự án là **Ducker**. Kho mã trên GitHub vẫn giữ slug `app-store-doc` — slug chỉ xuất hiện ở vai phụ.
+> The project's display name is **Ducker**. The GitHub repository keeps the slug
+> `app-store-doc` — the slug only ever appears in a secondary role.
 
-Trang tài liệu cho hệ sinh thái ứng dụng của [@LeVanAnhDuc](https://github.com/LeVanAnhDuc), kèm trang quản trị nội dung.
+A documentation site for [@LeVanAnhDuc](https://github.com/LeVanAnhDuc)'s app
+ecosystem, with an admin CMS attached.
 
-Mỗi ứng dụng có một mục riêng — là gì, chạy thử thế nào, cách dùng, tính năng — cộng các trang tổng quan hệ sinh thái và hướng dẫn tích hợp OAuth. Nội dung sửa được qua CMS, không cần deploy lại.
+Every app gets its own section — what it is, how to try it, how to use it, what
+it does — plus ecosystem overview pages and an OAuth integration guide. Content
+is edited through the CMS, and the public pages change without a redeploy.
 
-> **Trạng thái:** mã ứng dụng đã hoàn thành — 108 test xanh (6 test skip vì thiếu `DATABASE_URL_TEST`), `tsc --noEmit` sạch, `next build` chạy được ở chế độ không có DB.
-> **Chưa chạy migration thật, chưa seed thật, chưa deploy.** Ba việc đó cần thông tin đăng nhập Neon, Cloudflare R2 và Vercel mà quá trình xây dựng không có. Các bước để làm nằm trong [`docs/operations.md`](docs/operations.md).
+> **Status:** the application code is complete — 242 tests pass (26 skip without
+> `DATABASE_URL_TEST`), `tsc --noEmit` is clean, and `next build` succeeds even
+> with no database. Migrations, seeding and the end-to-end content roundtrip have
+> all been run for real against local Postgres.
+> **Never deployed.** That needs Neon, Cloudflare R2 and Vercel credentials the
+> build never had. The steps are in [`docs/operations.md`](docs/operations.md).
 
-## Chạy local
+## Features
 
-Cần Node 20+ và npm.
+- **Public documentation pages**
+  - A page per app — hero, feature grid, and body sections rendered from Markdown
+  - An ecosystem overview, per-app detail pages, and standalone doc pages
+  - A table of contents, a search dialog, and a sidebar navigation tree
+  - A draft preview route, gated by `PREVIEW_SECRET` — without the secret the
+    preview is closed, not open
+
+- **Navigation the CMS owns**
+  - The whole navigation tree is content, not code: nodes are created, nested,
+    reordered and translated in the admin, and the public sidebar follows
+  - Reordering uses explicit order controls rather than only drag, so it works
+    on a phone and with a keyboard
+
+- **Multiple languages, honestly labelled**
+  - Locales live in the database; `prebuild` generates
+    `src/i18n/locales.generated.ts` from the `Locale` table, so adding a language
+    is a content change
+  - Locales carry an explicit order, which drives the switcher rather than
+    whatever order the database returns
+  - Switching language and navigating both preserve the locale in the URL
+  - **Untranslated content falls back and says so** — a notice sits beside *each*
+    section and feature that is showing another language, not once at the top of
+    the page. Translation coverage is uneven, so a page-level notice would
+    describe most of the page wrongly. Content in the requested language renders
+    no notice at all
+  - A translation meter in the admin shows how complete each language is
+
+- **Admin CMS**
+  - Sign in with a single administrator account. `ADMIN_PASSWORD_HASH` is a
+    **bcrypt hash**, not a plaintext password
+  - **Login is rate limited** — 5 attempts per 15 minutes per IP, on a sliding
+    window
+  - Edit apps, features, doc pages and sections, each with its own translations,
+    through a Markdown editor
+  - Reorder features and sections; manage locales and the navigation tree
+
+- **Media library on Cloudflare R2**
+  - Upload by dropping files, browse the library, and pick an image from an
+    editor
+  - **Dimensions are measured at upload time** by reading the image header. The
+    reader never throws: an unusual but valid image must not break the upload, so
+    `Media.width`/`height` are nullable on purpose and a size that cannot be read
+    is simply absent
+
+- **Three-state theme toggle**
+  - Light, dark, or follow the system — with no colour flash on first paint
+
+- **Mobile layout**
+  - A navigation drawer for small screens, and a responsive shell shared by the
+    public site and the admin
+
+- **One door per external concern**
+  - A component never imports Prisma, Auth.js or the S3 SDK. `src/server/content`
+    is the only place that touches Prisma, `src/server/auth` the only place that
+    knows Auth.js, `src/server/media` the only place that knows R2 — so swapping
+    cache, database, storage provider or auth mechanism each touches one layer
+  - **Every server action calls `requireAdmin()` on its first line.** A Server
+    Action is its own HTTP endpoint, so protecting the `/admin` layout does not
+    protect it
+
+## Tech Stack
+
+Next.js 16 · Prisma 7 · PostgreSQL (Neon) · Auth.js · next-intl · Cloudflare R2 · Vercel
+
+Testing: Vitest (242 unit tests, 26 requiring a database) and Playwright (16 e2e).
+
+## Running
+
+Needs Node 20+ and npm.
 
 ```bash
-npm install                # postinstall tự chạy `prisma generate`
+npm install                # postinstall runs `prisma generate`
 cp .env.example .env       # PowerShell: Copy-Item .env.example .env
-npm run dev                # http://localhost:3000 → chuyển sang /vi
+npm run dev                # http://localhost:3000 → redirects to /vi
 ```
 
-Không có `DATABASE_URL` thì trang vẫn dựng được nhưng **không có nội dung**: `generateStaticParams` trả `[]`, mọi truy vấn ném lỗi ở lần chạm DB đầu tiên. Muốn thấy nội dung thật, làm mục 1 và 5 của [`docs/operations.md`](docs/operations.md) rồi điền `DATABASE_URL` vào `.env`.
+Without `DATABASE_URL` the site still builds but has **no content**:
+`generateStaticParams` returns `[]` and every query throws at its first touch of
+the database. To see real content, follow sections 1 and 5 of
+[`docs/operations.md`](docs/operations.md), then set `DATABASE_URL` in `.env`.
 
 ### Scripts
 
-| Lệnh | Việc |
+| Command | What it does |
 |---|---|
 | `npm run dev` | Next dev server |
-| `npm run build` | `prebuild` sinh `src/i18n/locales.generated.ts` từ bảng `Locale`, rồi `next build` |
-| `npm start` | Chạy bản đã build |
-| `npm test` | Vitest chế độ watch |
-| `npm run test:run` | Vitest một lượt, `--maxWorkers=1` (song song hay flaky trên Windows) |
-| `npm run typecheck` | `tsc --noEmit` — **vitest không typecheck**, luôn chạy lệnh này riêng |
+| `npm run build` | `prebuild` generates `src/i18n/locales.generated.ts` from the `Locale` table, then `next build` |
+| `npm start` | Serve the build |
+| `npm test` | Vitest in watch mode |
+| `npm run test:run` | Vitest once, `--maxWorkers=1` (parallel runs are flaky on Windows) |
+| `npm run typecheck` | `tsc --noEmit` — **vitest does not typecheck**, so always run this separately |
 | `npm run lint` | ESLint |
-| `npm run e2e` | Playwright. Tự dựng server bằng `npm start`, nên phải `npm run build` trước |
+| `npm run e2e` | Playwright. It starts its own server with `npm start`, so `npm run build` first |
 
-Bốn lệnh chạy được mà không cần thông tin đăng nhập nào: `test:run`, `typecheck`, `lint`, `build`. Test cần Postgres nằm trong `*.db.test.ts` và **tự skip** khi thiếu `DATABASE_URL_TEST` — suite xanh trong trạng thái đó không chứng minh gì về tầng truy vấn. Cách chạy chúng: [`docs/operations.md`](docs/operations.md) mục 7.
+Four commands need no credentials at all: `test:run`, `typecheck`, `lint`,
+`build`. The tests that need Postgres live in `*.db.test.ts` and **skip
+themselves** when `DATABASE_URL_TEST` is missing — a green suite in that state
+proves nothing about the query layer. How to run them:
+[`docs/operations.md`](docs/operations.md), section 7.
 
-### Biến môi trường
+### Environment variables
 
-`.env.example` liệt kê đủ. Ba cái dễ sai nhất:
+`.env.example` lists them all. The three easiest to get wrong:
 
-- `ADMIN_PASSWORD_HASH` là **hash bcrypt**, không phải mật khẩu thô.
-- `.env` chỉ được Next tự nạp. **Prisma CLI 7 và vitest không đọc `.env`** — với chúng phải đặt biến trong chính phiên shell.
-- `PREVIEW_SECRET` thiếu thì trang xem trước bản nháp **đóng**, không mở.
+- `ADMIN_PASSWORD_HASH` is a **bcrypt hash**, not the raw password.
+- Only Next loads `.env` automatically. **Prisma CLI 7 and vitest do not read
+  `.env`** — for those, set the variable in the shell session itself.
+- Without `PREVIEW_SECRET` the draft preview page is **closed**, not open.
 
-Giải thích từng biến, lệnh sinh giá trị, và cách lấy chúng từ Neon/R2: [`docs/operations.md`](docs/operations.md).
+Each variable explained, the commands that generate values, and how to get them
+from Neon and R2: [`docs/operations.md`](docs/operations.md).
 
-## Hệ sinh thái
+## Ecosystem
 
-| Repo | Vai trò |
+| Repo | Role |
 |---|---|
-| [`web-store-apps`](https://github.com/LeVanAnhDuc/web-store-apps) · [`api-web-store-apps`](https://github.com/LeVanAnhDuc/api-web-store-apps) | IDMS — máy chủ định danh OAuth 2.0/OIDC và cổng đăng nhập |
-| [`client-web-app-match-cv`](https://github.com/LeVanAnhDuc/client-web-app-match-cv) · [`api-web-app-match-cv`](https://github.com/LeVanAnhDuc/api-web-app-match-cv) | Đối chiếu CV với mô tả công việc |
-| [`app-manage-gym`](https://github.com/LeVanAnhDuc/app-manage-gym) | Nhật ký tập luyện |
-| [`app-AI-study-coach`](https://github.com/LeVanAnhDuc/app-AI-study-coach) | Trợ lý học tập |
-| [`app-calculate-badminton`](https://github.com/LeVanAnhDuc/app-calculate-badminton) | Chia tiền sân cầu lông |
-| `client-web-app-shorten-link` | Rút gọn liên kết (repo riêng tư) |
+| [`web-store-apps`](https://github.com/LeVanAnhDuc/web-store-apps) · [`api-web-store-apps`](https://github.com/LeVanAnhDuc/api-web-store-apps) | IDMS — the OAuth 2.0/OIDC identity server and sign-in portal |
+| [`client-web-app-match-cv`](https://github.com/LeVanAnhDuc/client-web-app-match-cv) · [`api-web-app-match-cv`](https://github.com/LeVanAnhDuc/api-web-app-match-cv) | Matching a CV against a job description |
+| [`app-manage-gym`](https://github.com/LeVanAnhDuc/app-manage-gym) | Training log |
+| [`app-AI-study-coach`](https://github.com/LeVanAnhDuc/app-AI-study-coach) | Study assistant |
+| [`app-calculate-badminton`](https://github.com/LeVanAnhDuc/app-calculate-badminton) | Splitting badminton court costs |
+| `client-web-app-shorten-link` | Link shortener (private repo) |
 
-Tính đến 17.08.2026, chưa ứng dụng vệ tinh nào thực sự nối vào IDMS.
+As of 17.08.2026, no satellite app is actually wired into IDMS yet.
 
-## Tài liệu
+## Documentation
 
-| Việc | Tài liệu |
+| Task | Document |
 |---|---|
-| **Quay lại dự án — đang làm tới đâu, còn nợ gì** | **[`docs/status.md`](docs/status.md) — mở file này trước** |
-| Vì sao mọi thứ thành ra như thế — quyết định, cách làm việc, bẫy đã trả giá | [`docs/session-log.md`](docs/session-log.md) |
-| **Dựng hạ tầng, deploy, chạy test cần DB** | **[`docs/operations.md`](docs/operations.md)** |
-| **Dựng bất kỳ giao diện nào** | **[`docs/design/design-rules.md`](docs/design/design-rules.md) — bắt buộc** |
-| Giao diện đã được duyệt | [`docs/design/mockups/v3/index.html`](docs/design/mockups/v3/index.html) — **v3 là bản đang dùng**; `mockups/index.html` và `v2/` là ảnh chụp lịch sử của quyết định cũ |
-| Kiến trúc, data model, i18n, auth, kiểm thử | [spec 17.08](docs/superpowers/specs/2026-08-17-app-store-doc-design.md) — bản gốc · [spec 18.08](docs/superpowers/specs/2026-08-18-ducker-navigation-tree-design.md) — **thay thế §6, §7, §8, §9.3** của bản gốc |
-| Kế hoạch thực thi từng task | [`docs/superpowers/plans/2026-08-17-app-store-doc.md`](docs/superpowers/plans/2026-08-17-app-store-doc.md) |
-| Quy ước khi sửa mã trong repo này | [`CLAUDE.md`](CLAUDE.md) |
+| **Coming back to the project — where it stands, what is owed** | **[`docs/status.md`](docs/status.md) — open this first** |
+| Why things are the way they are — decisions, working method, traps already paid for | [`docs/session-log.md`](docs/session-log.md) |
+| **Standing up infrastructure, deploying, running the DB-backed tests** | **[`docs/operations.md`](docs/operations.md)** |
+| **Building any interface** | **[`docs/design/design-rules.md`](docs/design/design-rules.md) — mandatory** |
+| The approved interface | [`docs/design/mockups/v3/index.html`](docs/design/mockups/v3/index.html) — **v3 is the one in use**; `mockups/index.html` and `v2/` are historical snapshots of older decisions |
+| Architecture, data model, i18n, auth, testing | [spec 17.08](docs/superpowers/specs/2026-08-17-app-store-doc-design.md) — the original · [spec 18.08](docs/superpowers/specs/2026-08-18-ducker-navigation-tree-design.md) — **supersedes §6, §7, §8 and §9.3** of the original |
+| The per-task execution plan | [`docs/superpowers/plans/2026-08-17-app-store-doc.md`](docs/superpowers/plans/2026-08-17-app-store-doc.md) |
+| Conventions for changing code in this repo | [`CLAUDE.md`](CLAUDE.md) |
 
-## Nội dung seed là bản nháp
+## Seed content is a draft
 
-`prisma/seed.ts` viết từ README công khai của các repo, không từ mã nguồn. Phần "Chạy thử trong 5 phút" có thể sai số cổng hoặc tên script. Sau lần deploy đầu, **nguồn sự thật là DB** — sửa qua CMS, đừng sửa `seed.ts`.
-
-## Stack
-
-Next.js 16 · Prisma 7 · PostgreSQL (Neon) · Auth.js · next-intl · Cloudflare R2 · Vercel
+`prisma/seed.ts` was written from the public READMEs of those repos, not from
+their source. The "try it in 5 minutes" parts may have the wrong port or script
+name. After the first deploy, **the database is the source of truth** — edit
+through the CMS, not `seed.ts`.
